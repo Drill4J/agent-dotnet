@@ -1,0 +1,18 @@
+// Drill4dotNet.idl : IDL source for Drill4dotNet
+//
+
+// This file will be processed by the MIDL tool to
+// produce the type library (Drill4dotNet.tlb) and marshalling code.
+
+import "oaidl.idl";
+import "ocidl.idl";
+
+[
+	uuid(bb54e37e-3e2e-4b45-ad99-223cb351098e),
+	version(1.0),
+]
+library Drill4dotNetLib
+{
+	importlib("stdole2.tlb");
+};
+

@@ -1,0 +1,8 @@
+.vs
+*.user
+/Drill4dotNet/bin
+/Drill4dotNet/temp
+/Drill4dotNet/Drill4dotNet/Drill4dotNet_i.c
+/Drill4dotNet/Drill4dotNet/Drill4dotNet_i.h
+/Drill4dotNet/Drill4dotNet/Drill4dotNet_p.c
+/Drill4dotNet/Drill4dotNet/dlldata.c
