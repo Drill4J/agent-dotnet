@@ -19,3 +19,7 @@
 #include <atlbase.h>
 #include <atlcom.h>
 #include <atlctl.h>
+
+#include <corhdr.h>
+#include <cor.h>
+#include <corprof.h>

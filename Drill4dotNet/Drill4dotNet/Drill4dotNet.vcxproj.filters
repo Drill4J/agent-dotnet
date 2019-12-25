@@ -37,6 +37,9 @@
     <ClInclude Include="pch.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="CProfilerCallback.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Drill4dotNet.cpp">
@@ -49,6 +52,9 @@
       <Filter>Generated Files</Filter>
     </ClCompile>
     <ClCompile Include="pch.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CProfilerCallback.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
