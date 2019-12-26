@@ -230,6 +230,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="CDrillProfiler.h" />
     <ClInclude Include="CProfilerCallback.h" />
     <ClInclude Include="dllmain.h" />
     <ClInclude Include="Drill4dotNet_i.h" />
@@ -239,6 +240,7 @@
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="CDrillProfiler.cpp" />
     <ClCompile Include="CProfilerCallback.cpp" />
     <ClCompile Include="dllmain.cpp">
       <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</CompileAsManaged>

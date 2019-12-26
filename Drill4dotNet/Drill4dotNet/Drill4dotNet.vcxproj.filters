@@ -40,6 +40,9 @@
     <ClInclude Include="CProfilerCallback.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="CDrillProfiler.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Drill4dotNet.cpp">
@@ -55,6 +58,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="CProfilerCallback.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CDrillProfiler.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

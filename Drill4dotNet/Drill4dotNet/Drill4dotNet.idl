@@ -6,13 +6,23 @@
 
 import "oaidl.idl";
 import "ocidl.idl";
+import "corprof.idl";
 
 [
     uuid(bb54e37e-3e2e-4b45-ad99-223cb351098e),
     version(1.0),
+    helpstring("Drill4dotNet 1.0 Type Library")
 ]
 library Drill4dotNetLib
 {
     importlib("stdole2.tlb");
+    [
+        uuid(be4d1e40-1a9f-45e4-bce4-68de191cc8d6),
+        helpstring("Drill4dotNet Component Class")
+    ]
+    coclass DrillProfiler
+    {
+        [default] interface IUnknown;
+    };
 };
 
