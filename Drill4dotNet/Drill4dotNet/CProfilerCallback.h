@@ -31,6 +31,7 @@ namespace Drill4dotNet
 
     public:
         CProfilerCallback(ProClient& client);
+        ProClient& GetClient();
 
         // Inherited via IUnknown
         virtual HRESULT __stdcall QueryInterface(REFIID riid, void** ppvObject) override;

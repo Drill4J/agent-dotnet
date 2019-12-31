@@ -1,6 +1,7 @@
 #include "pch.h"
-
 #include "CProfilerCallback.h"
+#include "ProClient.h"
+
 namespace Drill4dotNet
 {
 
@@ -9,14 +10,32 @@ namespace Drill4dotNet
     {
     }
 
+    ProClient& CProfilerCallback::GetClient()
+    {
+        return  m_pImplClient;
+    }
+
+    static CProfilerCallback* g_cb = nullptr;
+
     void __stdcall __stdcall CProfilerCallback::fn_functionEnter2(FunctionID funcId, UINT_PTR clientData, COR_PRF_FRAME_INFO func, COR_PRF_FUNCTION_ARGUMENT_INFO* argumentInfo)
     {
+        if (!g_cb) return;
+
+        g_cb->GetClient().Log() << L"Enter function: " << funcId << L"\n";
     }
+
     void __stdcall __stdcall CProfilerCallback::fn_functionLeave2(FunctionID funcId, UINT_PTR clientData, COR_PRF_FRAME_INFO func, COR_PRF_FUNCTION_ARGUMENT_RANGE* retvalRange)
     {
+        if (!g_cb) return;
+
+        g_cb->GetClient().Log() << L"Leave function: " << funcId << L"\n";
     }
+
     void __stdcall __stdcall CProfilerCallback::fn_functionTailcall2(FunctionID funcId, UINT_PTR clientData, COR_PRF_FRAME_INFO func)
     {
+        if (!g_cb) return;
+
+        g_cb->GetClient().Log() << L"Tailcall at function: " << funcId << L"\n";
     }
 
     //
@@ -60,12 +79,12 @@ namespace Drill4dotNet
     //
     HRESULT __stdcall CProfilerCallback::Initialize(IUnknown* pICorProfilerInfoUnk)
     {
-        // log that we are initializing
+        m_pImplClient.Log() << L"CProfilerCallback::Initialize\n";
 
         HRESULT hr = pICorProfilerInfoUnk->QueryInterface(IID_ICorProfilerInfo2, (LPVOID*)&m_corProfilerInfo2);
         if (FAILED(hr))
         {
-            // log error
+            m_pImplClient.Log() << L"Error: " << hr << "\n";
             return hr;
         }
 
@@ -73,16 +92,18 @@ namespace Drill4dotNet
         hr = m_corProfilerInfo2->SetEventMask(eventMask);
         if (FAILED(hr))
         {
-            // log error
+            m_pImplClient.Log() << L"Error: " << hr << "\n";
             return hr;
         }
 
         // set the enter, leave and tailcall hooks
+        g_cb = this;
         hr = m_corProfilerInfo2->SetEnterLeaveFunctionHooks2(fn_functionEnter2, fn_functionLeave2, fn_functionTailcall2);
 
         if (FAILED(hr))
         {
-            // log error
+            g_cb = nullptr;
+            m_pImplClient.Log() << L"Error: " << hr << "\n";
             return hr;
         }
 
@@ -91,7 +112,8 @@ namespace Drill4dotNet
 
     HRESULT __stdcall CProfilerCallback::Shutdown(void)
     {
-        // log the we're shutting down
+        m_pImplClient.Log() << L"CProfilerCallback::Shutdown\n";
+        g_cb = nullptr;
 
         return S_OK;
     }

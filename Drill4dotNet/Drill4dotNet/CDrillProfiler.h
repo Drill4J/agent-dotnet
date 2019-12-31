@@ -1,14 +1,10 @@
 #pragma once
 #include "Drill4dotNet_i.h"
 #include "CProfilerCallback.h"
+#include "ProClient.h"
 
 namespace Drill4dotNet
 {
-    class ProClient
-    {
-        unsigned int _unnamed = 1;
-    };
-
     class ATL_NO_VTABLE CDrillProfiler
         : public ATL::CComObjectRootEx<ATL::CComSingleThreadModel>
         , public ATL::CComCoClass<CDrillProfiler, &CLSID_DrillProfiler>
