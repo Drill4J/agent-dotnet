@@ -14,6 +14,7 @@ namespace Drill4dotNet
     public:
         CDrillProfiler();
 
+        DECLARE_REGISTRY_RESOURCEID(IDR_DRILL4DOTNET)
         BEGIN_COM_MAP(CDrillProfiler)
             COM_INTERFACE_ENTRY(ICorProfilerCallback)
             COM_INTERFACE_ENTRY(ICorProfilerCallback2)
@@ -24,5 +25,5 @@ namespace Drill4dotNet
         void FinalRelease();
     };
 
-    // TODO: OBJECT_ENTRY_AUTO(__uuidof(DrillProfiler), CDrillProfiler)
+    OBJECT_ENTRY_AUTO(__uuidof(DrillProfiler), CDrillProfiler)
 }

@@ -1,5 +1,6 @@
 .vs
 *.user
+*.aps
 /Drill4dotNet/bin
 /Drill4dotNet/temp
 /Drill4dotNet/Drill4dotNet/Drill4dotNet_i.c
