@@ -6,7 +6,7 @@ namespace Drill4dotNet
 {
 
     CDrillProfiler::CDrillProfiler()
-        : CProfilerCallback(*this)
+        : CProfilerCallback(dynamic_cast<ProClient&>(*this))
     {
     }
 
