@@ -15,28 +15,32 @@ namespace Drill4dotNet
         return  m_pImplClient;
     }
 
-    static CProfilerCallback* g_cb = nullptr;
-
-    void __stdcall __stdcall CProfilerCallback::fn_functionEnter2(FunctionID funcId, UINT_PTR clientData, COR_PRF_FRAME_INFO func, COR_PRF_FUNCTION_ARGUMENT_INFO* argumentInfo)
+    namespace
     {
-        if (!g_cb) return;
 
-        g_cb->GetClient().Log() << L"Enter function: " << funcId << L"\n";
-    }
+        static CProfilerCallback* g_cb = nullptr;
 
-    void __stdcall __stdcall CProfilerCallback::fn_functionLeave2(FunctionID funcId, UINT_PTR clientData, COR_PRF_FRAME_INFO func, COR_PRF_FUNCTION_ARGUMENT_RANGE* retvalRange)
-    {
-        if (!g_cb) return;
+        static void __stdcall fn_functionEnter2(FunctionID funcId, UINT_PTR clientData, COR_PRF_FRAME_INFO func, COR_PRF_FUNCTION_ARGUMENT_INFO* argumentInfo)
+        {
+            if (!g_cb) return;
 
-        g_cb->GetClient().Log() << L"Leave function: " << funcId << L"\n";
-    }
+            g_cb->GetClient().Log() << L"Enter function: " << funcId << L"\n";
+        }
 
-    void __stdcall __stdcall CProfilerCallback::fn_functionTailcall2(FunctionID funcId, UINT_PTR clientData, COR_PRF_FRAME_INFO func)
-    {
-        if (!g_cb) return;
+        static void __stdcall fn_functionLeave2(FunctionID funcId, UINT_PTR clientData, COR_PRF_FRAME_INFO func, COR_PRF_FUNCTION_ARGUMENT_RANGE* retvalRange)
+        {
+            if (!g_cb) return;
 
-        g_cb->GetClient().Log() << L"Tailcall at function: " << funcId << L"\n";
-    }
+            g_cb->GetClient().Log() << L"Leave function: " << funcId << L"\n";
+        }
+
+        static void __stdcall fn_functionTailcall2(FunctionID funcId, UINT_PTR clientData, COR_PRF_FRAME_INFO func)
+        {
+            if (!g_cb) return;
+
+            g_cb->GetClient().Log() << L"Tailcall at function: " << funcId << L"\n";
+        }
+    } // anonymous namespace
 
     //
     // Inherited via IUnknown (for isolated testing)
