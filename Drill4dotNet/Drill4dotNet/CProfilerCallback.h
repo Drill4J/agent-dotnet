@@ -38,7 +38,7 @@ namespace Drill4dotNet
     protected:
         ProClient& m_pImplClient;
         volatile ULONG m_lRef = 0;
-        std::optional<CorProfilerInfo2<LogToProClient>> m_corProfilerInfo2{};
+        std::optional<CorProfilerInfo3<LogToProClient>> m_corProfilerInfo3{};
     public:
         CProfilerCallback(ProClient& client);
         ProClient& GetClient();

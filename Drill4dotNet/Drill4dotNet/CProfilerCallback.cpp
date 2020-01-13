@@ -22,25 +22,25 @@ namespace Drill4dotNet
 
         static CProfilerCallback* g_cb = nullptr;
 
-        static void __stdcall fn_functionEnter2(FunctionID funcId, UINT_PTR clientData, COR_PRF_FRAME_INFO func, COR_PRF_FUNCTION_ARGUMENT_INFO* argumentInfo)
+        static void __stdcall fn_functionEnter3(FunctionIDOrClientID functionIDOrClientID)
         {
             if (!g_cb) return;
 
-            g_cb->GetClient().Log() << L"Enter function: " << HexOutput(funcId);
+            g_cb->GetClient().Log() << L"Enter function: " << HexOutput(functionIDOrClientID.functionID);
         }
 
-        static void __stdcall fn_functionLeave2(FunctionID funcId, UINT_PTR clientData, COR_PRF_FRAME_INFO func, COR_PRF_FUNCTION_ARGUMENT_RANGE* retvalRange)
+        static void __stdcall fn_functionLeave3(FunctionIDOrClientID functionIDOrClientID)
         {
             if (!g_cb) return;
 
-            g_cb->GetClient().Log() << L"Leave function: " << HexOutput(funcId);
+            g_cb->GetClient().Log() << L"Leave function: " << HexOutput(functionIDOrClientID.functionID);
         }
 
-        static void __stdcall fn_functionTailcall2(FunctionID funcId, UINT_PTR clientData, COR_PRF_FRAME_INFO func)
+        static void __stdcall fn_functionTailcall3(FunctionIDOrClientID functionIDOrClientID)
         {
             if (!g_cb) return;
 
-            g_cb->GetClient().Log() << L"Tailcall at function: " << HexOutput(funcId);
+            g_cb->GetClient().Log() << L"Tailcall at function: " << HexOutput(functionIDOrClientID.functionID);
         }
     } // anonymous namespace
 
@@ -88,14 +88,14 @@ namespace Drill4dotNet
         m_pImplClient.Log() << L"CProfilerCallback::Initialize";
         try
         {
-            m_corProfilerInfo2 = CorProfilerInfo2(pICorProfilerInfoUnk, LogToProClient(m_pImplClient));
+            m_corProfilerInfo2 = CorProfilerInfo3(pICorProfilerInfoUnk, LogToProClient(m_pImplClient));
 
             DWORD eventMask = (DWORD)(COR_PRF_MONITOR_ENTERLEAVE | COR_PRF_MONITOR_JIT_COMPILATION);
             m_corProfilerInfo2->SetEventMask(eventMask);
 
             // set the enter, leave and tailcall hooks
             g_cb = this;
-            m_corProfilerInfo2->SetEnterLeaveFunctionHooks2(fn_functionEnter2, fn_functionLeave2, fn_functionTailcall2);
+            m_corProfilerInfo3->SetEnterLeaveFunctionHooks3(fn_functionEnter3, fn_functionLeave3, fn_functionTailcall3);
         }
         catch (const _com_error& exception)
         {
