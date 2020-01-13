@@ -12,23 +12,6 @@ namespace Drill4dotNet
         volatile ULONG m_lRef = 0;
         ATL::CComQIPtr<ICorProfilerInfo2> m_corProfilerInfo2;
 
-        static void __stdcall __stdcall fn_functionEnter2(
-            FunctionID funcId,
-            UINT_PTR clientData,
-            COR_PRF_FRAME_INFO func,
-            COR_PRF_FUNCTION_ARGUMENT_INFO* argumentInfo);
-
-        static void __stdcall __stdcall fn_functionLeave2(
-            FunctionID funcId,
-            UINT_PTR clientData,
-            COR_PRF_FRAME_INFO func,
-            COR_PRF_FUNCTION_ARGUMENT_RANGE* retvalRange);
-
-        static void __stdcall __stdcall fn_functionTailcall2(
-            FunctionID funcId,
-            UINT_PTR clientData,
-            COR_PRF_FRAME_INFO func);
-
     public:
         CProfilerCallback(ProClient& client);
         ProClient& GetClient();
