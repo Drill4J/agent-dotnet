@@ -12,13 +12,13 @@ namespace Drill4dotNet
 
     HRESULT CDrillProfiler::FinalConstruct()
     {
-        this->Log() << L"Entering CDrillProfiler::FinalConstruct\n";
+        Log() << L"Entering CDrillProfiler::FinalConstruct";
         return S_OK;
     }
 
     void CDrillProfiler::FinalRelease()
     {
-        this->Log() << L"Entering CDrillProfiler::FinalRelease\n";
+        Log() << L"Entering CDrillProfiler::FinalRelease";
     }
 
 }

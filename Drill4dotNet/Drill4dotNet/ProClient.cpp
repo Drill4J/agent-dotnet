@@ -15,33 +15,13 @@ namespace Drill4dotNet
     {
     }
 
-    wostream& ProClient::Log()
+    LogBuffer<std::wostream> ProClient::Log()
     {
-        return m_ostream;
+        return LogBuffer<std::wostream>(m_ostream);
     }
 
     wistream& ProClient::Key()
     {
         return m_istream;
-    }
-
-    wostream& ProClient::operator << (const wstring& s)
-    {
-        return m_ostream << s;
-    }
-
-    wostream& ProClient::operator << (wstring&& s)
-    {
-        return m_ostream << s;
-    }
-
-    wostream& ProClient::operator << (int16_t i)
-    {
-        return m_ostream << i;
-    }
-
-    wostream& ProClient::operator << (int32_t l)
-    {
-        return m_ostream << l;
     }
 }
