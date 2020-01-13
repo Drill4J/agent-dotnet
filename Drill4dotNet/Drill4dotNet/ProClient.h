@@ -1,7 +1,8 @@
 #pragma once
 
 #include <string>
-#include <iostream>
+#include <sstream>
+#include "LogBuffer.h"
 
 namespace Drill4dotNet
 {
@@ -10,12 +11,9 @@ namespace Drill4dotNet
     public:
         ProClient();
         ~ProClient();
-        std::wostream& Log();
+        LogBuffer<std::wostream> Log();
         std::wistream& Key();
-        std::wostream& operator << (const std::wstring& s);
-        std::wostream& operator << (std::wstring&& s);
-        std::wostream& operator << (std::int16_t i);
-        std::wostream& operator << (std::int32_t l);
+
     protected:
         std::wostream& m_ostream;
         std::wistream& m_istream;

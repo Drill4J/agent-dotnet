@@ -24,21 +24,21 @@ namespace Drill4dotNet
         {
             if (!g_cb) return;
 
-            g_cb->GetClient().Log() << L"Enter function: " << funcId << L"\n";
+            g_cb->GetClient().Log() << L"Enter function: " << funcId;
         }
 
         static void __stdcall fn_functionLeave2(FunctionID funcId, UINT_PTR clientData, COR_PRF_FRAME_INFO func, COR_PRF_FUNCTION_ARGUMENT_RANGE* retvalRange)
         {
             if (!g_cb) return;
 
-            g_cb->GetClient().Log() << L"Leave function: " << funcId << L"\n";
+            g_cb->GetClient().Log() << L"Leave function: " << funcId;
         }
 
         static void __stdcall fn_functionTailcall2(FunctionID funcId, UINT_PTR clientData, COR_PRF_FRAME_INFO func)
         {
             if (!g_cb) return;
 
-            g_cb->GetClient().Log() << L"Tailcall at function: " << funcId << L"\n";
+            g_cb->GetClient().Log() << L"Tailcall at function: " << funcId;
         }
     } // anonymous namespace
 
@@ -83,12 +83,12 @@ namespace Drill4dotNet
     //
     HRESULT __stdcall CProfilerCallback::Initialize(IUnknown* pICorProfilerInfoUnk)
     {
-        m_pImplClient.Log() << L"CProfilerCallback::Initialize\n";
+        m_pImplClient.Log() << L"CProfilerCallback::Initialize";
 
         HRESULT hr = pICorProfilerInfoUnk->QueryInterface(IID_ICorProfilerInfo2, (LPVOID*)&m_corProfilerInfo2);
         if (FAILED(hr))
         {
-            m_pImplClient.Log() << L"Error: " << hr << "\n";
+            m_pImplClient.Log() << L"Error: " << hr;
             return hr;
         }
 
@@ -96,7 +96,7 @@ namespace Drill4dotNet
         hr = m_corProfilerInfo2->SetEventMask(eventMask);
         if (FAILED(hr))
         {
-            m_pImplClient.Log() << L"Error: " << hr << "\n";
+            m_pImplClient.Log() << L"Error: " << hr;
             return hr;
         }
 
@@ -107,7 +107,7 @@ namespace Drill4dotNet
         if (FAILED(hr))
         {
             g_cb = nullptr;
-            m_pImplClient.Log() << L"Error: " << hr << "\n";
+            m_pImplClient.Log() << L"Error: " << hr;
             return hr;
         }
 
@@ -116,7 +116,7 @@ namespace Drill4dotNet
 
     HRESULT __stdcall CProfilerCallback::Shutdown(void)
     {
-        m_pImplClient.Log() << L"CProfilerCallback::Shutdown\n";
+        m_pImplClient.Log() << L"CProfilerCallback::Shutdown";
         g_cb = nullptr;
 
         return S_OK;

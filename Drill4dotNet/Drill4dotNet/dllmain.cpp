@@ -5,7 +5,10 @@
 #include "resource.h"
 #include "Drill4dotNet_i.h"
 #include "dllmain.h"
+#include "LogBuffer.h"
 #include <iostream>
+
+using namespace Drill4dotNet;
 
 CDrill4dotNetModule _AtlModule;
 
@@ -16,6 +19,7 @@ extern "C" BOOL WINAPI DllMain(HINSTANCE hInstance, DWORD dwReason, LPVOID lpRes
     {
         DisableThreadLibraryCalls(hInstance);
     }
-    std::wcout << L"DllMain(" << hInstance << L", " << dwReason << L")\n";
+    LogStdout() << L"DllMain(" << hInstance << L", " << dwReason << L")";
+
     return _AtlModule.DllMain(dwReason, lpReserved);
 }
