@@ -11,7 +11,7 @@
 
 namespace Drill4dotNet
 {
-    // Provides logging and error handling capabilities for ICorProfilerInfo2.
+    // Provides logging and error handling capabilities for ICorProfilerInfo3.
     // TLogger: class with methods bool IsLogEnabled()
     //     and Log(). The second one should provide some
     //     object allowing to output data with << in the
@@ -20,7 +20,7 @@ namespace Drill4dotNet
     class CorProfilerInfo : protected ComWrapperBase<TLogger>
     {
     private:
-        ATL::CComQIPtr<ICorProfilerInfo2> m_corProfilerInfo{};
+        ATL::CComQIPtr<ICorProfilerInfo3> m_corProfilerInfo{};
 
         CorProfilerInfo(const TLogger logger) : ComWrapperBase(logger)
         {
@@ -32,7 +32,7 @@ namespace Drill4dotNet
             return [&info = m_corProfilerInfo, pICorProfilerInfoUnk]()
             {
                 return pICorProfilerInfoUnk->QueryInterface(
-                    IID_ICorProfilerInfo2,
+                    IID_ICorProfilerInfo3,
                     (LPVOID*)&info);
             };
         }
@@ -60,15 +60,15 @@ namespace Drill4dotNet
             };
         }
 
-        // Wraps ICorProfilerInfo2::SetEnterLeaveFunctionHooks2.
+        // Wraps ICorProfilerInfo3::SetEnterLeaveFunctionHooks3.
         auto SetEnterLeaveFunctionHooksCallable(
-            FunctionEnter2* pFuncEnter,
-            FunctionLeave2* pFuncLeave,
-            FunctionTailcall2* pFuncTailcall)
+            FunctionEnter3* pFuncEnter,
+            FunctionLeave3* pFuncLeave,
+            FunctionTailcall3* pFuncTailcall)
         {
             return [this, pFuncEnter, pFuncLeave, pFuncTailcall]()
             {
-                return m_corProfilerInfo->SetEnterLeaveFunctionHooks2(
+                return m_corProfilerInfo->SetEnterLeaveFunctionHooks3(
                     pFuncEnter,
                     pFuncLeave,
                     pFuncTailcall);
@@ -130,7 +130,7 @@ namespace Drill4dotNet
     public:
         // Creates wrapper with logging and error handling capabilities.
         // Throws _com_error in case of an error.
-        // pICorProfilerInfoUnk : should provide ICorProfilerInfo2.
+        // pICorProfilerInfoUnk : should provide ICorProfilerInfo3.
         // logger : tool to log the exceptions.
         CorProfilerInfo(IUnknown* pICorProfilerInfoUnk, const TLogger logger)
             : CorProfilerInfo(logger)
@@ -140,7 +140,7 @@ namespace Drill4dotNet
 
         // Creates wrapper with logging and error handling capabilities.
         // Returns an empty optional in case of an error.
-        // pICorProfilerInfoUnk : should provide ICorProfilerInfo2.
+        // pICorProfilerInfoUnk : should provide ICorProfilerInfo3.
         // logger : tool to log the exceptions.
         static std::optional<CorProfilerInfo<TLogger>> TryCreate(IUnknown* pICorProfilerInfoUnk, const TLogger logger)
         {
@@ -289,12 +289,12 @@ namespace Drill4dotNet
             return this->TryCallCom(SetEventMaskCallable(eventMask) , L"Failed to call CorProfilerInfo::TrySetEventMask.");
         }
 
-        // Calls ICorProfilerInfo2::SetEnterLeaveFunctionHooks2 with the given parameters.
+        // Calls ICorProfilerInfo3::SetEnterLeaveFunctionHooks3 with the given parameters.
         // Throws _com_error in case of an error.
         void SetEnterLeaveFunctionHooks(
-            FunctionEnter2* pFuncEnter,
-            FunctionLeave2* pFuncLeave,
-            FunctionTailcall2* pFuncTailcall)
+            FunctionEnter3* pFuncEnter,
+            FunctionLeave3* pFuncLeave,
+            FunctionTailcall3* pFuncTailcall)
         {
             this->CallComOrThrow(
                 SetEnterLeaveFunctionHooksCallable(
@@ -304,7 +304,7 @@ namespace Drill4dotNet
                 L"Failed to call CorProfilerInfo::SetEnterLeaveFunctionHooks.");
         }
 
-        // Calls ICorProfilerInfo2::SetEnterLeaveFunctionHooks2 with the given parameters.
+        // Calls ICorProfilerInfo3::SetEnterLeaveFunctionHooks3 with the given parameters.
         // Returns false in case of an error.
         bool TrySetEnterLeaveFunctionHooks(
             FunctionEnter2* pFuncEnter,

@@ -23,38 +23,30 @@ namespace Drill4dotNet
         static CProfilerCallback* g_cb = nullptr;
 
         static void __stdcall fn_functionEnter(
-            FunctionID funcId,
-            UINT_PTR clientData,
-            COR_PRF_FRAME_INFO func,
-            COR_PRF_FUNCTION_ARGUMENT_INFO* argumentInfo
+            FunctionIDOrClientID functionIDOrClientID
         )
         {
             if (!g_cb) return;
 
-            g_cb->GetClient().Log() << L"Enter function: " << HexOutput(funcId);
+            g_cb->GetClient().Log() << L"Enter function: " << HexOutput(functionIDOrClientID.functionID);
         }
 
         static void __stdcall fn_functionLeave(
-            FunctionID funcId,
-            UINT_PTR clientData,
-            COR_PRF_FRAME_INFO func,
-            COR_PRF_FUNCTION_ARGUMENT_RANGE* retvalRange
+            FunctionIDOrClientID functionIDOrClientID
         )
         {
             if (!g_cb) return;
 
-            g_cb->GetClient().Log() << L"Leave function: " << HexOutput(funcId);
+            g_cb->GetClient().Log() << L"Leave function: " << HexOutput(functionIDOrClientID.functionID);
         }
 
         static void __stdcall fn_functionTailcall(
-            FunctionID funcId,
-            UINT_PTR clientData,
-            COR_PRF_FRAME_INFO func
+            FunctionIDOrClientID functionIDOrClientID
         )
         {
             if (!g_cb) return;
 
-            g_cb->GetClient().Log() << L"Tailcall at function: " << HexOutput(funcId);
+            g_cb->GetClient().Log() << L"Tailcall at function: " << HexOutput(functionIDOrClientID.functionID);
         }
     } // anonymous namespace
 
