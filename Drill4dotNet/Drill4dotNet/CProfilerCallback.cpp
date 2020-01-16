@@ -86,31 +86,22 @@ namespace Drill4dotNet
     HRESULT __stdcall CProfilerCallback::Initialize(IUnknown* pICorProfilerInfoUnk)
     {
         m_pImplClient.Log() << L"CProfilerCallback::Initialize";
-
-        HRESULT hr = pICorProfilerInfoUnk->QueryInterface(IID_ICorProfilerInfo2, (LPVOID*)&m_corProfilerInfo2);
-        if (FAILED(hr))
+        try
         {
-            m_pImplClient.Log() << L"Error: " << HexOutput(hr);
-            return hr;
+            m_corProfilerInfo2 = CorProfilerInfo2(pICorProfilerInfoUnk, LogToProClient(m_pImplClient));
+
+            DWORD eventMask = (DWORD)(COR_PRF_MONITOR_ENTERLEAVE);
+            m_corProfilerInfo2->SetEventMask(eventMask);
+
+            // set the enter, leave and tailcall hooks
+            g_cb = this;
+            m_corProfilerInfo2->SetEnterLeaveFunctionHooks2(fn_functionEnter2, fn_functionLeave2, fn_functionTailcall2);
         }
-
-        DWORD eventMask = (DWORD)(COR_PRF_MONITOR_ENTERLEAVE);
-        hr = m_corProfilerInfo2->SetEventMask(eventMask);
-        if (FAILED(hr))
+        catch (const _com_error& exception)
         {
-            m_pImplClient.Log() << L"Error: " << HexOutput(hr);
-            return hr;
-        }
-
-        // set the enter, leave and tailcall hooks
-        g_cb = this;
-        hr = m_corProfilerInfo2->SetEnterLeaveFunctionHooks2(fn_functionEnter2, fn_functionLeave2, fn_functionTailcall2);
-
-        if (FAILED(hr))
-        {
-            g_cb = nullptr;
-            m_pImplClient.Log() << L"Error: " << HexOutput(hr);
-            return hr;
+            HRESULT errorCode = exception.Error();
+            m_pImplClient.Log() << L"CProfilerCallback::Initialize failed: " << HexOutput(errorCode);
+            return errorCode;
         }
 
         return S_OK;
@@ -502,4 +493,8 @@ namespace Drill4dotNet
         return E_NOTIMPL;
     }
 
+    LogBuffer<std::wostream> LogToProClient::Log() const
+    {
+        return m_proClient.get().Log();
+    }
 }
