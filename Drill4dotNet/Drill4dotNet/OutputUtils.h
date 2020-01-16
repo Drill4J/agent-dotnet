@@ -4,6 +4,11 @@
 #include <ios>
 #include <iomanip>
 #include <optional>
+#include <cstddef>
+#include <type_traits>
+#include <iterator>
+#include <utility>
+#include <string>
 
 namespace Drill4dotNet
 {
@@ -106,6 +111,44 @@ namespace Drill4dotNet
         }
     };
 
+    // Allows to send std::byte to streams.
+    // Outputs hexadecimal digits.
+    template <typename TChar>
+    std::basic_ostream<TChar>& operator <<(std::basic_ostream<TChar>& target, std::byte value)
+    {
+        return target << HexOutput<int, 2>(int(value));
+    }
+
+    // Allows to send containers with std::byte to output streams,
+    // such as std::vector<std::byte>, std::array<std::byte>, or std::byte[]
+    // Outputs hexadecimal digits.
+    // Usage:
+    // void main
+    // {
+    //     std::vector<std::byte> a { 16, 32, 48, 64 };
+    //     std::array<std::byte> b { 64, 48, 32, 16 };
+    //     std::cout << a << b; // Will type 1020304040302010
+    // }
+    template <
+        typename TChar,
+        typename TContainer,
+        std::enable_if_t< // Checks that the given container has std::bytes inside
+            std::is_assignable_v<
+                std::byte&,
+                typename std::iterator_traits<
+                    decltype(std::cbegin(std::declval<TContainer>()))>
+                ::value_type>,
+            int> = 0>
+    std::basic_ostream<TChar>& operator <<(std::basic_ostream<TChar>& target, TContainer&& byteRange)
+    {
+        for (const std::byte b : byteRange)
+        {
+            target << b;
+        }
+
+        return target;
+    }
+
     // Provides support for putting an empty optional<T>
     // to an output stream.
     // Writes "std::nullopt".
@@ -136,5 +179,23 @@ namespace Drill4dotNet
         }
 
         return target;
+    }
+
+    // If the given string has null as the last
+    // character, removes it.
+    template<typename TChar>
+    void TrimTrailingNull(std::basic_string<TChar>& target)
+    {
+        size_t size{ target.size() };
+        if (size == 0)
+        {
+            return;
+        }
+
+        size_t newSize = size - 1;
+        if (target[newSize] == TChar{})
+        {
+            target.resize(newSize);
+        }
     }
 }
