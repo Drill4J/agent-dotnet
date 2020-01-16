@@ -1,8 +1,36 @@
 #pragma once
 
+#include <optional>
+#include <type_traits>
+
+#include "LogBuffer.h"
+#include "CorProfilerInfo2.h"
+
 namespace Drill4dotNet
 {
     class ProClient;
+
+    // Wraps ProClient to make its logging interface
+    // compatible with CorProfilerInfo2.
+    class LogToProClient
+    {
+    private:
+        std::reference_wrapper<ProClient> m_proClient;
+
+    public:
+
+        explicit LogToProClient(ProClient& target) noexcept
+            : m_proClient(target)
+        {
+        }
+
+        constexpr bool IsLogEnabled() const noexcept
+        {
+            return true;
+        }
+
+        LogBuffer<std::wostream> Log() const;
+    };
 
     class CProfilerCallback :
         public ICorProfilerCallback2
@@ -10,8 +38,7 @@ namespace Drill4dotNet
     protected:
         ProClient& m_pImplClient;
         volatile ULONG m_lRef = 0;
-        ATL::CComQIPtr<ICorProfilerInfo2> m_corProfilerInfo2;
-
+        std::optional<CorProfilerInfo2<LogToProClient>> m_corProfilerInfo2{};
     public:
         CProfilerCallback(ProClient& client);
         ProClient& GetClient();
