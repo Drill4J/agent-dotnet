@@ -49,6 +49,9 @@
     <ClInclude Include="LogBuffer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="OutputUtils.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Drill4dotNet.cpp">
