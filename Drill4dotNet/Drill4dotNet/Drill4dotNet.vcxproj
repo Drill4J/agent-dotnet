@@ -241,7 +241,9 @@
     <ClInclude Include="dllmain.h" />
     <ClInclude Include="Drill4dotNet_i.h" />
     <ClInclude Include="framework.h" />
+    <ClInclude Include="FunctionInfo.h" />
     <ClInclude Include="LogBuffer.h" />
+    <ClInclude Include="MetaDataImport2.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="ProClient.h" />
     <ClInclude Include="Resource.h" />

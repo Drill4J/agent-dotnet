@@ -90,7 +90,7 @@ namespace Drill4dotNet
         {
             m_corProfilerInfo2 = CorProfilerInfo2(pICorProfilerInfoUnk, LogToProClient(m_pImplClient));
 
-            DWORD eventMask = (DWORD)(COR_PRF_MONITOR_ENTERLEAVE);
+            DWORD eventMask = (DWORD)(COR_PRF_MONITOR_ENTERLEAVE | COR_PRF_MONITOR_JIT_COMPILATION);
             m_corProfilerInfo2->SetEventMask(eventMask);
 
             // set the enter, leave and tailcall hooks
@@ -207,7 +207,30 @@ namespace Drill4dotNet
 
     HRESULT __stdcall CProfilerCallback::JITCompilationStarted(FunctionID functionId, BOOL fIsSafeToBlock)
     {
-        return E_NOTIMPL;
+        try
+        {
+            std::wstring functionName{ m_corProfilerInfo2->GetFunctionName(functionId) };
+
+            std::vector<std::byte> functionBody{
+                m_corProfilerInfo2->GetMethodIntermediateLanguageBody(
+                    m_corProfilerInfo2->GetFunctionInfo(functionId)) };
+
+            GetClient().Log()
+                << L"Compiling function "
+                << HexOutput(functionId)
+                << L" "
+                << functionName
+                << L" IL Body size: "
+                << functionBody.size()
+                << L" bytes";
+
+            return S_OK;
+        }
+        catch (const _com_error & exception)
+        {
+            GetClient().Log() << L"CProfilerCallback::JITCompilationStarted failed.";
+            return exception.Error();
+        }
     }
 
     HRESULT __stdcall CProfilerCallback::JITCompilationFinished(FunctionID functionId, HRESULT hrStatus, BOOL fIsSafeToBlock)
