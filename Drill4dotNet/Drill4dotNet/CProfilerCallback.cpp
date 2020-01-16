@@ -1,4 +1,6 @@
 #include "pch.h"
+
+#include "OutputUtils.h"
 #include "CProfilerCallback.h"
 #include "ProClient.h"
 
@@ -24,21 +26,21 @@ namespace Drill4dotNet
         {
             if (!g_cb) return;
 
-            g_cb->GetClient().Log() << L"Enter function: " << funcId;
+            g_cb->GetClient().Log() << L"Enter function: " << HexOutput(funcId);
         }
 
         static void __stdcall fn_functionLeave2(FunctionID funcId, UINT_PTR clientData, COR_PRF_FRAME_INFO func, COR_PRF_FUNCTION_ARGUMENT_RANGE* retvalRange)
         {
             if (!g_cb) return;
 
-            g_cb->GetClient().Log() << L"Leave function: " << funcId;
+            g_cb->GetClient().Log() << L"Leave function: " << HexOutput(funcId);
         }
 
         static void __stdcall fn_functionTailcall2(FunctionID funcId, UINT_PTR clientData, COR_PRF_FRAME_INFO func)
         {
             if (!g_cb) return;
 
-            g_cb->GetClient().Log() << L"Tailcall at function: " << funcId;
+            g_cb->GetClient().Log() << L"Tailcall at function: " << HexOutput(funcId);
         }
     } // anonymous namespace
 
@@ -88,7 +90,7 @@ namespace Drill4dotNet
         HRESULT hr = pICorProfilerInfoUnk->QueryInterface(IID_ICorProfilerInfo2, (LPVOID*)&m_corProfilerInfo2);
         if (FAILED(hr))
         {
-            m_pImplClient.Log() << L"Error: " << hr;
+            m_pImplClient.Log() << L"Error: " << HexOutput(hr);
             return hr;
         }
 
@@ -96,7 +98,7 @@ namespace Drill4dotNet
         hr = m_corProfilerInfo2->SetEventMask(eventMask);
         if (FAILED(hr))
         {
-            m_pImplClient.Log() << L"Error: " << hr;
+            m_pImplClient.Log() << L"Error: " << HexOutput(hr);
             return hr;
         }
 
@@ -107,7 +109,7 @@ namespace Drill4dotNet
         if (FAILED(hr))
         {
             g_cb = nullptr;
-            m_pImplClient.Log() << L"Error: " << hr;
+            m_pImplClient.Log() << L"Error: " << HexOutput(hr);
             return hr;
         }
 
