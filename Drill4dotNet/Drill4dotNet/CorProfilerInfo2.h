@@ -1,9 +1,13 @@
 #pragma once
 
+#include <cstddef>
+#include <vector>
 
 #include "framework.h"
 #include "OutputUtils.h"
+#include "FunctionInfo.h"
 #include "ComWrapperBase.h"
+#include "MetaDataImport2.h"
 
 namespace Drill4dotNet
 {
@@ -71,6 +75,58 @@ namespace Drill4dotNet
             };
         }
 
+        // Wraps ICorProfilerInfo2::GetFunctionInfo.
+        auto GetFunctionInfoCallable(const FunctionID functionId, FunctionInfo& result) const
+        {
+            return [this, functionId, &result]()
+            {
+                return m_corProfilerInfo2->GetFunctionInfo(
+                    functionId,
+                    &result.classId,
+                    &result.moduleId,
+                    &result.token);
+            };
+        }
+
+        // Wraps ICorProfilerInfo2::GetModuleMetaData
+        auto GetModuleMetadataCallable(
+            const ModuleID moduleId,
+            ATL::CComQIPtr<IMetaDataImport2, &IID_IMetaDataImport2>& result) const
+        {
+            return [this, moduleId, &result]()
+            {
+                return m_corProfilerInfo2->GetModuleMetaData(
+                    moduleId,
+                    CorOpenFlags::ofRead,
+                    IID_IMetaDataImport2,
+                    (IUnknown**)&result);
+            };
+        }
+
+        // Wraps ICorProfilerInfo2::GetILFunctionBody
+        auto GetMethodIntermediateLanguageBodyCallable(
+            const FunctionInfo& functionInfo,
+            LPCBYTE& methodHeader,
+            ULONG& methodSize) const
+        {
+            return [this, &functionInfo, &methodHeader, &methodSize]()
+            {
+                return m_corProfilerInfo2->GetILFunctionBody(
+                    functionInfo.moduleId,
+                    functionInfo.token,
+                    &methodHeader,
+                    &methodSize);
+            };
+        }
+
+        // Copies the method body given by pointer and length, to a separate vector.
+        static std::vector<std::byte> CopyBody(const LPCBYTE methodHeader, const ULONG methodSize)
+        {
+            return std::vector<std::byte>(
+                reinterpret_cast<const std::byte*>(methodHeader),
+                reinterpret_cast<const std::byte*>(methodHeader + methodSize));
+        }
+
     public:
         // Creates wrapper with logging and error handling capabilities.
         // Throws _com_error in case of an error.
@@ -92,6 +148,128 @@ namespace Drill4dotNet
                 ; result.TryInit(pICorProfilerInfoUnk))
             {
                 return result;
+            }
+
+            return std::nullopt;
+        }
+
+        // Calls ICorProfilerInfo2::GetFunctionInfo with the given functionId.
+        // Throws _com_error in case of an error.
+        FunctionInfo GetFunctionInfo(const FunctionID functionId) const
+        {
+            FunctionInfo result;
+            this->CallComOrThrow(
+                GetFunctionInfoCallable(functionId, result),
+                L"Failed to call CorProfilerInfo2::GetFunctionInfo.");
+            return result;
+        }
+
+        // Calls ICorProfilerInfo2::GetFunctionInfo with the given functionId.
+        // Returns an empty optional in case of an error.
+        std::optional<FunctionInfo> TryGetFunctionInfo(const FunctionID functionId) const
+        {
+            if (FunctionInfo result
+                ; this->TryCallCom(
+                    GetFunctionInfoCallable(functionId, result),
+                    L"Failed to call CorProfilerInfo2::TryGetFunctionInfo."))
+            {
+                return result;
+            }
+
+            return std::nullopt;
+        }
+
+        // Calls ICorProfilerInfo2::GetModuleMetadata and creates
+        // a MetadataImport2 wrapper around it.
+        // The resulting object will become independent, and because
+        // some logging context is required to create it, user of this
+        // function must provide loggerForMetadata.
+        // Throws _com_error in case of an error.
+        template <typename TMetaDataLogger = TLogger>
+        MetaDataImport2<TMetaDataLogger> GetModuleMetadata(
+            const ModuleID moduleId,
+            const TMetaDataLogger loggerForMetadata) const
+        {
+            ATL::CComQIPtr<IMetaDataImport2, &IID_IMetaDataImport2> metaDataImport2{};
+            CallComOrThrow(
+                GetModuleMetadataCallable(moduleId, metaDataImport2),
+                L"Failed to call CorProfilerInfo2::GetModuleMetadata.");
+            return MetaDataImport2<TMetaDataLogger>(metaDataImport2, loggerForMetadata);
+        }
+
+        // Calls ICorProfilerInfo2::GetModuleMetadata and creates
+        // a MetadataImport2 wrapper around it.
+        // The resulting object will become independent, and because
+        // some logging context is required to create it, user of this
+        // function must provide loggerForMetadata.
+        // Returns an empty optional in case of an error.
+        template <typename TMetaDataLogger = TLogger>
+        std::optional<MetaDataImport2<TMetaDataLogger>> TryGetModuleMetadata(
+            const ModuleID moduleId,
+            const TMetaDataLogger loggerForMetadata) const
+        {
+            if (ATL::CComQIPtr<IMetaDataImport2, &IID_IMetaDataImport2> metaDataImport2{}
+                ; TryCallCom(
+                    GetModuleMetadataCallable(moduleId, metaDataImport2),
+                    L"Failed to call CorProfilerInfo2::TryGetModuleMetadata."))
+            {
+                return MetaDataImport2<TMetaDataLogger>(metaDataImport2, loggerForMetadata);
+            }
+
+            return std::nullopt;
+        }
+
+        // Gets the name of the function specified by the FunctionID.
+        // Throws _com_error in case of an error.
+        std::wstring GetFunctionName(const FunctionID functionId) const
+        {
+            try
+            {
+                FunctionInfo functionInfo{ GetFunctionInfo(functionId) };
+                return GetModuleMetadata(functionInfo.moduleId, m_logger)
+                    .GetMethodName(functionInfo.token);
+            }
+            catch (const _com_error&)
+            {
+                m_logger.Log() << L"CorProfilerInfo2::GetFunctionName failed.";
+                throw;
+            }
+        }
+
+        // Calls ICorProfilerInfo2::GetILFunctionBody with the given FunctionInfo.
+        // Returns vector with a copy of the bytes of the Intermediate Language
+        // representation of the function body.
+        // Throws _com_error in case of an error.
+        std::vector<std::byte> GetMethodIntermediateLanguageBody(const FunctionInfo& functionInfo) const
+        {
+            LPCBYTE methodHeader;
+            ULONG methodSize;
+            this->CallComOrThrow(
+                GetMethodIntermediateLanguageBodyCallable(
+                    functionInfo,
+                    methodHeader,
+                    methodSize),
+                L"Failed to call CorProfilerInfo2::GetMethodIntermediateLanguageBody.");
+
+            return CopyBody(methodHeader, methodSize);
+        }
+
+        // Calls ICorProfilerInfo2::GetILFunctionBody with the given FunctionInfo.
+        // Returns vector with a copy of the bytes of the Intermediate Language
+        // representation of the function body.
+        // Returns an empty optional in case of an error.
+        std::optional<std::vector<std::byte>> TryGetMethodIntermediateLanguageBody(const FunctionInfo& functionInfo) const
+        {
+            LPCBYTE methodHeader;
+            ULONG methodSize;
+            if (this->TryCallCom(
+                GetMethodIntermediateLanguageBodyCallable(
+                    functionInfo,
+                    methodHeader,
+                    methodSize),
+                L"Failed to call CorProfilerInfo2::TryGetMethodIntermediateLanguageBody."))
+            {
+                return CopyBody(methodHeader, methodSize);
             }
 
             return std::nullopt;

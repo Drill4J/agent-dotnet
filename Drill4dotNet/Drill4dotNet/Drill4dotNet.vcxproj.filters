@@ -55,7 +55,13 @@
     <ClInclude Include="CorProfilerInfo2.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="FunctionInfo.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="ComWrapperBase.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MetaDataImport2.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
