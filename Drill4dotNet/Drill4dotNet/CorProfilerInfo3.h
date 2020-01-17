@@ -17,19 +17,19 @@ namespace Drill4dotNet
     //     object allowing to output data with << in the
     //     same manner as standard output streams do.
     template <typename TLogger>
-    class CorProfilerInfo2 : protected ComWrapperBase<TLogger>
+    class CorProfilerInfo3 : protected ComWrapperBase<TLogger>
     {
     private:
-        ATL::CComQIPtr<ICorProfilerInfo2> m_corProfilerInfo2{};
+        ATL::CComQIPtr<ICorProfilerInfo3> m_corProfilerInfo3{};
 
-        CorProfilerInfo2(const TLogger logger) : ComWrapperBase(logger)
+        CorProfilerInfo3(const TLogger logger) : ComWrapperBase(logger)
         {
         }
 
-        // Updates m_corProfilerInfo2 with the extracted interface.
+        // Updates m_corProfilerInfo3 with the extracted interface.
         auto InitCallable(IUnknown* pICorProfilerInfoUnk)
         {
-            return [&info = m_corProfilerInfo2, &pICorProfilerInfoUnk]()
+            return [&info = m_corProfilerInfo3, &pICorProfilerInfoUnk]()
             {
                 return pICorProfilerInfoUnk->QueryInterface(
                     IID_ICorProfilerInfo2,
@@ -37,15 +37,15 @@ namespace Drill4dotNet
             };
         }
 
-        inline static const wchar_t s_InitError[] { L"Failed to initialize CorProfilerInfo2." };
+        inline static const wchar_t s_InitError[] { L"Failed to initialize CorProfilerInfo3." };
 
-        // Fills m_corProfilerInfo2. Returns false in case of error.
+        // Fills m_corProfilerInfo3. Returns false in case of error.
         bool TryInit(IUnknown* pICorProfilerInfoUnk)
         {
             return this->TryCallCom(InitCallable(pICorProfilerInfoUnk), s_InitError);
         }
 
-        // Fills m_corProfilerInfo2. Throws in case of error.
+        // Fills m_corProfilerInfo3. Throws in case of error.
         void Init(IUnknown* pICorProfilerInfoUnk)
         {
             this->CallComOrThrow(InitCallable(pICorProfilerInfoUnk), s_InitError);
@@ -56,19 +56,19 @@ namespace Drill4dotNet
         {
             return [this, eventMask]()
             {
-                return m_corProfilerInfo2->SetEventMask(eventMask);
+                return m_corProfilerInfo3->SetEventMask(eventMask);
             };
         }
 
-        // Wraps ICorProfilerInfo2::SetEnterLeaveFunctionHooks2.
-        auto SetEnterLeaveFunctionHooks2Callable(
-            FunctionEnter2* pFuncEnter,
-            FunctionLeave2* pFuncLeave,
-            FunctionTailcall2* pFuncTailcall)
+        // Wraps ICorProfilerInfo3::SetEnterLeaveFunctionHooks3.
+        auto SetEnterLeaveFunctionHooks3Callable(
+            FunctionEnter3* pFuncEnter,
+            FunctionLeave3* pFuncLeave,
+            FunctionTailcall3* pFuncTailcall)
         {
             return [this, pFuncEnter, pFuncLeave, pFuncTailcall]()
             {
-                return m_corProfilerInfo2->SetEnterLeaveFunctionHooks2(
+                return m_corProfilerInfo3->SetEnterLeaveFunctionHooks3(
                     pFuncEnter,
                     pFuncLeave,
                     pFuncTailcall);
@@ -80,7 +80,7 @@ namespace Drill4dotNet
         {
             return [this, functionId, &result]()
             {
-                return m_corProfilerInfo2->GetFunctionInfo(
+                return m_corProfilerInfo3->GetFunctionInfo(
                     functionId,
                     &result.classId,
                     &result.moduleId,
@@ -95,7 +95,7 @@ namespace Drill4dotNet
         {
             return [this, moduleId, &result]()
             {
-                return m_corProfilerInfo2->GetModuleMetaData(
+                return m_corProfilerInfo3->GetModuleMetaData(
                     moduleId,
                     CorOpenFlags::ofRead,
                     IID_IMetaDataImport2,
@@ -111,7 +111,7 @@ namespace Drill4dotNet
         {
             return [this, &functionInfo, &methodHeader, &methodSize]()
             {
-                return m_corProfilerInfo2->GetILFunctionBody(
+                return m_corProfilerInfo3->GetILFunctionBody(
                     functionInfo.moduleId,
                     functionInfo.token,
                     &methodHeader,
@@ -132,8 +132,8 @@ namespace Drill4dotNet
         // Throws _com_error in case of an error.
         // pICorProfilerInfoUnk : should provide ICorProfilerInfo2.
         // logger : tool to log the exceptions.
-        CorProfilerInfo2(IUnknown* pICorProfilerInfoUnk, const TLogger logger)
-            : CorProfilerInfo2(logger)
+        CorProfilerInfo3(IUnknown* pICorProfilerInfoUnk, const TLogger logger)
+            : CorProfilerInfo3(logger)
         {
             Init(pICorProfilerInfoUnk);
         }
@@ -142,9 +142,9 @@ namespace Drill4dotNet
         // Returns an empty optional in case of an error.
         // pICorProfilerInfoUnk : should provide ICorProfilerInfo2.
         // logger : tool to log the exceptions.
-        static std::optional<CorProfilerInfo2<TLogger>> TryCreate(IUnknown* pICorProfilerInfoUnk, const TLogger logger)
+        static std::optional<CorProfilerInfo3<TLogger>> TryCreate(IUnknown* pICorProfilerInfoUnk, const TLogger logger)
         {
-            if (CorProfilerInfo2<TLogger> result(logger)
+            if (CorProfilerInfo3<TLogger> result(logger)
                 ; result.TryInit(pICorProfilerInfoUnk))
             {
                 return result;
@@ -160,7 +160,7 @@ namespace Drill4dotNet
             FunctionInfo result;
             this->CallComOrThrow(
                 GetFunctionInfoCallable(functionId, result),
-                L"Failed to call CorProfilerInfo2::GetFunctionInfo.");
+                L"Failed to call CorProfilerInfo3::GetFunctionInfo.");
             return result;
         }
 
@@ -171,7 +171,7 @@ namespace Drill4dotNet
             if (FunctionInfo result
                 ; this->TryCallCom(
                     GetFunctionInfoCallable(functionId, result),
-                    L"Failed to call CorProfilerInfo2::TryGetFunctionInfo."))
+                    L"Failed to call CorProfilerInfo3::TryGetFunctionInfo."))
             {
                 return result;
             }
@@ -193,7 +193,7 @@ namespace Drill4dotNet
             ATL::CComQIPtr<IMetaDataImport2, &IID_IMetaDataImport2> metaDataImport2{};
             CallComOrThrow(
                 GetModuleMetadataCallable(moduleId, metaDataImport2),
-                L"Failed to call CorProfilerInfo2::GetModuleMetadata.");
+                L"Failed to call CorProfilerInfo3::GetModuleMetadata.");
             return MetaDataImport2<TMetaDataLogger>(metaDataImport2, loggerForMetadata);
         }
 
@@ -211,7 +211,7 @@ namespace Drill4dotNet
             if (ATL::CComQIPtr<IMetaDataImport2, &IID_IMetaDataImport2> metaDataImport2{}
                 ; TryCallCom(
                     GetModuleMetadataCallable(moduleId, metaDataImport2),
-                    L"Failed to call CorProfilerInfo2::TryGetModuleMetadata."))
+                    L"Failed to call CorProfilerInfo3::TryGetModuleMetadata."))
             {
                 return MetaDataImport2<TMetaDataLogger>(metaDataImport2, loggerForMetadata);
             }
@@ -231,7 +231,7 @@ namespace Drill4dotNet
             }
             catch (const _com_error&)
             {
-                m_logger.Log() << L"CorProfilerInfo2::GetFunctionName failed.";
+                m_logger.Log() << L"CorProfilerInfo3::GetFunctionName failed.";
                 throw;
             }
         }
@@ -249,7 +249,7 @@ namespace Drill4dotNet
                     functionInfo,
                     methodHeader,
                     methodSize),
-                L"Failed to call CorProfilerInfo2::GetMethodIntermediateLanguageBody.");
+                L"Failed to call CorProfilerInfo3::GetMethodIntermediateLanguageBody.");
 
             return CopyBody(methodHeader, methodSize);
         }
@@ -267,7 +267,7 @@ namespace Drill4dotNet
                     functionInfo,
                     methodHeader,
                     methodSize),
-                L"Failed to call CorProfilerInfo2::TryGetMethodIntermediateLanguageBody."))
+                L"Failed to call CorProfilerInfo3::TryGetMethodIntermediateLanguageBody."))
             {
                 return CopyBody(methodHeader, methodSize);
             }
@@ -279,44 +279,44 @@ namespace Drill4dotNet
         // Throws _com_error in case of an error.
         void SetEventMask(DWORD eventMask)
         {
-            this->CallComOrThrow(SetEventMaskCallable(eventMask), L"Failed to call CorProfilerInfo2::SetEventMask.");
+            this->CallComOrThrow(SetEventMaskCallable(eventMask), L"Failed to call CorProfilerInfo3::SetEventMask.");
         }
 
         // Calls ICorProfilerInfo2::SetEventMask with the given mask.
         // Returns false in case of an error.
         bool TrySetEventMask(DWORD eventMask)
         {
-            return this->TryCallCom(SetEventMaskCallable(eventMask) , L"Failed to call CorProfilerInfo2::TrySetEventMask.");
+            return this->TryCallCom(SetEventMaskCallable(eventMask) , L"Failed to call CorProfilerInfo3::TrySetEventMask.");
         }
 
-        // Calls ICorProfilerInfo2::SetEnterLeaveFunctionHooks2 with the given parameters.
+        // Calls ICorProfilerInfo3::SetEnterLeaveFunctionHooks3 with the given parameters.
         // Throws _com_error in case of an error.
-        void SetEnterLeaveFunctionHooks2(
-            FunctionEnter2* pFuncEnter,
-            FunctionLeave2* pFuncLeave,
-            FunctionTailcall2* pFuncTailcall)
+        void SetEnterLeaveFunctionHooks3(
+            FunctionEnter3* pFuncEnter,
+            FunctionLeave3* pFuncLeave,
+            FunctionTailcall3* pFuncTailcall)
         {
             this->CallComOrThrow(
-                SetEnterLeaveFunctionHooks2Callable(
+                SetEnterLeaveFunctionHooks3Callable(
                     pFuncEnter,
                     pFuncLeave,
                     pFuncTailcall),
-                L"Failed to call CorProfilerInfo2::SetEnterLeaveFunctionHooks2.");
+                L"Failed to call CorProfilerInfo3::SetEnterLeaveFunctionHooks3.");
         }
 
-        // Calls ICorProfilerInfo2::SetEnterLeaveFunctionHooks2 with the given parameters.
+        // Calls ICorProfilerInfo3::SetEnterLeaveFunctionHooks3 with the given parameters.
         // Returns false in case of an error.
-        bool TrySetEnterLeaveFunctionHooks2(
-            FunctionEnter2* pFuncEnter,
-            FunctionLeave2* pFuncLeave,
-            FunctionTailcall2* pFuncTailcall)
+        bool TrySetEnterLeaveFunctionHooks3(
+            FunctionEnter3* pFuncEnter,
+            FunctionLeave3* pFuncLeave,
+            FunctionTailcall3* pFuncTailcall)
         {
             return this->TryCallCom(
-                SetEnterLeaveFunctionHooks2Callable(
+                SetEnterLeaveFunctionHooks3Callable(
                     pFuncEnter,
                     pFuncLeave,
                     pFuncTailcall),
-                L"Failed to call CorProfilerInfo2::TrySetEnterLeaveFunctionHooks2.");
+                L"Failed to call CorProfilerInfo3::TrySetEnterLeaveFunctionHooks2.");
         }
     };
 }

@@ -88,10 +88,10 @@ namespace Drill4dotNet
         m_pImplClient.Log() << L"CProfilerCallback::Initialize";
         try
         {
-            m_corProfilerInfo2 = CorProfilerInfo3(pICorProfilerInfoUnk, LogToProClient(m_pImplClient));
+            m_corProfilerInfo3 = CorProfilerInfo3(pICorProfilerInfoUnk, LogToProClient(m_pImplClient));
 
             DWORD eventMask = (DWORD)(COR_PRF_MONITOR_ENTERLEAVE | COR_PRF_MONITOR_JIT_COMPILATION);
-            m_corProfilerInfo2->SetEventMask(eventMask);
+            m_corProfilerInfo3->SetEventMask(eventMask);
 
             // set the enter, leave and tailcall hooks
             g_cb = this;
@@ -209,11 +209,11 @@ namespace Drill4dotNet
     {
         try
         {
-            std::wstring functionName{ m_corProfilerInfo2->GetFunctionName(functionId) };
+            std::wstring functionName{ m_corProfilerInfo3->GetFunctionName(functionId) };
 
             std::vector<std::byte> functionBody{
-                m_corProfilerInfo2->GetMethodIntermediateLanguageBody(
-                    m_corProfilerInfo2->GetFunctionInfo(functionId)) };
+                m_corProfilerInfo3->GetMethodIntermediateLanguageBody(
+                    m_corProfilerInfo3->GetFunctionInfo(functionId)) };
 
             GetClient().Log()
                 << L"Compiling function "

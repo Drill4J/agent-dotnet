@@ -4,14 +4,14 @@
 #include <type_traits>
 
 #include "LogBuffer.h"
-#include "CorProfilerInfo2.h"
+#include "CorProfilerInfo3.h"
 
 namespace Drill4dotNet
 {
     class ProClient;
 
     // Wraps ProClient to make its logging interface
-    // compatible with CorProfilerInfo2.
+    // compatible with CorProfilerInfo3.
     class LogToProClient
     {
     private:

@@ -236,7 +236,7 @@
   <ItemGroup>
     <ClInclude Include="CDrillProfiler.h" />
     <ClInclude Include="ComWrapperBase.h" />
-    <ClInclude Include="CorProfilerInfo2.h" />
+    <ClInclude Include="CorProfilerInfo3.h" />
     <ClInclude Include="CProfilerCallback.h" />
     <ClInclude Include="dllmain.h" />
     <ClInclude Include="Drill4dotNet_i.h" />
