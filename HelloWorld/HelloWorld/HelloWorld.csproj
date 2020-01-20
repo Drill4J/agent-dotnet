@@ -5,10 +5,21 @@
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <ApplicationIcon />
     <StartupObject />
+    <Platforms>x64</Platforms>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <WarningLevel>2</WarningLevel>
+    <OutputPath>$(SolutionDir)bin\$(Platform)\$(Configuration)\$(AssemblyName)\</OutputPath>
+    <PlatformTarget>x64</PlatformTarget>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <WarningLevel>2</WarningLevel>
+    <OutputPath>$(SolutionDir)bin\$(Platform)\$(Configuration)\$(AssemblyName)\</OutputPath>
   </PropertyGroup>
 
   <ItemGroup>
     <Folder Include="Properties\" />
   </ItemGroup>
-
 </Project>

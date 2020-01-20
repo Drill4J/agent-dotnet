@@ -1,13 +1,9 @@
 .vs
 *.user
 *.aps
-/Drill4dotNet/bin
-/Drill4dotNet/temp
+bin/
+obj/
 /Drill4dotNet/Drill4dotNet/Drill4dotNet_i.c
 /Drill4dotNet/Drill4dotNet/Drill4dotNet_i.h
 /Drill4dotNet/Drill4dotNet/Drill4dotNet_p.c
 /Drill4dotNet/Drill4dotNet/dlldata.c
-/HelloWorld/HelloWorld/bin
-/HelloWorld/HelloWorld/obj
-/HelloWorld/HelloWorldFramework/bin
-/HelloWorld/HelloWorldFramework/obj
