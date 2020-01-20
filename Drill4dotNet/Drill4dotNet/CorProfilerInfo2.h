@@ -29,7 +29,7 @@ namespace Drill4dotNet
         // Updates m_corProfilerInfo2 with the extracted interface.
         auto InitCallable(IUnknown* pICorProfilerInfoUnk)
         {
-            return [&info = m_corProfilerInfo2, &pICorProfilerInfoUnk]()
+            return [&info = m_corProfilerInfo2, pICorProfilerInfoUnk]()
             {
                 return pICorProfilerInfoUnk->QueryInterface(
                     IID_ICorProfilerInfo2,
@@ -109,7 +109,7 @@ namespace Drill4dotNet
             LPCBYTE& methodHeader,
             ULONG& methodSize) const
         {
-            return [this, &functionInfo, &methodHeader, &methodSize]()
+            return [this, functionInfo, &methodHeader, &methodSize]()
             {
                 return m_corProfilerInfo2->GetILFunctionBody(
                     functionInfo.moduleId,
