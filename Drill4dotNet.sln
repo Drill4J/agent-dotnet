@@ -1,0 +1,60 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29613.14
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Drill4dotNet", "Drill4dotNet", "{165F5CAF-C1CD-433E-9313-566EC89C8A2A}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "HelloWorld", "HelloWorld", "{E621FC48-1856-4CE5-AF7C-1D6A902B0861}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HelloWorld", "HelloWorld\HelloWorld\HelloWorld.csproj", "{981611E6-B1A3-4E83-A63C-401716CAA23E}"
+	ProjectSection(ProjectDependencies) = postProject
+		{2AB82CE8-683B-4984-A566-9FFC579E3B47} = {2AB82CE8-683B-4984-A566-9FFC579E3B47}
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HelloWorldFramework", "HelloWorld\HelloWorldFramework\HelloWorldFramework.csproj", "{B3AD0592-681C-4C80-8DCD-D97F8ECCF041}"
+	ProjectSection(ProjectDependencies) = postProject
+		{2AB82CE8-683B-4984-A566-9FFC579E3B47} = {2AB82CE8-683B-4984-A566-9FFC579E3B47}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Drill4dotNet", "Drill4dotNet\Drill4dotNet\Drill4dotNet.vcxproj", "{2AB82CE8-683B-4984-A566-9FFC579E3B47}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Drill4dotNetPS", "Drill4dotNet\Drill4dotNetPS\Drill4dotNetPS.vcxproj", "{5A2A665D-549C-4698-95BC-E5BCF70473D4}"
+	ProjectSection(ProjectDependencies) = postProject
+		{2AB82CE8-683B-4984-A566-9FFC579E3B47} = {2AB82CE8-683B-4984-A566-9FFC579E3B47}
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Release|x64 = Release|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{981611E6-B1A3-4E83-A63C-401716CAA23E}.Debug|x64.ActiveCfg = Debug|x64
+		{981611E6-B1A3-4E83-A63C-401716CAA23E}.Debug|x64.Build.0 = Debug|x64
+		{981611E6-B1A3-4E83-A63C-401716CAA23E}.Release|x64.ActiveCfg = Release|x64
+		{981611E6-B1A3-4E83-A63C-401716CAA23E}.Release|x64.Build.0 = Release|x64
+		{B3AD0592-681C-4C80-8DCD-D97F8ECCF041}.Debug|x64.ActiveCfg = Debug|x64
+		{B3AD0592-681C-4C80-8DCD-D97F8ECCF041}.Debug|x64.Build.0 = Debug|x64
+		{B3AD0592-681C-4C80-8DCD-D97F8ECCF041}.Release|x64.ActiveCfg = Release|x64
+		{B3AD0592-681C-4C80-8DCD-D97F8ECCF041}.Release|x64.Build.0 = Release|x64
+		{2AB82CE8-683B-4984-A566-9FFC579E3B47}.Debug|x64.ActiveCfg = Debug|x64
+		{2AB82CE8-683B-4984-A566-9FFC579E3B47}.Debug|x64.Build.0 = Debug|x64
+		{2AB82CE8-683B-4984-A566-9FFC579E3B47}.Release|x64.ActiveCfg = Release|x64
+		{2AB82CE8-683B-4984-A566-9FFC579E3B47}.Release|x64.Build.0 = Release|x64
+		{5A2A665D-549C-4698-95BC-E5BCF70473D4}.Debug|x64.ActiveCfg = Debug|x64
+		{5A2A665D-549C-4698-95BC-E5BCF70473D4}.Release|x64.ActiveCfg = Release|x64
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{981611E6-B1A3-4E83-A63C-401716CAA23E} = {E621FC48-1856-4CE5-AF7C-1D6A902B0861}
+		{B3AD0592-681C-4C80-8DCD-D97F8ECCF041} = {E621FC48-1856-4CE5-AF7C-1D6A902B0861}
+		{2AB82CE8-683B-4984-A566-9FFC579E3B47} = {165F5CAF-C1CD-433E-9313-566EC89C8A2A}
+		{5A2A665D-549C-4698-95BC-E5BCF70473D4} = {165F5CAF-C1CD-433E-9313-566EC89C8A2A}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {21899A74-A1ED-440D-8A6E-7136113832DA}
+	EndGlobalSection
+EndGlobal
