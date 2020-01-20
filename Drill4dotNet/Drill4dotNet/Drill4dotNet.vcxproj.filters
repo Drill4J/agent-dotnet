@@ -52,7 +52,7 @@
     <ClInclude Include="OutputUtils.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="CorProfilerInfo2.h">
+    <ClInclude Include="CorProfilerInfo.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="FunctionInfo.h">
@@ -61,7 +61,7 @@
     <ClInclude Include="ComWrapperBase.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="MetaDataImport2.h">
+    <ClInclude Include="MetaDataImport.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

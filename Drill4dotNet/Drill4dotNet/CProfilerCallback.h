@@ -4,14 +4,14 @@
 #include <type_traits>
 
 #include "LogBuffer.h"
-#include "CorProfilerInfo2.h"
+#include "CorProfilerInfo.h"
 
 namespace Drill4dotNet
 {
     class ProClient;
 
     // Wraps ProClient to make its logging interface
-    // compatible with CorProfilerInfo2.
+    // compatible with CorProfilerInfo.
     class LogToProClient
     {
     private:
@@ -38,7 +38,7 @@ namespace Drill4dotNet
     protected:
         ProClient& m_pImplClient;
         volatile ULONG m_lRef = 0;
-        std::optional<CorProfilerInfo2<LogToProClient>> m_corProfilerInfo2{};
+        std::optional<CorProfilerInfo<LogToProClient>> m_corProfilerInfo{};
     public:
         CProfilerCallback(ProClient& client);
         ProClient& GetClient();
