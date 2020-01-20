@@ -22,21 +22,35 @@ namespace Drill4dotNet
 
         static CProfilerCallback* g_cb = nullptr;
 
-        static void __stdcall fn_functionEnter2(FunctionID funcId, UINT_PTR clientData, COR_PRF_FRAME_INFO func, COR_PRF_FUNCTION_ARGUMENT_INFO* argumentInfo)
+        static void __stdcall fn_functionEnter(
+            FunctionID funcId,
+            UINT_PTR clientData,
+            COR_PRF_FRAME_INFO func,
+            COR_PRF_FUNCTION_ARGUMENT_INFO* argumentInfo
+        )
         {
             if (!g_cb) return;
 
             g_cb->GetClient().Log() << L"Enter function: " << HexOutput(funcId);
         }
 
-        static void __stdcall fn_functionLeave2(FunctionID funcId, UINT_PTR clientData, COR_PRF_FRAME_INFO func, COR_PRF_FUNCTION_ARGUMENT_RANGE* retvalRange)
+        static void __stdcall fn_functionLeave(
+            FunctionID funcId,
+            UINT_PTR clientData,
+            COR_PRF_FRAME_INFO func,
+            COR_PRF_FUNCTION_ARGUMENT_RANGE* retvalRange
+        )
         {
             if (!g_cb) return;
 
             g_cb->GetClient().Log() << L"Leave function: " << HexOutput(funcId);
         }
 
-        static void __stdcall fn_functionTailcall2(FunctionID funcId, UINT_PTR clientData, COR_PRF_FRAME_INFO func)
+        static void __stdcall fn_functionTailcall(
+            FunctionID funcId,
+            UINT_PTR clientData,
+            COR_PRF_FRAME_INFO func
+        )
         {
             if (!g_cb) return;
 
@@ -88,14 +102,18 @@ namespace Drill4dotNet
         m_pImplClient.Log() << L"CProfilerCallback::Initialize";
         try
         {
-            m_corProfilerInfo2 = CorProfilerInfo2(pICorProfilerInfoUnk, LogToProClient(m_pImplClient));
+            m_corProfilerInfo = CorProfilerInfo(pICorProfilerInfoUnk, LogToProClient(m_pImplClient));
 
             DWORD eventMask = (DWORD)(COR_PRF_MONITOR_ENTERLEAVE | COR_PRF_MONITOR_JIT_COMPILATION);
-            m_corProfilerInfo2->SetEventMask(eventMask);
+            m_corProfilerInfo->SetEventMask(eventMask);
 
             // set the enter, leave and tailcall hooks
             g_cb = this;
-            m_corProfilerInfo2->SetEnterLeaveFunctionHooks2(fn_functionEnter2, fn_functionLeave2, fn_functionTailcall2);
+            m_corProfilerInfo->SetEnterLeaveFunctionHooks(
+                fn_functionEnter,
+                fn_functionLeave,
+                fn_functionTailcall
+            );
         }
         catch (const _com_error& exception)
         {
@@ -209,11 +227,11 @@ namespace Drill4dotNet
     {
         try
         {
-            std::wstring functionName{ m_corProfilerInfo2->GetFunctionName(functionId) };
+            std::wstring functionName{ m_corProfilerInfo->GetFunctionName(functionId) };
 
             std::vector<std::byte> functionBody{
-                m_corProfilerInfo2->GetMethodIntermediateLanguageBody(
-                    m_corProfilerInfo2->GetFunctionInfo(functionId)) };
+                m_corProfilerInfo->GetMethodIntermediateLanguageBody(
+                    m_corProfilerInfo->GetFunctionInfo(functionId)) };
 
             GetClient().Log()
                 << L"Compiling function "

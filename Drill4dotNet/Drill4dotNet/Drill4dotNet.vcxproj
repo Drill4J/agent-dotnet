@@ -236,14 +236,14 @@
   <ItemGroup>
     <ClInclude Include="CDrillProfiler.h" />
     <ClInclude Include="ComWrapperBase.h" />
-    <ClInclude Include="CorProfilerInfo2.h" />
+    <ClInclude Include="CorProfilerInfo.h" />
     <ClInclude Include="CProfilerCallback.h" />
     <ClInclude Include="dllmain.h" />
     <ClInclude Include="Drill4dotNet_i.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="FunctionInfo.h" />
     <ClInclude Include="LogBuffer.h" />
-    <ClInclude Include="MetaDataImport2.h" />
+    <ClInclude Include="MetaDataImport.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="ProClient.h" />
     <ClInclude Include="Resource.h" />
