@@ -3,6 +3,7 @@
 #include "OutputUtils.h"
 #include "CProfilerCallback.h"
 #include "ProClient.h"
+#include <algorithm>
 
 namespace Drill4dotNet
 {
@@ -26,9 +27,9 @@ namespace Drill4dotNet
         {
             if (!g_cb) return;
 
-            std::optional<FunctionMetaInfo> fmi = g_cb->GetClient().GetFunctionInfo(funcId);
-            fmi ?
-            g_cb->GetClient().Log() << L"Enter function: " << fmi->name
+            std::optional<FunctionMetaInfo> functionMetaInfo = g_cb->GetClient().GetFunctionInfo(funcId);
+            functionMetaInfo ?
+            g_cb->GetClient().Log() << L"Enter function: " << functionMetaInfo->name
             :
             g_cb->GetClient().Log() << L"Enter function: " << HexOutput(funcId);
             g_cb->GetClient().FunctionCalled(funcId);
@@ -43,9 +44,9 @@ namespace Drill4dotNet
         {
             if (!g_cb) return;
 
-            std::optional<FunctionMetaInfo> fmi = g_cb->GetClient().GetFunctionInfo(funcId);
-            fmi ?
-            g_cb->GetClient().Log() << L"Leave function: " << fmi->name
+            std::optional<FunctionMetaInfo> functionMetaInfo = g_cb->GetClient().GetFunctionInfo(funcId);
+            functionMetaInfo ?
+            g_cb->GetClient().Log() << L"Leave function: " << functionMetaInfo->name
             :
             g_cb->GetClient().Log() << L"Leave function: " << HexOutput(funcId);
         }
@@ -58,9 +59,9 @@ namespace Drill4dotNet
         {
             if (!g_cb) return;
 
-            std::optional<FunctionMetaInfo> fmi = g_cb->GetClient().GetFunctionInfo(funcId);
-            fmi ?
-            g_cb->GetClient().Log() << L"Tailcall at function: " << fmi->name
+            std::optional<FunctionMetaInfo> functionMetaInfo = g_cb->GetClient().GetFunctionInfo(funcId);
+            functionMetaInfo ?
+            g_cb->GetClient().Log() << L"Tailcall at function: " << functionMetaInfo->name
             :
             g_cb->GetClient().Log() << L"Tailcall at function: " << HexOutput(funcId);
         }
@@ -71,11 +72,11 @@ namespace Drill4dotNet
         {
             if (!g_cb) return funcId;
 
-            FunctionMetaInfo fmi{
+            FunctionMetaInfo functionMetaInfo{
                 g_cb->GetCorProfilerInfo().GetFunctionName(funcId)
             };
-            g_cb->GetClient().Log() << "Mapping   function[" << HexOutput(funcId) << "] to " << fmi.name;
-            g_cb->GetClient().MapFunctionInfo(funcId, fmi);
+            g_cb->GetClient().Log() << "Mapping   function[" << HexOutput(funcId) << "] to " << functionMetaInfo.name;
+            g_cb->GetClient().MapFunctionInfo(funcId, functionMetaInfo);
             return funcId;
         }
     } // anonymous namespace
@@ -153,19 +154,19 @@ namespace Drill4dotNet
         m_pImplClient.Log() << L"CProfilerCallback::Shutdown";
         g_cb = nullptr;
 
-        auto mfn = m_pImplClient.GetMapOfFunctionNames();
-        m_pImplClient.Log() << L"Total number of functions mapped: " << mfn.size();
+        auto functionMetaInfoMap = m_pImplClient.GetFunctionMetaInfoMap();
+        m_pImplClient.Log() << L"Total number of functions mapped: " << functionMetaInfoMap.size();
 
-        auto mfc = m_pImplClient.GetMapOfFunctionCounts();
-        size_t cnt = 0;
-        for (auto f : mfc)
-        {
-            if (f.second > 0)
+        auto functionRuntimeInfoMap = m_pImplClient.GetFunctionRuntimeInfoMap();
+        size_t countFunctionsCalled = std::count_if(
+            functionRuntimeInfoMap.cbegin(),
+            functionRuntimeInfoMap.cend(),
+            [](const TFunctionRuntimeInfoMap::value_type& info) -> bool
             {
-                ++cnt;
+                return info.second.callCount > 0;
             }
-        }
-        m_pImplClient.Log() << L"Total number of functions called: " << cnt;
+        );
+        m_pImplClient.Log() << L"Total number of functions called: " << countFunctionsCalled;
         return S_OK;
     }
 

@@ -4,6 +4,7 @@
 #include <string>
 #include <sstream>
 #include <optional>
+#include <unordered_map>
 #include "LogBuffer.h"
 #include "FunctionInfo.h"
 
@@ -15,9 +16,13 @@ namespace Drill4dotNet
         //TODO: std::wstring className;
         //TODO: std::wstring fullName;
     };
+    struct FunctionRuntimeInfo
+    {
+        unsigned long callCount = 0UL;
+    };
 
-    typedef std::map<FunctionID, FunctionMetaInfo> TFunctionInfoMap;
-    typedef std::map<FunctionID, long> TFunctionCountMap;
+    using TFunctionMetaInfoMap = std::unordered_map<FunctionID, FunctionMetaInfo>;
+    using TFunctionRuntimeInfoMap = std::unordered_map<FunctionID, FunctionRuntimeInfo>;
 
     class ProClient
     {
@@ -30,11 +35,11 @@ namespace Drill4dotNet
         void MapFunctionInfo(const FunctionID& id, const FunctionMetaInfo& info) noexcept;
         std::optional<FunctionMetaInfo> GetFunctionInfo(const FunctionID& id) const noexcept;
         void FunctionCalled(const FunctionID& id) noexcept;
-        const TFunctionInfoMap& GetMapOfFunctionNames() const
+        const TFunctionMetaInfoMap& GetFunctionMetaInfoMap() const
         {
             return m_functionNames;
         }
-        const TFunctionCountMap& GetMapOfFunctionCounts() const
+        const TFunctionRuntimeInfoMap& GetFunctionRuntimeInfoMap() const
         {
             return m_functionCounts;
         }
@@ -42,7 +47,7 @@ namespace Drill4dotNet
     protected:
         std::wostream& m_ostream;
         std::wistream& m_istream;
-        TFunctionInfoMap  m_functionNames;
-        TFunctionCountMap m_functionCounts;
+        TFunctionMetaInfoMap m_functionNames;
+        TFunctionRuntimeInfoMap m_functionCounts;
     };
 }

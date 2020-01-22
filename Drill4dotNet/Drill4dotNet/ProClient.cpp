@@ -31,7 +31,7 @@ namespace Drill4dotNet
         {
             // allow to overwrite function information on secondary mapping (TBD?)
             m_functionNames[id] = info;
-            m_functionCounts[id] = 0;
+            m_functionCounts[id] = { 0 };
         }
         catch (const std::exception & ex)
         {
@@ -43,7 +43,7 @@ namespace Drill4dotNet
     {
         try
         {
-            TFunctionInfoMap::const_iterator it = m_functionNames.find(id);
+            TFunctionMetaInfoMap::const_iterator it = m_functionNames.find(id);
             if (m_functionNames.end() != it)
             {
                 return it->second;
@@ -64,10 +64,10 @@ namespace Drill4dotNet
     {
         try
         {
-            TFunctionCountMap::iterator it = m_functionCounts.find(id);
+            TFunctionRuntimeInfoMap::iterator it = m_functionCounts.find(id);
             if (m_functionCounts.end() != it)
             {
-                it->second += 1;
+                it->second.callCount += 1;
             }
             else
             {

@@ -75,6 +75,15 @@ namespace Drill4dotNet
             };
         }
 
+        // Wraps ICorProfilerInfo2::SetFunctionIDMapper.
+        auto SetFunctionIDMapperCallable(FunctionIDMapper* pFunc)
+        {
+            return [this, pFunc]()
+            {
+                return m_corProfilerInfo->SetFunctionIDMapper(pFunc);
+            };
+        }
+
         // Wraps ICorProfilerInfo2::GetFunctionInfo.
         auto GetFunctionInfoCallable(const FunctionID functionId, FunctionInfo& result) const
         {
@@ -319,15 +328,6 @@ namespace Drill4dotNet
                 L"Failed to call CorProfilerInfo::TrySetEnterLeaveFunctionHooks.");
         }
 
-        // Wraps ICorProfilerInfo2::SetFunctionIDMapper.
-        auto SetFunctionIDMapperCallable(FunctionIDMapper* pFunc)
-        {
-            return [this, pFunc]()
-            {
-                return m_corProfilerInfo->SetFunctionIDMapper(pFunc);
-            };
-        }
-
         // Calls ICorProfilerInfo2::SetFunctionIDMapper
         // Throws _com_error in case of an error.
         void SetFunctionIDMapper(FunctionIDMapper* pFunc)
@@ -337,5 +337,13 @@ namespace Drill4dotNet
                 L"Failed to call CorProfilerInfo::SetFunctionIDMapper.");
         }
 
+        // Calls ICorProfilerInfo2::SetFunctionIDMapper
+        // Throws _com_error in case of an error.
+        void TrySetFunctionIDMapper(FunctionIDMapper* pFunc)
+        {
+            return this->TryCallCom(
+                SetFunctionIDMapperCallable(pFunc),
+                L"Failed to call CorProfilerInfo::TrySetFunctionIDMapper.");
+        }
     };
 }
