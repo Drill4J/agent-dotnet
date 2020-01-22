@@ -12,11 +12,6 @@ namespace Drill4dotNet
     {
     }
 
-    ProClient& CProfilerCallback::GetClient()
-    {
-        return  m_pImplClient;
-    }
-
     namespace
     {
 
@@ -31,7 +26,12 @@ namespace Drill4dotNet
         {
             if (!g_cb) return;
 
+            std::optional<FunctionMetaInfo> fmi = g_cb->GetClient().GetFunctionInfo(funcId);
+            fmi ?
+            g_cb->GetClient().Log() << L"Enter function: " << fmi->name
+            :
             g_cb->GetClient().Log() << L"Enter function: " << HexOutput(funcId);
+            g_cb->GetClient().FunctionCalled(funcId);
         }
 
         static void __stdcall fn_functionLeave(
@@ -43,6 +43,10 @@ namespace Drill4dotNet
         {
             if (!g_cb) return;
 
+            std::optional<FunctionMetaInfo> fmi = g_cb->GetClient().GetFunctionInfo(funcId);
+            fmi ?
+            g_cb->GetClient().Log() << L"Leave function: " << fmi->name
+            :
             g_cb->GetClient().Log() << L"Leave function: " << HexOutput(funcId);
         }
 
@@ -54,7 +58,25 @@ namespace Drill4dotNet
         {
             if (!g_cb) return;
 
+            std::optional<FunctionMetaInfo> fmi = g_cb->GetClient().GetFunctionInfo(funcId);
+            fmi ?
+            g_cb->GetClient().Log() << L"Tailcall at function: " << fmi->name
+            :
             g_cb->GetClient().Log() << L"Tailcall at function: " << HexOutput(funcId);
+        }
+
+        static UINT_PTR __stdcall fn_FunctionIDMapper(
+            FunctionID funcId,
+            BOOL* pbHookFunction)
+        {
+            if (!g_cb) return funcId;
+
+            FunctionMetaInfo fmi{
+                g_cb->GetCorProfilerInfo().GetFunctionName(funcId)
+            };
+            g_cb->GetClient().Log() << "Mapping   function[" << HexOutput(funcId) << "] to " << fmi.name;
+            g_cb->GetClient().MapFunctionInfo(funcId, fmi);
+            return funcId;
         }
     } // anonymous namespace
 
@@ -114,6 +136,7 @@ namespace Drill4dotNet
                 fn_functionLeave,
                 fn_functionTailcall
             );
+            m_corProfilerInfo->SetFunctionIDMapper(fn_FunctionIDMapper);
         }
         catch (const _com_error& exception)
         {
@@ -130,6 +153,19 @@ namespace Drill4dotNet
         m_pImplClient.Log() << L"CProfilerCallback::Shutdown";
         g_cb = nullptr;
 
+        auto mfn = m_pImplClient.GetMapOfFunctionNames();
+        m_pImplClient.Log() << L"Total number of functions mapped: " << mfn.size();
+
+        auto mfc = m_pImplClient.GetMapOfFunctionCounts();
+        size_t cnt = 0;
+        for (auto f : mfc)
+        {
+            if (f.second > 0)
+            {
+                ++cnt;
+            }
+        }
+        m_pImplClient.Log() << L"Total number of functions called: " << cnt;
         return S_OK;
     }
 

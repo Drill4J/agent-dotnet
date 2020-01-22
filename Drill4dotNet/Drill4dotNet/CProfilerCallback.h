@@ -41,7 +41,14 @@ namespace Drill4dotNet
         std::optional<CorProfilerInfo<LogToProClient>> m_corProfilerInfo{};
     public:
         CProfilerCallback(ProClient& client);
-        ProClient& GetClient();
+        ProClient& GetClient()
+        {
+            return m_pImplClient;
+        }
+        CorProfilerInfo<LogToProClient>& GetCorProfilerInfo()
+        {
+            return m_corProfilerInfo.value();
+        }
 
         // Inherited via IUnknown
         virtual HRESULT __stdcall QueryInterface(REFIID riid, void** ppvObject) override;
