@@ -242,6 +242,7 @@
     <ClInclude Include="Drill4dotNet_i.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="FunctionInfo.h" />
+    <ClInclude Include="InfoHandler.h" />
     <ClInclude Include="LogBuffer.h" />
     <ClInclude Include="MetaDataImport.h" />
     <ClInclude Include="pch.h" />
@@ -282,6 +283,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
       </PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="InfoHandler.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>

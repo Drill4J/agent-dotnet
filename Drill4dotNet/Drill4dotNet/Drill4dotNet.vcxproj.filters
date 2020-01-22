@@ -64,6 +64,9 @@
     <ClInclude Include="MetaDataImport.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="InfoHandler.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Drill4dotNet.cpp">
@@ -85,6 +88,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="ProClient.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="InfoHandler.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
