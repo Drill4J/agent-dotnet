@@ -228,7 +228,7 @@ namespace Drill4dotNet
             return std::nullopt;
         }
 
-        // Gets the name of the function specified by the FunctionID.
+        // Gets the name of the function specified by the @param FunctionID.
         // Throws _com_error in case of an error.
         std::wstring GetFunctionName(const FunctionID functionId) const
         {
@@ -243,6 +243,24 @@ namespace Drill4dotNet
                 m_logger.Log() << L"CorProfilerInfo::GetFunctionName failed.";
                 throw;
             }
+        }
+
+        /// Gets the name of the function specified by the @param FunctionID.
+        /// @returns function's name or std::nullopt in case of an error.
+        std::optional<std::wstring> TryGetFunctionName(const FunctionID functionId) const
+        {
+            if (const auto oFunctionInfo = TryGetFunctionInfo(functionId);
+                oFunctionInfo)
+            {
+                if (const auto oName = GetModuleMetadata(oFunctionInfo->moduleId, m_logger)
+                    .TryGetMethodName(oFunctionInfo->token);
+                    oName)
+                {
+                    return oName.value();
+                }
+            }
+            m_logger.Log() << L"CorProfilerInfo::TryGetFunctionName failed.";
+            return std::nullopt;
         }
 
         // Calls ICorProfilerInfo2::GetILFunctionBody with the given FunctionInfo.
@@ -344,6 +362,173 @@ namespace Drill4dotNet
             return this->TryCallCom(
                 SetFunctionIDMapperCallable(pFunc),
                 L"Failed to call CorProfilerInfo::TrySetFunctionIDMapper.");
+        }
+
+        /// Gets application domain information
+        /// Wraps ICorProfilerInfo2::GetAppDomainInfo
+        /// @returns AppDomain's name and process, if obtained, std::nullopt otherwise.
+        std::optional<AppDomainInfo> TryGetAppDomainInfo(AppDomainID appDomainId)
+        {
+            AppDomainInfo info;
+            if (ULONG cchName;
+                TryCallCom(
+                [this, appDomainId, &cchName, &info]()
+                {
+                    return m_corProfilerInfo->GetAppDomainInfo(
+                        appDomainId,
+                        0,
+                        &cchName,
+                        nullptr,
+                        &info.processId);
+                },
+                L"Calling ICorProfilerInfo2::GetAppDomainInfo 1-st try."))
+            {
+                if (0 == cchName) // success, but zero-name
+                {
+                    return info;
+                }
+                info.name.resize(cchName, L'\0');
+                if (TryCallCom(
+                    [this, appDomainId, cchName , &info]()
+                    {
+                        ULONG cchDrop;
+                        return m_corProfilerInfo->GetAppDomainInfo(
+                            appDomainId,
+                            cchName,
+                            &cchDrop,
+                            info.name.data(),
+                            &info.processId);
+                    },
+                    L"Calling ICorProfilerInfo2::GetAppDomainInfo 2-nd try.")
+                    )
+                {
+                    TrimTrailingNull(info.name);
+                    return info;
+                }
+            }
+            return std::nullopt;
+        }
+
+        /// Gets assembly information
+        /// Wraps ICorProfilerInfo2::GetAssemblyInfo
+        /// @returns Assembly's name, domain, and module, if obtained, std::nullopt otherwise.
+        std::optional<AssemblyInfo> TryGetAssemblyInfo(AssemblyID assemblyId)
+        {
+            AssemblyInfo info;
+            if (ULONG cchName;
+                TryCallCom(
+                [this, assemblyId, &cchName, &info]()
+                {
+                    return m_corProfilerInfo->GetAssemblyInfo(
+                        assemblyId,
+                        0,
+                        &cchName,
+                        nullptr,
+                        &info.appDomainId,
+                        &info.moduleId);
+                },
+                L"Calling ICorProfilerInfo2::GetAssemblyInfo 1-st try."))
+            {
+                if (0 == cchName) // success, but zero-name
+                {
+                    return info;
+                }
+                info.name.resize(cchName, L'\0');
+                if (TryCallCom(
+                    [this, assemblyId, cchName, &info]()
+                    {
+                        ULONG cchDrop;
+                        return m_corProfilerInfo->GetAssemblyInfo(
+                            assemblyId,
+                            cchName,
+                            &cchDrop,
+                            info.name.data(),
+                            &info.appDomainId,
+                            &info.moduleId);
+                    },
+                    L"Calling ICorProfilerInfo2::GetAssemblyInfo 2-nd try.")
+                    )
+                {
+                    TrimTrailingNull(info.name);
+                    return info;
+                }
+            }
+            return std::nullopt;
+        }
+
+        /// Gets module information
+        /// Wraps ICorProfilerInfo2::GetModuleInfo
+        /// @returns Module's name, assembly, and base load address, if obtained, std::nullopt otherwise.
+        std::optional<ModuleInfo> TryGetModuleInfo(ModuleID moduleId)
+        {
+            ModuleInfo info;
+            if (ULONG cchName;
+                TryCallCom(
+                [this, moduleId, &cchName, &info]()
+                {
+                    return m_corProfilerInfo->GetModuleInfo(
+                        moduleId,
+                        &info.baseLoadAddress,
+                        0,
+                        &cchName,
+                        nullptr,
+                        &info.assemblyId);
+                },
+                L"Calling ICorProfilerInfo2::GetModuleInfo 1-st try."))
+            {
+                if (0 == cchName) // success, but zero-name
+                {
+                    return info;
+                }
+                info.name.resize(cchName, L'\0');
+                if (TryCallCom(
+                    [this, moduleId, cchName, &info]()
+                    {
+                        ULONG cchDrop;
+                        return m_corProfilerInfo->GetModuleInfo(
+                            moduleId,
+                            &info.baseLoadAddress,
+                            cchName,
+                            &cchDrop,
+                            info.name.data(),
+                            &info.assemblyId);
+                    },
+                    L"Calling ICorProfilerInfo2::GetModuleInfo 2-nd try.")
+                    )
+                {
+                    TrimTrailingNull(info.name);
+                    return info;
+                }
+            }
+            return std::nullopt;
+        }
+
+        /// Gets class (type) information
+        /// It wraps ICorProfilerInfo2::GetClassIDInfo and IMetaDataImport2::GetTypeDefProps
+        /// @param classId : ID of the class
+        /// @returns Class's name, module, token, if obtained, std::nullopt otherwise.
+        std::optional<ClassInfo> TryGetClassInfo(const ClassID classId) const
+        {
+            ClassInfo info;
+            if (TryCallCom(
+                [this, classId, &info]()
+                {
+                    return m_corProfilerInfo->GetClassIDInfo(
+                        classId,
+                        &info.moduleId,
+                        &info.typeDefToken);
+                },
+                L"Calling ICorProfilerInfo2::GetClassIDInfo."))
+            {
+                auto metadata = GetModuleMetadata(info.moduleId, m_logger);
+                if (const auto oName = metadata.TryGetTypeName(info.typeDefToken);
+                    oName)
+                {
+                    info.name = oName.value();
+                    return info;
+                }
+            }
+            return std::nullopt;
         }
     };
 }
