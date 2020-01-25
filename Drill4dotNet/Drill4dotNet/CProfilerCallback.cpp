@@ -1,5 +1,4 @@
 #include "pch.h"
-
 #include "OutputUtils.h"
 #include "CProfilerCallback.h"
 #include "CorDataStructures.h"

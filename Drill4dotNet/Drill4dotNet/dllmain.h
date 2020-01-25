@@ -1,5 +1,7 @@
 // dllmain.h : Declaration of module class.
 
+#pragma once
+
 class CDrill4dotNetModule : public ATL::CAtlDllModuleT< CDrill4dotNetModule >
 {
 public:

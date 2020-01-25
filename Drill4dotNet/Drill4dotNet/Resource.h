@@ -2,6 +2,7 @@
 // Microsoft Visual C++ generated include file.
 // Used by Drill4dotNet.rc
 //
+#pragma once
 
 #define IDS_PROJNAME                    100
 #define IDR_DRILL4DOTNET                101
