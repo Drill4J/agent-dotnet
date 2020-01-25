@@ -25,17 +25,10 @@ namespace Drill4dotNet
     public:
         explicit InfoHandler(std::wostream& log);
 
+        void OutputStatistics() const;
         void MapFunctionInfo(const FunctionID& id, const FunctionMetaInfo& info) noexcept;
         std::optional<FunctionMetaInfo> GetFunctionInfo(const FunctionID& id) const noexcept;
         void FunctionCalled(const FunctionID& id) noexcept;
-        const TFunctionMetaInfoMap& GetFunctionMetaInfoMap() const
-        {
-            return m_functionNames;
-        }
-        const TFunctionRuntimeInfoMap& GetFunctionRuntimeInfoMap() const
-        {
-            return m_functionCounts;
-        }
     protected:
         using Logger = LogBuffer<std::wostream>;
         Logger Log() const;

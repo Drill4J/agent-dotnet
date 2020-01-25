@@ -2,6 +2,7 @@
 #include "InfoHandler.h"
 #include "ProClient.h"
 #include "FunctionInfo.h"
+#include <algorithm>
 
 namespace Drill4dotNet
 {
@@ -68,5 +69,21 @@ namespace Drill4dotNet
         {
             Log() << "InfoHandler::FunctionCalled: exception while accessing function info by id [" << id << "]. " << ex.what();
         }
+    }
+    
+    void InfoHandler::OutputStatistics() const
+    {
+        Log() << L"Statistics:";
+        Log() << L"Total number of functions mapped: " << m_functionNames.size();
+
+        size_t countFunctionsCalled = std::count_if(
+            m_functionCounts.cbegin(),
+            m_functionCounts.cend(),
+            [](const auto& info) -> bool
+            {
+                return info.second.callCount > 0;
+            }
+        );
+        Log() << L"Total number of functions called: " << countFunctionsCalled;
     }
 }

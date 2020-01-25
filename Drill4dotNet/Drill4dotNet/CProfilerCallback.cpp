@@ -4,7 +4,6 @@
 #include "CProfilerCallback.h"
 #include "ProClient.h"
 #include "InfoHandler.h"
-#include <algorithm>
 
 namespace Drill4dotNet
 {
@@ -181,20 +180,7 @@ namespace Drill4dotNet
     {
         m_pImplClient.Log() << L"CProfilerCallback::Shutdown";
         g_cb = nullptr;
-
-        auto& functionMetaInfoMap = GetInfoHandler().GetFunctionMetaInfoMap();
-        m_pImplClient.Log() << L"Total number of functions mapped: " << functionMetaInfoMap.size();
-
-        auto& functionRuntimeInfoMap = GetInfoHandler().GetFunctionRuntimeInfoMap();
-        size_t countFunctionsCalled = std::count_if(
-            functionRuntimeInfoMap.cbegin(),
-            functionRuntimeInfoMap.cend(),
-            [](const auto& info) -> bool
-            {
-                return info.second.callCount > 0;
-            }
-        );
-        m_pImplClient.Log() << L"Total number of functions called: " << countFunctionsCalled;
+        GetInfoHandler().OutputStatistics();
         return S_OK;
     }
 
