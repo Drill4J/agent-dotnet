@@ -8,3 +8,11 @@
 
 // add headers that you want to pre-compile here
 #include "framework.h"
+
+// Often used STL headers
+#include <cstddef>
+#include <iostream>
+#include <ostream>
+#include <sstream>
+#include <string>
+#include <vector>
