@@ -8,8 +8,6 @@
 #include "dllmain.h"
 
 
-using namespace ATL;
-
 // Used to determine whether the DLL can be unloaded by OLE.
 _Use_decl_annotations_
 STDAPI DllCanUnloadNow(void)
