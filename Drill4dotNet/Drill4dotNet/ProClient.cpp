@@ -2,13 +2,11 @@
 #include "ProClient.h"
 #include "InfoHandler.h"
 
-using namespace std;
-
 namespace Drill4dotNet
 {
     ProClient::ProClient()
-        : m_ostream(wcout)
-        , m_istream(wcin)
+        : m_ostream(std::wcout)
+        , m_istream(std::wcin)
         , m_infoHandler(m_ostream)
     {
     }
@@ -22,7 +20,7 @@ namespace Drill4dotNet
         return LogBuffer<std::wostream>(m_ostream);
     }
 
-    wistream& ProClient::Key()
+    std::wistream& ProClient::Key()
     {
         return m_istream;
     }

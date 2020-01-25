@@ -8,8 +8,6 @@
 #include "LogBuffer.h"
 #include <iostream>
 
-using namespace Drill4dotNet;
-
 CDrill4dotNetModule _AtlModule;
 
 // DLL Entry Point
@@ -19,7 +17,7 @@ extern "C" BOOL WINAPI DllMain(HINSTANCE hInstance, DWORD dwReason, LPVOID lpRes
     {
         DisableThreadLibraryCalls(hInstance);
     }
-    LogStdout() << L"DllMain(" << hInstance << L", " << dwReason << L")";
+    Drill4dotNet::LogStdout() << L"DllMain(" << hInstance << L", " << dwReason << L")";
 
     return _AtlModule.DllMain(dwReason, lpReserved);
 }
