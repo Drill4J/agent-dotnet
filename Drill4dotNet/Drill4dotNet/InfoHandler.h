@@ -8,13 +8,9 @@
 
 namespace Drill4dotNet
 {
-    class ProClient;
-
     struct FunctionMetaInfo
     {
         std::wstring name;
-        //TODO: std::wstring className;
-        //TODO: std::wstring fullName;
     };
     struct FunctionRuntimeInfo
     {

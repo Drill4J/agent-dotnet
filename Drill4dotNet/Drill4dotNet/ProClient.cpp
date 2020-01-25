@@ -9,7 +9,7 @@ namespace Drill4dotNet
     ProClient::ProClient()
         : m_ostream(wcout)
         , m_istream(wcin)
-        , m_infoHandler(new InfoHandler(m_ostream))
+        , m_infoHandler(m_ostream)
     {
     }
 

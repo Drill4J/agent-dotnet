@@ -2,13 +2,11 @@
 
 #include <string>
 #include <sstream>
-#include <memory>
 #include "LogBuffer.h"
+#include "InfoHandler.h"
 
 namespace Drill4dotNet
 {
-    class InfoHandler;
-
     class ProClient
     {
     public:
@@ -17,7 +15,7 @@ namespace Drill4dotNet
         LogBuffer<std::wostream> Log() const;
         std::wistream& Key();
 
-        std::shared_ptr<InfoHandler> GetInfoHandler()
+        InfoHandler& GetInfoHandler()
         {
             return m_infoHandler;
         }
@@ -25,6 +23,6 @@ namespace Drill4dotNet
     protected:
         std::wostream& m_ostream;
         std::wistream& m_istream;
-        std::shared_ptr<InfoHandler> m_infoHandler;
+        InfoHandler m_infoHandler;
     };
 }

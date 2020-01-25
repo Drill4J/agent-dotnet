@@ -19,7 +19,7 @@ namespace Drill4dotNet
         return  m_pImplClient;
     }
 
-    inline std::shared_ptr<InfoHandler> CProfilerCallback::GetInfoHandler()
+    inline InfoHandler& CProfilerCallback::GetInfoHandler()
     {
         return m_pImplClient.GetInfoHandler();
     }
@@ -43,12 +43,16 @@ namespace Drill4dotNet
         {
             if (!g_cb) return;
 
-            std::optional<FunctionMetaInfo> functionMetaInfo = g_cb->GetInfoHandler()->GetFunctionInfo(funcId);
-            functionMetaInfo ?
-            g_cb->GetClient().Log() << L"Enter function: " << functionMetaInfo->name
-            :
-            g_cb->GetClient().Log() << L"Enter function: " << HexOutput(funcId);
-            g_cb->GetInfoHandler()->FunctionCalled(funcId);
+            if (std::optional<FunctionMetaInfo> functionMetaInfo = g_cb->GetInfoHandler().GetFunctionInfo(funcId);
+                functionMetaInfo)
+            {
+                g_cb->GetClient().Log() << L"Enter function: " << functionMetaInfo->name;
+            }
+            else
+            {
+                g_cb->GetClient().Log() << L"Enter function: " << HexOutput(funcId);
+            }
+            g_cb->GetInfoHandler().FunctionCalled(funcId);
         }
 
         static void __stdcall fn_functionLeave(
@@ -60,11 +64,15 @@ namespace Drill4dotNet
         {
             if (!g_cb) return;
 
-            std::optional<FunctionMetaInfo> functionMetaInfo = g_cb->GetInfoHandler()->GetFunctionInfo(funcId);
-            functionMetaInfo ?
-            g_cb->GetClient().Log() << L"Leave function: " << functionMetaInfo->name
-            :
-            g_cb->GetClient().Log() << L"Leave function: " << HexOutput(funcId);
+            if (std::optional<FunctionMetaInfo> functionMetaInfo = g_cb->GetInfoHandler().GetFunctionInfo(funcId);
+                functionMetaInfo)
+            {
+                g_cb->GetClient().Log() << L"Leave function: " << functionMetaInfo->name;
+            }
+            else
+            {
+                g_cb->GetClient().Log() << L"Leave function: " << HexOutput(funcId);
+            }
         }
 
         static void __stdcall fn_functionTailcall(
@@ -75,11 +83,15 @@ namespace Drill4dotNet
         {
             if (!g_cb) return;
 
-            std::optional<FunctionMetaInfo> functionMetaInfo = g_cb->GetInfoHandler()->GetFunctionInfo(funcId);
-            functionMetaInfo ?
-            g_cb->GetClient().Log() << L"Tailcall at function: " << functionMetaInfo->name
-            :
-            g_cb->GetClient().Log() << L"Tailcall at function: " << HexOutput(funcId);
+            if (std::optional<FunctionMetaInfo> functionMetaInfo = g_cb->GetInfoHandler().GetFunctionInfo(funcId);
+                functionMetaInfo)
+            {
+                g_cb->GetClient().Log() << L"Tailcall at function: " << functionMetaInfo->name;
+            }
+            else
+            {
+                g_cb->GetClient().Log() << L"Tailcall at function: " << HexOutput(funcId);
+            }
         }
 
         static UINT_PTR __stdcall fn_FunctionIDMapper(
@@ -92,7 +104,7 @@ namespace Drill4dotNet
                 g_cb->GetCorProfilerInfo().GetFunctionName(funcId)
             };
             g_cb->GetClient().Log() << "Mapping   function[" << HexOutput(funcId) << "] to " << functionMetaInfo.name;
-            g_cb->GetInfoHandler()->MapFunctionInfo(funcId, functionMetaInfo);
+            g_cb->GetInfoHandler().MapFunctionInfo(funcId, functionMetaInfo);
             return funcId;
         }
     } // anonymous namespace
@@ -170,14 +182,14 @@ namespace Drill4dotNet
         m_pImplClient.Log() << L"CProfilerCallback::Shutdown";
         g_cb = nullptr;
 
-        auto& functionMetaInfoMap = GetInfoHandler()->GetFunctionMetaInfoMap();
+        auto& functionMetaInfoMap = GetInfoHandler().GetFunctionMetaInfoMap();
         m_pImplClient.Log() << L"Total number of functions mapped: " << functionMetaInfoMap.size();
 
-        auto& functionRuntimeInfoMap = GetInfoHandler()->GetFunctionRuntimeInfoMap();
+        auto& functionRuntimeInfoMap = GetInfoHandler().GetFunctionRuntimeInfoMap();
         size_t countFunctionsCalled = std::count_if(
             functionRuntimeInfoMap.cbegin(),
             functionRuntimeInfoMap.cend(),
-            [](const TFunctionRuntimeInfoMap::value_type& info) -> bool
+            [](const auto& info) -> bool
             {
                 return info.second.callCount > 0;
             }

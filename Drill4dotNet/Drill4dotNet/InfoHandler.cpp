@@ -33,8 +33,8 @@ namespace Drill4dotNet
     {
         try
         {
-            TFunctionMetaInfoMap::const_iterator it = m_functionNames.find(id);
-            if (m_functionNames.end() != it)
+            if (TFunctionMetaInfoMap::const_iterator it = m_functionNames.find(id);
+                m_functionNames.end() != it)
             {
                 return it->second;
             }
@@ -54,8 +54,8 @@ namespace Drill4dotNet
     {
         try
         {
-            TFunctionRuntimeInfoMap::iterator it = m_functionCounts.find(id);
-            if (m_functionCounts.end() != it)
+            if (TFunctionRuntimeInfoMap::iterator it = m_functionCounts.find(id);
+                m_functionCounts.end() != it)
             {
                 it->second.callCount += 1;
             }

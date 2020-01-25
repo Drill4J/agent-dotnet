@@ -338,8 +338,8 @@ namespace Drill4dotNet
         }
 
         // Calls ICorProfilerInfo2::SetFunctionIDMapper
-        // Throws _com_error in case of an error.
-        void TrySetFunctionIDMapper(FunctionIDMapper* pFunc)
+        // Returns false in case of an error.
+        bool TrySetFunctionIDMapper(FunctionIDMapper* pFunc)
         {
             return this->TryCallCom(
                 SetFunctionIDMapperCallable(pFunc),
