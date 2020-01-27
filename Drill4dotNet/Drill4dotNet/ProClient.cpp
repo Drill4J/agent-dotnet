@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "ProClient.h"
+#include "InfoHandler.h"
 
 using namespace std;
 
@@ -8,6 +9,7 @@ namespace Drill4dotNet
     ProClient::ProClient()
         : m_ostream(wcout)
         , m_istream(wcin)
+        , m_infoHandler(m_ostream)
     {
     }
 
@@ -15,7 +17,7 @@ namespace Drill4dotNet
     {
     }
 
-    LogBuffer<std::wostream> ProClient::Log()
+    LogBuffer<std::wostream> ProClient::Log() const
     {
         return LogBuffer<std::wostream>(m_ostream);
     }

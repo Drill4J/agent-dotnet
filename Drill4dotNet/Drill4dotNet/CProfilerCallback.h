@@ -9,6 +9,7 @@
 namespace Drill4dotNet
 {
     class ProClient;
+    class InfoHandler;
 
     // Wraps ProClient to make its logging interface
     // compatible with CorProfilerInfo.
@@ -42,6 +43,8 @@ namespace Drill4dotNet
     public:
         CProfilerCallback(ProClient& client);
         ProClient& GetClient();
+        CorProfilerInfo<LogToProClient>& GetCorProfilerInfo();
+        InfoHandler& GetInfoHandler();
 
         // Inherited via IUnknown
         virtual HRESULT __stdcall QueryInterface(REFIID riid, void** ppvObject) override;

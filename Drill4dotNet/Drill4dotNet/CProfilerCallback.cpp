@@ -3,6 +3,7 @@
 #include "OutputUtils.h"
 #include "CProfilerCallback.h"
 #include "ProClient.h"
+#include "InfoHandler.h"
 
 namespace Drill4dotNet
 {
@@ -12,9 +13,19 @@ namespace Drill4dotNet
     {
     }
 
-    ProClient& CProfilerCallback::GetClient()
+    inline ProClient& CProfilerCallback::GetClient()
     {
         return  m_pImplClient;
+    }
+
+    inline InfoHandler& CProfilerCallback::GetInfoHandler()
+    {
+        return m_pImplClient.GetInfoHandler();
+    }
+
+    inline CorProfilerInfo<LogToProClient>& CProfilerCallback::GetCorProfilerInfo()
+    {
+        return m_corProfilerInfo.value();
     }
 
     namespace
@@ -31,7 +42,16 @@ namespace Drill4dotNet
         {
             if (!g_cb) return;
 
-            g_cb->GetClient().Log() << L"Enter function: " << HexOutput(funcId);
+            if (std::optional<FunctionMetaInfo> functionMetaInfo = g_cb->GetInfoHandler().GetFunctionInfo(funcId);
+                functionMetaInfo)
+            {
+                g_cb->GetClient().Log() << L"Enter function: " << functionMetaInfo->name;
+            }
+            else
+            {
+                g_cb->GetClient().Log() << L"Enter function: " << HexOutput(funcId);
+            }
+            g_cb->GetInfoHandler().FunctionCalled(funcId);
         }
 
         static void __stdcall fn_functionLeave(
@@ -43,7 +63,15 @@ namespace Drill4dotNet
         {
             if (!g_cb) return;
 
-            g_cb->GetClient().Log() << L"Leave function: " << HexOutput(funcId);
+            if (std::optional<FunctionMetaInfo> functionMetaInfo = g_cb->GetInfoHandler().GetFunctionInfo(funcId);
+                functionMetaInfo)
+            {
+                g_cb->GetClient().Log() << L"Leave function: " << functionMetaInfo->name;
+            }
+            else
+            {
+                g_cb->GetClient().Log() << L"Leave function: " << HexOutput(funcId);
+            }
         }
 
         static void __stdcall fn_functionTailcall(
@@ -54,7 +82,29 @@ namespace Drill4dotNet
         {
             if (!g_cb) return;
 
-            g_cb->GetClient().Log() << L"Tailcall at function: " << HexOutput(funcId);
+            if (std::optional<FunctionMetaInfo> functionMetaInfo = g_cb->GetInfoHandler().GetFunctionInfo(funcId);
+                functionMetaInfo)
+            {
+                g_cb->GetClient().Log() << L"Tailcall at function: " << functionMetaInfo->name;
+            }
+            else
+            {
+                g_cb->GetClient().Log() << L"Tailcall at function: " << HexOutput(funcId);
+            }
+        }
+
+        static UINT_PTR __stdcall fn_FunctionIDMapper(
+            FunctionID funcId,
+            BOOL* pbHookFunction)
+        {
+            if (!g_cb) return funcId;
+
+            FunctionMetaInfo functionMetaInfo{
+                g_cb->GetCorProfilerInfo().GetFunctionName(funcId)
+            };
+            g_cb->GetClient().Log() << "Mapping   function[" << HexOutput(funcId) << "] to " << functionMetaInfo.name;
+            g_cb->GetInfoHandler().MapFunctionInfo(funcId, functionMetaInfo);
+            return funcId;
         }
     } // anonymous namespace
 
@@ -114,6 +164,7 @@ namespace Drill4dotNet
                 fn_functionLeave,
                 fn_functionTailcall
             );
+            m_corProfilerInfo->SetFunctionIDMapper(fn_FunctionIDMapper);
         }
         catch (const _com_error& exception)
         {
@@ -129,7 +180,7 @@ namespace Drill4dotNet
     {
         m_pImplClient.Log() << L"CProfilerCallback::Shutdown";
         g_cb = nullptr;
-
+        GetInfoHandler().OutputStatistics();
         return S_OK;
     }
 
