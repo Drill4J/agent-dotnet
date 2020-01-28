@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "InfoHandler.h"
 #include "ProClient.h"
-#include "FunctionInfo.h"
+#include "CorDataStructures.h"
 #include <algorithm>
 
 namespace Drill4dotNet

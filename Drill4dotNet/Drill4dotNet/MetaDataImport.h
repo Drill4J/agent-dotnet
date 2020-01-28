@@ -2,7 +2,7 @@
 
 #include "framework.h"
 #include "OutputUtils.h"
-#include "FunctionInfo.h"
+#include "CorDataStructures.h"
 #include "ComWrapperBase.h"
 
 namespace Drill4dotNet
