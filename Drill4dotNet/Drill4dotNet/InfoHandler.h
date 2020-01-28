@@ -5,6 +5,7 @@
 #include <optional>
 #include <unordered_map>
 #include "LogBuffer.h"
+#include "CorDataStructures.h"
 
 namespace Drill4dotNet
 {
