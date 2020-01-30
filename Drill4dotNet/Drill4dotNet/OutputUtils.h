@@ -111,6 +111,113 @@ namespace Drill4dotNet
         }
     };
 
+    // Writes the given object to a stream,
+    // surrounding it with brackets.
+    template <
+        typename T,
+        auto OpenBracket,
+        decltype(OpenBracket) CloseBracket>
+    class InBrackets
+    {
+    private:
+        const T& m_value;
+    public:
+        // Creates a object which will output the
+        // given value, surrounding it with brackets
+        explicit InBrackets(const T& value)
+            : m_value { value }
+        {
+        }
+
+        // Outputs brackets and the value to the given stream.
+        template <typename TChar>
+        friend std::basic_ostream<TChar>& operator <<(std::basic_ostream<TChar>& target, const InBrackets& data)
+        {
+            target << OpenBracket << data.m_value << CloseBracket;
+            return target;
+        }
+    };
+
+    // Creates an object, which will output the given value,
+    // surrounding it with round brackets.
+    template <typename T>
+    InBrackets<T, '(', ')'> InRoundBrackets(const T& value)
+    {
+        return InBrackets<T, '(', ')'>(value);
+    }
+
+    // Creates an object, which will output the given value,
+    // surrounding it with square brackets.
+    template <typename T>
+    InBrackets<T, '[', ']'> InSquareBrackets(const T& value)
+    {
+        return InBrackets<T, '[', ']'>(value);
+    }
+
+    // Creates an object, which will output the given value,
+    // surrounding it with curly brackets.
+    template <typename T>
+    InBrackets<T, '{', '}'> InCurlyBrackets(const T& value)
+    {
+        return InBrackets<T, '{', '}'>(value);
+    }
+
+    // Creates an object, which will output the given value,
+    // surrounding it with spaces.
+    template <typename T>
+    InBrackets<T, ' ', ' '> InSpaces(const T& value)
+    {
+        return InBrackets<T, ' ', ' '>(value);
+    }
+
+    // Creates an object, which will output the given value,
+    // surrounding it with apostrophes (aka single quotes).
+    template <typename T>
+    InBrackets<T, '\'', '\''> InApostrophes(const T& value)
+    {
+        return InBrackets<T, '\'', '\''>(value);
+    }
+    // Allows to put content of containers to streams,
+    // adding a given delmiter between items.
+    template <typename TContainer, typename TDelimiter>
+    class Delimitered
+    {
+    private:
+        const TContainer& m_container;
+        const TDelimiter& m_delimiter;
+    public:
+        // Creates an object which will output
+        // each item of the given container, and
+        // the specified delimiter between items.
+        Delimitered(const TContainer& container, const TDelimiter& delimiter)
+            : m_container(container),
+            m_delimiter(delimiter)
+        {
+            static_assert(!std::is_void_v<decltype(std::cbegin(container))>);
+            static_assert(!std::is_void_v<decltype(std::cend(container))>);
+        }
+
+        // Outputs items and delimiters between them.
+        template <typename TChar>
+        friend std::basic_ostream<TChar>& operator <<(std::basic_ostream<TChar>& target, const Delimitered& data)
+        {
+            bool first { true };
+            for (const auto& x : data.m_container)
+            {
+                if (!first)
+                {
+                    target << data.m_delimiter;
+                }
+
+                target << x;
+                first = false;
+            }
+
+            return target;
+        }
+    };
+
+
     // Allows to send std::byte to streams.
     // Outputs hexadecimal digits.
     template <typename TChar>
