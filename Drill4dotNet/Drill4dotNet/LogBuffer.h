@@ -57,6 +57,13 @@ namespace Drill4dotNet
             m_buffer << data;
             return *this;
         }
+
+        // Adds support for std::hex, std::boolalpha, std::endl, etc
+        LogBuffer& operator <<(const std::add_pointer_t<TStream&(TStream&)> manipulator)
+        {
+            m_buffer << manipulator;
+            return *this;
+        }
     };
 
     // Makes an output tool, which automatically adds
