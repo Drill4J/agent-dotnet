@@ -104,6 +104,11 @@ namespace Drill4dotNet
             };
             g_cb->GetClient().Log() << "Mapping   function[" << HexOutput(funcId) << "] to " << functionMetaInfo.name;
             g_cb->GetInfoHandler().MapFunctionInfo(funcId, functionMetaInfo);
+
+            if (pbHookFunction)
+            {
+                *pbHookFunction = TRUE; // to receive FunctionEnter2, FunctionLeave2, and FunctionTailcall2 callbacks
+            }
             return funcId;
         }
     } // anonymous namespace
