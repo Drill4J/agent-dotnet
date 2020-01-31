@@ -169,6 +169,15 @@ namespace Drill4dotNet
         {
             m_corProfilerInfo = CorProfilerInfo(pICorProfilerInfoUnk, LogToProClient(m_pImplClient));
 
+            if (auto runtimeInformation = m_corProfilerInfo->TryGetRuntimeInformation();
+                runtimeInformation)
+            {
+                m_pImplClient.Log() 
+                    << L"Drill profiler is running in:" << InSpaces(runtimeInformation->RuntimeType())
+                    << L"version" << InSpaces(runtimeInformation->Version())
+                    << L"QFE version" << InSpaces(runtimeInformation->QFEVersion());
+            }
+
             m_corProfilerInfo->SetEventMask(EVENTS_WE_MONITOR);
 
             // set the enter, leave and tailcall hooks

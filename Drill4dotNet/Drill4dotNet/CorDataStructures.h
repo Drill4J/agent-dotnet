@@ -44,4 +44,34 @@ namespace Drill4dotNet
         mdTypeDef typeDefToken;
         CorTypeAttr corTypeAttributes;
     };
+    struct RuntimeInformation
+    {
+        USHORT clrInstanceId;
+        COR_PRF_RUNTIME_TYPE runtimeType;
+        USHORT majorVersion;
+        USHORT minorVersion;
+        USHORT buildNumber;
+        USHORT qfeVersion;
+        std::wstring RuntimeType() const
+        {
+            switch (runtimeType)
+            {
+                case COR_PRF_DESKTOP_CLR: return L"Desktop CLR";
+                case COR_PRF_CORE_CLR: return L"Core CLR";
+                default: return L"Unknown CLR";
+            }
+        }
+        std::wstring Version() const
+        {
+            std::wostringstream s;
+            s << majorVersion << L"." << minorVersion << L"." << buildNumber;
+            return s.str();
+        }
+        std::wstring QFEVersion() const
+        {
+            std::wostringstream s;
+            s << qfeVersion;
+            return s.str();
+        }
+    };
 }
