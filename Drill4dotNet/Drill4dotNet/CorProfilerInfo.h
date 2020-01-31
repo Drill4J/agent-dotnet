@@ -263,6 +263,30 @@ namespace Drill4dotNet
             return std::nullopt;
         }
 
+        /// Gets the combined name of the function: : { own name, class name }
+        /// @param FunctionID : ID of the function.
+        /// @returns function's name and its class' name, or std::nullopt on error.
+        std::optional<FunctionName> TryGetFunctionFullName(const FunctionID functionId) const
+        {
+            ATL::CComQIPtr<IMetaDataImport2, &IID_IMetaDataImport2> metaDataImportPtr{};
+            if (mdToken functionToken;
+                TryCallCom(
+                [this, functionId, &metaDataImportPtr, &functionToken]()
+                {
+                    return m_corProfilerInfo->GetTokenAndMetaDataFromFunction(
+                        functionId, 
+                        IID_IMetaDataImport2, 
+                        (IUnknown**)&metaDataImportPtr,
+                        &functionToken);
+                },
+                L"Calling ICorProfilerInfo2::GetTokenAndMetaDataFromFunction."))
+            {
+                MetaDataImport<TLogger> metaDataImport(metaDataImportPtr, m_logger);
+                return metaDataImport.TryGetFunctionFullName(functionToken);
+            }
+            return std::nullopt;
+        }
+
         // Calls ICorProfilerInfo2::GetILFunctionBody with the given FunctionInfo.
         // Returns vector with a copy of the bytes of the Intermediate Language
         // representation of the function body.

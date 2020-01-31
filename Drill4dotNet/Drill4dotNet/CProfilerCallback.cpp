@@ -51,14 +51,14 @@ namespace Drill4dotNet
         {
             if (!g_cb) return;
 
-            if (std::optional<FunctionMetaInfo> functionMetaInfo = g_cb->GetInfoHandler().TryGetFunctionInfo(funcId);
-                functionMetaInfo)
+            if (std::optional<FunctionName> functionName = g_cb->GetInfoHandler().TryGetFunctionName(funcId);
+                functionName)
             {
-                g_cb->GetClient().Log() << L"Enter function: " << functionMetaInfo->name;
+                g_cb->GetClient().Log() << L"Enter function: " << functionName->fullName();
             }
             else
             {
-                g_cb->GetClient().Log() << L"Enter function: " << HexOutput(funcId);
+                g_cb->GetClient().Log() << L"Enter function: " << funcId;
             }
             g_cb->GetInfoHandler().FunctionCalled(funcId);
         }
@@ -72,14 +72,14 @@ namespace Drill4dotNet
         {
             if (!g_cb) return;
 
-            if (std::optional<FunctionMetaInfo> functionMetaInfo = g_cb->GetInfoHandler().TryGetFunctionInfo(funcId);
-                functionMetaInfo)
+            if (std::optional<FunctionName> functionName = g_cb->GetInfoHandler().TryGetFunctionName(funcId);
+                functionName)
             {
-                g_cb->GetClient().Log() << L"Leave function: " << functionMetaInfo->name;
+                g_cb->GetClient().Log() << L"Leave function: " << functionName->fullName();
             }
             else
             {
-                g_cb->GetClient().Log() << L"Leave function: " << HexOutput(funcId);
+                g_cb->GetClient().Log() << L"Leave function: " << funcId;
             }
         }
 
@@ -91,14 +91,14 @@ namespace Drill4dotNet
         {
             if (!g_cb) return;
 
-            if (std::optional<FunctionMetaInfo> functionMetaInfo = g_cb->GetInfoHandler().TryGetFunctionInfo(funcId);
-                functionMetaInfo)
+            if (std::optional<FunctionName> functionName = g_cb->GetInfoHandler().TryGetFunctionName(funcId);
+                functionName)
             {
-                g_cb->GetClient().Log() << L"Tailcall at function: " << functionMetaInfo->name;
+                g_cb->GetClient().Log() << L"Tailcall at function: " << functionName->fullName();
             }
             else
             {
-                g_cb->GetClient().Log() << L"Tailcall at function: " << HexOutput(funcId);
+                g_cb->GetClient().Log() << L"Tailcall at function: " << funcId;
             }
         }
 
@@ -108,11 +108,12 @@ namespace Drill4dotNet
         {
             if (!g_cb) return funcId;
 
-            FunctionMetaInfo functionMetaInfo{
-                g_cb->GetCorProfilerInfo().GetFunctionName(funcId)
-            };
-            g_cb->GetClient().Log() << "Mapping   function[" << HexOutput(funcId) << "] to " << functionMetaInfo.name;
-            g_cb->GetInfoHandler().MapFunctionInfo(funcId, functionMetaInfo);
+            if (auto functionName = g_cb->GetCorProfilerInfo().TryGetFunctionFullName(funcId);
+                functionName)
+            {
+                g_cb->GetClient().Log() << "Mapping   function[" << funcId << "] to " << functionName->fullName();
+                g_cb->GetInfoHandler().MapFunctionName(funcId, functionName.value());
+            }
 
             if (pbHookFunction)
             {
@@ -473,7 +474,7 @@ namespace Drill4dotNet
 
             GetClient().Log()
                 << L"Compiling function "
-                << HexOutput(functionId)
+                << functionId
                 << L" "
                 << functionName
                 << L" IL Body size: "

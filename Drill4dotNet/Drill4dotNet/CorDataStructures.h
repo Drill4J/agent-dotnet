@@ -11,9 +11,14 @@ namespace Drill4dotNet
         ModuleID moduleId;
         mdToken token;
     };
-    struct FunctionMetaInfo
+    struct FunctionName
     {
         std::wstring name;
+        std::wstring className;
+        std::wstring fullName() const
+        {
+            return className + L"." + name;
+        }
     };
     struct AppDomainInfo
     {

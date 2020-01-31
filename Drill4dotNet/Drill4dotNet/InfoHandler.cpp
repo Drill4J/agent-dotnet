@@ -17,7 +17,7 @@ namespace Drill4dotNet
         return LogBuffer<std::wostream>(m_ostream);
     }
 
-    void InfoHandler::MapFunctionInfo(const FunctionID id, const FunctionMetaInfo& info) noexcept
+    void InfoHandler::MapFunctionName(const FunctionID id, const FunctionName& info) noexcept
     {
         try
         {
@@ -26,11 +26,11 @@ namespace Drill4dotNet
         }
         catch (const std::exception & ex)
         {
-            Log() << "InfoHandler::MapFunctionInfo: exception while inserting function info by id [" << id << "]. " << ex.what();
+            Log() << "InfoHandler::MapFunctionName: exception while inserting function info by id [" << id << "]. " << ex.what();
         }
     }
 
-    std::optional<FunctionMetaInfo> InfoHandler::TryGetFunctionInfo(const FunctionID id) const noexcept
+    std::optional<FunctionName> InfoHandler::TryGetFunctionName(const FunctionID id) const noexcept
     {
         try
         {
@@ -41,12 +41,12 @@ namespace Drill4dotNet
             }
             else
             {
-                Log() << "InfoHandler::TryGetFunctionInfo: cannot find function by id [" << id << "].";
+                Log() << "InfoHandler::TryGetFunctionName: cannot find function by id [" << id << "].";
             }
         }
         catch (const std::exception & ex)
         {
-            Log() << "InfoHandler::TryGetFunctionInfo: exception while accessing function info by id [" << id << "]. " << ex.what();
+            Log() << "InfoHandler::TryGetFunctionName: exception while accessing function info by id [" << id << "]. " << ex.what();
         }
         return std::nullopt;
     }

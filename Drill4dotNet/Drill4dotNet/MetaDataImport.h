@@ -144,7 +144,7 @@ namespace Drill4dotNet
         }
 
         /// Gets the name of the given class/type with IMetaDataImport2::GetTypeDefProps.
-        /// @param typeDefToken : token of the class or type
+        /// @param typeDefToken : metadata token of the class or type
         /// @returns : name of the class/type or std::nullopt in case of error.
         std::optional<std::wstring> TryGetTypeName(const mdTypeDef typeDefToken) const
         {
@@ -183,6 +183,65 @@ namespace Drill4dotNet
                 {
                     TrimTrailingNull(result);
                     return result;
+                }
+            }
+            return std::nullopt;
+        }
+
+        /// Gets the combined name of the given function: { own name, class name }
+        /// @param functionToken : metadata token of the function
+        /// @returns : function's name and its class' name, or std::nullopt on error.
+        std::optional<FunctionName> TryGetFunctionFullName(const mdToken functionToken) const
+        {
+            mdTypeDef classToken;
+            if (ULONG actualLength;
+                TryCallCom(
+                [this, functionToken, &classToken, &actualLength]()
+                {
+                    return m_metaDataImport->GetMethodProps(
+                        functionToken,
+                        &classToken,
+                        nullptr,
+                        0,
+                        &actualLength,
+                        nullptr,
+                        nullptr,
+                        nullptr,
+                        nullptr,
+                        nullptr);
+                },
+                L"Calling IMetadataImport2::GetMethodProps, 1-st call."))
+            {
+                std::wstring functionName;
+                if (actualLength > 0)
+                {
+                    functionName.resize(actualLength, L'\0');
+                    if (TryCallCom(
+                        [this, functionToken, actualLength, &functionName]()
+                        {
+                            ULONG cchDummy;
+                            return m_metaDataImport->GetMethodProps(
+                                functionToken,
+                                nullptr,
+                                functionName.data(),
+                                actualLength,
+                                &cchDummy,
+                                nullptr,
+                                nullptr,
+                                nullptr,
+                                nullptr,
+                                nullptr);
+                        },
+                        L"Calling IMetadataImport2::GetMethodProps, 2-nd call."))
+                    {
+                        TrimTrailingNull(functionName);
+                    }
+                }
+
+                if (const auto oClassName = TryGetTypeName(classToken);
+                    oClassName)
+                {
+                    return FunctionName{ functionName, oClassName.value() };
                 }
             }
             return std::nullopt;
