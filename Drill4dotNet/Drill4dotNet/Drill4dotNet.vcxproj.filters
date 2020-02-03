@@ -70,6 +70,12 @@
     <ClInclude Include="OpCodes.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="DefineOpCodesGeneratorSpecializations.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="UnDefineOpCodesGeneratorSpecializations.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Drill4dotNet.cpp">
