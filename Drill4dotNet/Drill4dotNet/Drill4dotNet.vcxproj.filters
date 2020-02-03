@@ -79,6 +79,9 @@
     <ClInclude Include="MethodBody.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="MethodMalloc.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Drill4dotNet.cpp">
