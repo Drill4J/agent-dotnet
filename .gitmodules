@@ -1,0 +1,3 @@
+[submodule "dependencies/dotnet/runtime"]
+	path = dependencies/dotnet/runtime
+	url = https://github.com/dotnet/runtime.git
