@@ -234,6 +234,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="MethodBody.h" />
     <ClInclude Include="OpCodes.h" />
     <ClInclude Include="CDrillProfiler.h" />
     <ClInclude Include="ComWrapperBase.h" />
@@ -287,6 +288,7 @@
       </PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="InfoHandler.cpp" />
+    <ClCompile Include="MethodBody.cpp" />
     <ClCompile Include="OpCodes.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
