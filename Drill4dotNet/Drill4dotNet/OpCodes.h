@@ -219,6 +219,8 @@ namespace Drill4dotNet
     class OpCodeVariant
     {
     private:
+        friend class MethodBody;
+
         // Variant which can store any possible inline argument type,
         // std::monostate is for no inline argument case.
         using VariantType = ParameterPack<
