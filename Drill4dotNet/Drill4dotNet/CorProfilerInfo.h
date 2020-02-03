@@ -8,6 +8,7 @@
 #include "CorDataStructures.h"
 #include "ComWrapperBase.h"
 #include "MetaDataImport.h"
+#include "MethodMalloc.h"
 
 namespace Drill4dotNet
 {
@@ -125,6 +126,33 @@ namespace Drill4dotNet
                     functionInfo.token,
                     &methodHeader,
                     &methodSize);
+            };
+        }
+
+        //  Wraps ICorProfilerInfo3::GetILFunctionBodyAllocator
+        auto GetILFunctionBodyAllocatorCallable(
+            const ModuleID moduleId,
+            ATL::CComQIPtr<IMethodMalloc>& result) const
+        {
+            return [this, moduleId, &result]()
+            {
+                return m_corProfilerInfo->GetILFunctionBodyAllocator(
+                    moduleId,
+                    &result);
+            };
+        }
+
+        //  Wraps ICorProfilerInfo3::SetILFunctionBody
+        auto SetILFunctionBodyCallable(
+            const FunctionInfo& target,
+            const LPCBYTE pbNewILMethodHeader)
+        {
+            return [this, target, pbNewILMethodHeader]
+            {
+                return m_corProfilerInfo->SetILFunctionBody(
+                    target.moduleId,
+                    target.token,
+                    pbNewILMethodHeader);
             };
         }
 
@@ -577,6 +605,86 @@ namespace Drill4dotNet
                 return info;
             }
             return std::nullopt;
+        }
+
+        // Calls ICorProfilerInfo3::GetILFunctionBodyAllocator and creates
+        // a MethodMalloc wrapper around it.
+        // The resulting object will become independent, and because
+        // some logging context is required to create it, user of this
+        // function must provide loggerForMalloc.
+        // Throws _com_error in case of an error.
+        template <typename TMetaDataLogger = TLogger>
+        MethodMalloc<TMetaDataLogger> GetILFunctionBodyAllocator(
+            const ModuleID moduleId,
+            const TMetaDataLogger loggerForMalloc) const
+        {
+            ATL::CComQIPtr<IMethodMalloc> methodMalloc{};
+            CallComOrThrow(
+                GetILFunctionBodyAllocatorCallable(moduleId, methodMalloc),
+                L"Failed to call CorProfilerInfo::GetILFunctionBodyAllocator");
+            return MethodMalloc(methodMalloc, loggerForMalloc);
+        }
+
+        // Calls ICorProfilerInfo3::GetILFunctionBodyAllocator and creates
+        // a MethodMalloc wrapper around it.
+        // The resulting object will become independent, and because
+        // some logging context is required to create it, user of this
+        // function must provide loggerForMalloc.
+        // Returns std::nullopt in case of an error.
+        template <typename TMetaDataLogger = TLogger>
+        std::optional<MethodMalloc<TMetaDataLogger>> TryGetILFunctionBodyAllocator(
+            const ModuleID moduleId,
+            const TMetaDataLogger loggerForMalloc) const
+        {
+            if (ATL::CComQIPtr<IMethodMalloc> methodMalloc{}
+                ; this->TryCallCom(
+                    GetILFunctionBodyAllocatorCallable(moduleId, methodMalloc),
+                    L"Failed to call CorProfilerInfo::TryGetILFunctionBodyAllocator"))
+            {
+                return MethodMalloc(methodMalloc, loggerForMalloc);
+            }
+
+            return std::nullopt;
+        }
+
+        // Sets the given byte representation of a .net method body as
+        // an implementation for the given method.
+        // Calls ICorProfilerInfo3::SetILFunctionBody.
+        // Throws _com_error in case of an error.
+        // @param target : the target method
+        // @param newILMethodHeader : pointer to the first byte of a memory
+        //     block containing the method body; the block should be allocated
+        //     with MethodMalloc::Alloc or MethodMalloc::TryAlloc.
+        void SetILFunctionBody(
+            const FunctionInfo& target,
+            LPCBYTE newILMethodHeader)
+        {
+            CallComOrThrow(
+                SetILFunctionBodyCallable(
+                    target,
+                    newILMethodHeader),
+                L"Failed to call CorProfilerInfo::SetILFunctionBody"
+            );
+        }
+
+        // Sets the given byte representation of a .net method body as
+        // an implementation for the given method.
+        // Calls ICorProfilerInfo3::SetILFunctionBody.
+        // Returns false in case of an error.
+        // @param target : the target method
+        // @param newILMethodHeader : pointer to the first byte of a memory
+        //     block containing the method body; the block should be allocated
+        //     with MethodMalloc::Alloc or MethodMalloc::TryAlloc.
+        bool TrySetILFunctionBody(
+            FunctionInfo target,
+            LPCBYTE newILMethodHeader)
+        {
+            return this->TryCallCom(
+                SetILFunctionBodyCallable(
+                    target,
+                    newILMethodHeader),
+                L"Failed to call CorProfilerInfo::TrySetILFunctionBody"
+            );
         }
     };
 }
