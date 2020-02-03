@@ -1,0 +1,13 @@
+
+// Works in conjuction with OpCodesGeneratorSpecializations.h.
+
+#ifdef OPDEF_SPECIALIZATIONS_DEFINED
+
+#undef OPDEF_LENGTH_SPECIALIZATION_0
+#undef OPDEF_LENGTH_SPECIALIZATION_1
+#undef OPDEF_LENGTH_SPECIALIZATION_2
+#undef OPDEF
+
+#undef OPDEF_SPECIALIZATIONS_DEFINED
+
+#endif

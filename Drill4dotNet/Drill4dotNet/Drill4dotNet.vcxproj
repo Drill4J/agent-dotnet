@@ -246,11 +246,13 @@
     <ClInclude Include="InfoHandler.h" />
     <ClInclude Include="LogBuffer.h" />
     <ClInclude Include="MetaDataImport.h" />
+    <ClInclude Include="DefineOpCodesGeneratorSpecializations.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="ProClient.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="OutputUtils.h" />
+    <ClInclude Include="UnDefineOpCodesGeneratorSpecializations.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CDrillProfiler.cpp" />
