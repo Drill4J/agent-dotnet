@@ -5,6 +5,8 @@
 #include "CorDataStructures.h"
 #include "ProClient.h"
 #include "InfoHandler.h"
+#include "OpCodes.h"
+#include "MethodBody.h"
 
 namespace Drill4dotNet
 {
@@ -475,26 +477,111 @@ namespace Drill4dotNet
         GetClient().Log() << L"CProfilerCallback::JITCompilationStarted";
         try
         {
-            std::wstring functionName{ m_corProfilerInfo->GetFunctionName(functionId) };
+            // This example injection will insert a debugger break into the
+            // HelloWorld.Program.MyInjectionTarget function, at the place of
+            // the Console.WriteLine call.
 
-            std::vector<std::byte> functionBody{
-                m_corProfilerInfo->GetMethodIntermediateLanguageBody(
-                    m_corProfilerInfo->GetFunctionInfo(functionId)) };
+            const std::optional<FunctionName> functionName{
+                m_corProfilerInfo->TryGetFunctionFullName(functionId) };
+
+            const FunctionInfo info = m_corProfilerInfo->GetFunctionInfo(functionId);
+
+            const std::vector<std::byte> functionBytes{
+                m_corProfilerInfo->GetMethodIntermediateLanguageBody(info) };
 
             GetClient().Log()
                 << L"Compiling function "
-                << functionId
+                << InSquareBrackets(functionId)
                 << L" "
-                << functionName
+                << functionName->fullName()
                 << L" IL Body size: "
-                << functionBody.size()
+                << functionBytes.size()
                 << L" bytes";
+
+            if (!functionName.has_value() || functionName->fullName() != L"HelloWorld.Program.MyInjectionTarget")
+            {
+                return S_OK;
+            }
+
+            auto functionBody = MethodBody(functionBytes);
+
+            GetClient().Log()
+                << L"Initially decompiled raw bytes:"
+                << std::endl
+                << functionBytes
+                << std::endl
+                << L"Initial instructions:"
+                << std::endl
+                << functionBody;
+
+            const bool roundTripOk{ functionBody.Compile() == functionBytes };
+            if (roundTripOk)
+            {
+                GetClient().Log() << L"Compiling without any injection is OK.";
+            }
+            else
+            {
+                GetClient().Log() << L"Error: got different bytes when compiled method without any injection.";
+                return S_OK;
+            }
+
+            const auto insertionPosition
+            {
+                std::find_if(
+                    functionBody.begin(),
+                    functionBody.end(),
+                    [](const OpCodeVariant& variant)
+                    {
+                        return variant.HoldsAlternative<OpCode_CEE_CALL>();
+                    })
+            };
+
+            if (insertionPosition == functionBody.end())
+            {
+                GetClient().Log() << L"Error: position for injection was not found. Need to update the example or the injection.";
+                return S_OK;
+            }
+
+            functionBody.Insert(insertionPosition, OpCode_CEE_BREAK{});
+
+            const std::vector<std::byte> afterInjection = functionBody.Compile();
+            GetClient().Log()
+                << L"After injection: IL Body size "
+                << afterInjection.size()
+                << L", raw bytes:"
+                << std::endl
+                << afterInjection
+                << std::endl
+                << L"instructions:"
+                << std::endl
+                << functionBody;
+
+            MethodMalloc allocator = m_corProfilerInfo->GetILFunctionBodyAllocator(
+                info.moduleId,
+                LogToProClient(GetClient()));
+
+            BYTE* target = static_cast<BYTE*>(
+                allocator.Alloc(
+                    static_cast<uint32_t>(afterInjection.size())));
+
+            std::copy(
+                afterInjection.cbegin(),
+                afterInjection.cend(),
+                (std::byte*)(target));
+
+            m_corProfilerInfo->SetILFunctionBody(info, target);
+            GetClient().Log() << L"Injected successfully.";
 
             return S_OK;
         }
-        catch (const _com_error & exception)
+        catch (const _com_error& exception)
         {
-            m_pImplClient.Log() << L"COM error: " << HexOutput(exception.Error()) << " " << exception.ErrorMessage();
+            m_pImplClient.Log()
+                << L"COM error: "
+                << HexOutput(exception.Error())
+                << " "
+                << exception.ErrorMessage();
+
             return exception.Error();
         }
         catch (const std::exception & exception)
