@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ImportGroup Label="PropertySheets" />
+  <PropertyGroup Label="UserMacros">
+    <DotnetRuntimeDirectory>$(SolutionDir)dependencies\dotnet\runtime\</DotnetRuntimeDirectory>
+  </PropertyGroup>
+  <PropertyGroup>
+    <IncludePath>$(DotnetRuntimeDirectory)src\coreclr\src\inc;$(DotnetRuntimeDirectory)src\coreclr\src\utilcode;$(DotnetRuntimeDirectory)src\coreclr\src\pal\prebuilt\inc;$(DotnetRuntimeDirectory)src\coreclr\src\pal\prebuilt\idl;$(IncludePath)</IncludePath>
+    <SourcePath>$(DotnetRuntimeDirectory)src\coreclr\src\inc;$(DotnetRuntimeDirectory)src\coreclr\src\utilcode;$(DotnetRuntimeDirectory)src\coreclr\src\pal\prebuilt\inc;$(DotnetRuntimeDirectory)src\coreclr\src\pal\prebuilt\idl;$(SourcePath)</SourcePath>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile />
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <BuildMacro Include="DotnetRuntimeDirectory">
+      <Value>$(DotnetRuntimeDirectory)</Value>
+      <EnvironmentVariable>true</EnvironmentVariable>
+    </BuildMacro>
+  </ItemGroup>
+</Project>
