@@ -1,5 +1,9 @@
 #pragma once
 
+// This suppresses definition of macros
+// min and max when including windows.h
+#define NOMINMAX
+
 #ifndef STRICT
 #define STRICT
 #endif

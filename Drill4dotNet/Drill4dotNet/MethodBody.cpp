@@ -74,7 +74,7 @@ namespace Drill4dotNet
             m_flags = static_cast<uint16_t>(bodyBytes[0] & s_TinyHeaderFlagsMask);
             m_headerSize = sizeof(std::byte);
             m_maxStack = std::nullopt;
-            m_codeSize = static_cast<uint32_t>(bodyBytes[0] & s_TinyHeaderSizeMask) >> 2;
+            m_codeSize = static_cast<AbsoluteOffset>(bodyBytes[0] & s_TinyHeaderSizeMask) >> 2;
             m_localVariables = std::nullopt;
         }
         else
@@ -101,7 +101,7 @@ namespace Drill4dotNet
     std::vector<OpCodeVariant> MethodBody::Decompile(
         const std::vector<std::byte>& bodyBytes,
         uint8_t headerSize,
-        const uint32_t codeSize)
+        const AbsoluteOffset codeSize)
     {
         // Uses
         // const BYTE* OpInfo::fetch(const BYTE * instrPtr, OpArgsVal * args)

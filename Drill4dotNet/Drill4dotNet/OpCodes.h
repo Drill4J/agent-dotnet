@@ -7,8 +7,16 @@
 #include <variant>
 #include <type_traits>
 
+#include "ByteUtils.h"
+
 namespace Drill4dotNet
 {
+    // Unit to measure sizes of instructions,
+    // sizes of instructions streams, and
+    // distances from instructions stream start to
+    // a specific instruction.
+    using AbsoluteOffset = uint32_t;
+
     // Defines possible options for type of
     // an OpCode inline argument, for reference see
     // https://docs.microsoft.com/en-us/dotnet/api/system.reflection.emit.operandtype?view=netframework-4.8
@@ -267,7 +275,7 @@ namespace Drill4dotNet
             }
 
             // Gets the size of binary representation, in bytes.
-            constexpr uint32_t Size() const
+            constexpr AbsoluteOffset Size() const
             {
                 return IsOneByte() ? 1 : 2;
             }
@@ -424,7 +432,7 @@ public: \
         // Gets the size of binary representation of the
         // opcode this variant contains, including the instruction
         // code and the inline argument (if any).
-        uint32_t SizeWithArgument() const;
+        AbsoluteOffset SizeWithArgument() const;
 
         // Calls the visitor with the instruction this variant contains.
         // TVisitor must provide overload for each possible OpCode_* class.

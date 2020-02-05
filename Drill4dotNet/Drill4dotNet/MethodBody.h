@@ -24,7 +24,7 @@ namespace Drill4dotNet
         std::optional<uint16_t> m_maxStack;
 
         // 6 bits for tiny header, 32 bits for fat header
-        uint32_t m_codeSize;
+        AbsoluteOffset m_codeSize;
 
         // 32 bits in fat header only
         std::optional<uint32_t> m_localVariables;
@@ -49,7 +49,7 @@ namespace Drill4dotNet
         static std::vector<OpCodeVariant> Decompile(
             const std::vector<std::byte>& bodyBytes,
             uint8_t headerSize,
-            const uint32_t codeSize);
+            const AbsoluteOffset codeSize);
 
     public:
         // Creates the object representation of the method body.
