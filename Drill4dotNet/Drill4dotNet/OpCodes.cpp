@@ -22,27 +22,27 @@ namespace Drill4dotNet
         return !std::holds_alternative<std::monostate>(m_argument);
     }
 
-    uint32_t OpCodeVariant::SizeWithArgument() const
+    AbsoluteOffset OpCodeVariant::SizeWithArgument() const
     {
-        uint32_t instructionSize { m_code.Size() };
+        AbsoluteOffset instructionSize { m_code.Size() };
         return instructionSize + std::visit([](const auto& argument)
             {
                 using T = std::decay_t<decltype(argument)>;
                 if constexpr (std::is_same_v<T, std::monostate>)
                 {
-                    return static_cast<uint32_t>(0);
+                    return static_cast<AbsoluteOffset>(0);
                 }
                 else if constexpr (std::is_same_v<T, OpCodeArgumentType::InlinePhi>)
                 {
-                    return static_cast<uint32_t>(argument.size() * sizeof(uint16_t) + sizeof(uint8_t));
+                    return static_cast<AbsoluteOffset>(argument.size() * sizeof(uint16_t) + sizeof(uint8_t));
                 }
                 else if constexpr (std::is_same_v<T, OpCodeArgumentType::InlineSwitch>)
                 {
-                    return static_cast<uint32_t>(argument.size() * sizeof(int32_t) + sizeof(int32_t));
+                    return static_cast<AbsoluteOffset>(argument.size() * sizeof(int32_t) + sizeof(int32_t));
                 }
                 else
                 {
-                    return static_cast<uint32_t>(sizeof(argument));
+                    return static_cast<AbsoluteOffset>(sizeof(argument));
                 }
             },
             m_argument);
