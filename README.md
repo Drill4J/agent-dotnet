@@ -1,14 +1,66 @@
 # Drill dotNet agent module
 
-This repository contains the native agent used to profile .NET applications and report the results to Drill4J admin services.
+This repository contains a native agent to profile .NET applications and to report results to Drill4J admin services.
 
-Profiler is a COM DLL loaded to dotnet.exe process on startup. It provides component class and implements specific interfaces.
+The profiler is a COM DLL loaded to Common Language Runtime process on startup. It provides a component class and implements necessary interfaces.
 
-Agent DLL binaries can be found under ./Drill4dotNet/bin/$Platform/$Configuration/Drill4dotNet.dll
+Agent DLL binaries can be found under `./bin/$Platform/$Configuration/Drill4dotNet/Drill4dotNet.dll`, for example: `./bin/x64/Release/Drill4dotNet/Drill4dotNet.dll`
 
-To make `Drill4dotNet.dll` to be loaded into .NET machine on startup, adjust `CORECLR_PROFILER_PATH` in `./setruntimeenv.cmd` to the desired path and run `./setruntimeenv.cmd` in an elevated console to register COM DLL and define environment settings before starting a .NET application.
+The current version just outputs information to the console window. 
 
-Note: ATM, only Windows 32/64-bit is currently supported.
+- Start cmd.
+- Run `./setruntimeenv.cmd` in the top repository folder to configure the environment for profiling. It can be run without elevation. The environment settings affect both .NET Core runtime and .NET Framework CLR, whichever is installed.
+- Run a .NET application in the same console session, for example:
+    ```
+    dotnet.exe .\bin\x64\Release\HelloWorld\netcoreapp3.1\HelloWorld.dll
+    ```
+- The profiler prints to stdout the information about events from the target application executed in CLR.
 
-Note: Current project is built with ATL COM frame and .NET Frameworks 4.x SDK.
 
+In addition to `setruntimeenv.cmd`, you can register the COM DLL in the system using command `regsvr32.exe Drill4dotNet.dll`. To register/unregister, you need administrative privileges.
+
+# Sources
+
+Source repository is located at GitHub: https://github.com/Drill4J/agent-dotnet
+
+To get sources locally, run:
+```
+git clone https://github.com/Drill4J/agent-dotnet
+cd agent-dotnet
+git submodule update --init
+```
+
+# Solution and projects
+
+Visual Studio 2019 solution `Drill4dotNet.sln` in the top repository folder consists of:
+
+- `Drill4dotNet.sln`:
+  - `Drill4dotNet` folder with a couple of C++ projects:
+    - `Drill4dotNet.vcxproj` to build the COM DLL `Drill4dotNet.dll`;
+    - `Drill4dotNetPS.vcxproj` proxy/stub DLL (not used);
+  - `HelloWorld` folder with a couple of sample C# projects:
+    - `HelloWorld.csproj` to build an application to run in .NET Core 3.1 runtime;
+    - `HelloWorldFramework.csproj` to build an application to run in .NET Framework 4.x CLR;
+  - `Solution items` folder
+    - `README.md` - this file;
+    - `setruntimeenv.cmd` (see above).
+
+
+`Drill4dotNet.vcxproj` project is created in ATL COM frame; it uses latest Platform SDK (10.0) and dependency profiling files from [dotnet/runtime](https://github.com/dotnet/runtime) repository as a submodule.
+It uses C++ 17 language standard.
+
+Note: Do not build (deselect in Batch Build and Configuration Manager) `Drill4dotNetPS.vcxproj`; it is reserved for the future.
+
+Note: Do not build (deselect in Batch Build and Configuration Manager) Win32 configurations.
+
+`HelloWorld.csproj` project requires .NET Core 3.1 SDK to be installed. If you have different version installed, change Target framework in the project properties. 
+
+`HelloWorldFramework.csproj` project requires .NET Framework 4.x SDK to be installed. If you have different version installed, change Target framework in the project properties. 
+
+
+# Limitations
+
+* The profiler only outputs to stdout; it is not controlled or configured.
+* Only Windows 64-bit (x64) platform is currently supported.
+* ATM, the agent injects CEE_BREAK instruction to the target sample function. Injection is not supported to functions with exceptions, generic functions, unmanaged (native) functions.
+* ATM, the profiler is not thread-safe.
