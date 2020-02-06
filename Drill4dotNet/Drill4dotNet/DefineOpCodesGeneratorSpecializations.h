@@ -10,6 +10,10 @@
 //     #include <opcode.def>
 //     #include "UnDefineOpCodesGeneratorSpecializations.h"
 // and this will only invoke OPDEF_REAL_INSTRUCTION for real instructions.
+//
+// Warning: DO NOT put #pragma once to this file!
+// It is designed to be included several times and alter macros at each inclusion.
+//
 
 #ifndef OPDEF_SPECIALIZATIONS_DEFINED
 

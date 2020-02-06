@@ -1,5 +1,10 @@
 
-// Works in conjuction with OpCodesGeneratorSpecializations.h.
+// Works in conjunction with DefineOpCodesGeneratorSpecializations.h
+// It undefines macros, previously defined in DefineOpCodesGeneratorSpecializations.h before including opcode.def
+//
+// Warning: DO NOT put #pragma once to this file!
+// It is designed to be included several times and alter macros at each inclusion.
+//
 
 #ifdef OPDEF_SPECIALIZATIONS_DEFINED
 
