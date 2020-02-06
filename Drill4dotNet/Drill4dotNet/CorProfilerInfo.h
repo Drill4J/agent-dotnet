@@ -273,8 +273,8 @@ namespace Drill4dotNet
             }
         }
 
-        /// Gets the name of the function specified by the @param FunctionID.
-        /// @returns function's name or std::nullopt in case of an error.
+        // Gets the name of the function specified by the @param FunctionID.
+        // @returns function's name or std::nullopt in case of an error.
         std::optional<std::wstring> TryGetFunctionName(const FunctionID functionId) const
         {
             if (const auto oFunctionInfo = TryGetFunctionInfo(functionId);
@@ -291,9 +291,9 @@ namespace Drill4dotNet
             return std::nullopt;
         }
 
-        /// Gets the combined name of the function: : { own name, class name }
-        /// @param FunctionID : ID of the function.
-        /// @returns function's name and its class' name, or std::nullopt on error.
+        // Gets the combined name of the function: : { own name, class name }
+        // @param FunctionID : ID of the function.
+        // @returns function's name and its class' name, or std::nullopt on error.
         std::optional<FunctionName> TryGetFunctionFullName(const FunctionID functionId) const
         {
             ATL::CComQIPtr<IMetaDataImport2, &IID_IMetaDataImport2> metaDataImportPtr{};
@@ -416,9 +416,9 @@ namespace Drill4dotNet
                 L"Failed to call CorProfilerInfo::TrySetFunctionIDMapper.");
         }
 
-        /// Gets application domain information
-        /// Wraps ICorProfilerInfo3::GetAppDomainInfo
-        /// @returns AppDomain's name and process, if obtained, std::nullopt otherwise.
+        // Gets application domain information
+        // Wraps ICorProfilerInfo3::GetAppDomainInfo
+        // @returns AppDomain's name and process, if obtained, std::nullopt otherwise.
         std::optional<AppDomainInfo> TryGetAppDomainInfo(AppDomainID appDomainId)
         {
             AppDomainInfo info;
@@ -461,9 +461,9 @@ namespace Drill4dotNet
             return std::nullopt;
         }
 
-        /// Gets assembly information
-        /// Wraps ICorProfilerInfo3::GetAssemblyInfo
-        /// @returns Assembly's name, domain, and module, if obtained, std::nullopt otherwise.
+        // Gets assembly information
+        // Wraps ICorProfilerInfo3::GetAssemblyInfo
+        // @returns Assembly's name, domain, and module, if obtained, std::nullopt otherwise.
         std::optional<AssemblyInfo> TryGetAssemblyInfo(AssemblyID assemblyId)
         {
             AssemblyInfo info;
@@ -508,9 +508,9 @@ namespace Drill4dotNet
             return std::nullopt;
         }
 
-        /// Gets module information
-        /// Wraps ICorProfilerInfo3::GetModuleInfo
-        /// @returns Module's name, assembly, and base load address, if obtained, std::nullopt otherwise.
+        // Gets module information
+        // Wraps ICorProfilerInfo3::GetModuleInfo
+        // @returns Module's name, assembly, and base load address, if obtained, std::nullopt otherwise.
         std::optional<ModuleInfo> TryGetModuleInfo(ModuleID moduleId)
         {
             ModuleInfo info;
@@ -555,10 +555,10 @@ namespace Drill4dotNet
             return std::nullopt;
         }
 
-        /// Gets class (type) information
-        /// It wraps ICorProfilerInfo3::GetClassIDInfo and IMetaDataImport2::GetTypeDefProps
-        /// @param classId : ID of the class
-        /// @returns Class's name, module, token, if obtained, std::nullopt otherwise.
+        // Gets class (type) information
+        // It wraps ICorProfilerInfo3::GetClassIDInfo and IMetaDataImport2::GetTypeDefProps
+        // @param classId : ID of the class
+        // @returns Class's name, module, token, if obtained, std::nullopt otherwise.
         std::optional<ClassInfo> TryGetClassInfo(const ClassID classId) const
         {
             ClassInfo info;

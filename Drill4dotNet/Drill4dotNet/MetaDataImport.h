@@ -86,9 +86,9 @@ namespace Drill4dotNet
             }
         }
 
-        /// Gets the name of the method with IID_IMetaDataImport2::GetMethodProps.
-        /// @returns method's name or std::nullopt in case of error.
-        /// @param methodMetadataToken : points to the method
+        // Gets the name of the method with IID_IMetaDataImport2::GetMethodProps.
+        // @returns method's name or std::nullopt in case of error.
+        // @param methodMetadataToken : points to the method
         std::optional<std::wstring> TryGetMethodName(const mdToken methodMetadataToken) const
         {
             if (ULONG actualLength;
@@ -143,9 +143,9 @@ namespace Drill4dotNet
             return std::nullopt;
         }
 
-        /// Gets the name of the given class/type with IMetaDataImport2::GetTypeDefProps.
-        /// @param typeDefToken : metadata token of the class or type
-        /// @returns : name of the class/type or std::nullopt in case of error.
+        // Gets the name of the given class/type with IMetaDataImport2::GetTypeDefProps.
+        // @param typeDefToken : metadata token of the class or type
+        // @returns : name of the class/type or std::nullopt in case of error.
         std::optional<std::wstring> TryGetTypeName(const mdTypeDef typeDefToken) const
         {
             if (ULONG requiredLength;
@@ -188,9 +188,9 @@ namespace Drill4dotNet
             return std::nullopt;
         }
 
-        /// Gets the combined name of the given function: { own name, class name }
-        /// @param functionToken : metadata token of the function
-        /// @returns : function's name and its class' name, or std::nullopt on error.
+        // Gets the combined name of the given function: { own name, class name }
+        // @param functionToken : metadata token of the function
+        // @returns : function's name and its class' name, or std::nullopt on error.
         std::optional<FunctionName> TryGetFunctionFullName(const mdToken functionToken) const
         {
             mdTypeDef classToken;
