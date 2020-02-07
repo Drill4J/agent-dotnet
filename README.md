@@ -25,10 +25,10 @@ Source repository is located at GitHub: https://github.com/Drill4J/agent-dotnet
 
 To get sources locally, run:
 ```
-git clone https://github.com/Drill4J/agent-dotnet
-cd agent-dotnet
-git submodule update --init
+git clone --recurse-submodules https://github.com/Drill4J/agent-dotnet
 ```
+
+Note: `agent-dotnet` module depends on `dotnet/runtime` repository, located at GitHib: https://github.com/dotnet/runtime
 
 # Solution and projects
 
