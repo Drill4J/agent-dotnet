@@ -236,6 +236,7 @@
   <ItemGroup>
     <ClInclude Include="ByteUtils.h" />
     <ClInclude Include="CoreInteract.h" />
+    <ClInclude Include="InstructionStream.h" />
     <ClInclude Include="MethodBody.h" />
     <ClInclude Include="MethodHeader.h" />
     <ClInclude Include="MethodMalloc.h" />
@@ -272,6 +273,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="InfoHandler.cpp" />
+    <ClCompile Include="InstructionStream.cpp" />
     <ClCompile Include="MethodBody.cpp" />
     <ClCompile Include="MethodHeader.cpp" />
     <ClCompile Include="OpCodes.cpp" />
