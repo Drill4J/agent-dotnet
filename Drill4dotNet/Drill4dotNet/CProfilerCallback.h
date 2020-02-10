@@ -4,7 +4,7 @@
 #include <type_traits>
 
 #include "LogBuffer.h"
-#include "CorProfilerInfo.h"
+#include "CoreInteract.h"
 
 namespace Drill4dotNet
 {
@@ -39,11 +39,11 @@ namespace Drill4dotNet
     protected:
         ProClient& m_pImplClient;
         volatile ULONG m_lRef = 0;
-        std::optional<CorProfilerInfo<LogToProClient>> m_corProfilerInfo{};
+        std::unique_ptr<ICoreInteract> m_corProfilerInfo;
     public:
         CProfilerCallback(ProClient& client);
         ProClient& GetClient();
-        CorProfilerInfo<LogToProClient>& GetCorProfilerInfo();
+        ICoreInteract& GetCorProfilerInfo();
         InfoHandler& GetInfoHandler();
 
         // Inherited via IUnknown

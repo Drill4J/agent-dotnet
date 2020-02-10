@@ -234,6 +234,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="CoreInteract.h" />
     <ClInclude Include="MethodBody.h" />
     <ClInclude Include="MethodMalloc.h" />
     <ClInclude Include="OpCodes.h" />
@@ -258,6 +259,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CDrillProfiler.cpp" />
+    <ClCompile Include="CorProfilerInfo.cpp" />
     <ClCompile Include="CProfilerCallback.cpp" />
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="Drill4dotNet.cpp" />

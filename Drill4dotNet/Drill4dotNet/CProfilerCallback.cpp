@@ -6,6 +6,7 @@
 #include "InfoHandler.h"
 #include "OpCodes.h"
 #include "MethodBody.h"
+#include <comdef.h>
 
 namespace Drill4dotNet
 {
@@ -33,9 +34,9 @@ namespace Drill4dotNet
         return m_pImplClient.GetInfoHandler();
     }
 
-    inline CorProfilerInfo<LogToProClient>& CProfilerCallback::GetCorProfilerInfo()
+    inline ICoreInteract& CProfilerCallback::GetCorProfilerInfo()
     {
-        return m_corProfilerInfo.value();
+        return *(m_corProfilerInfo.get());
     }
 
     namespace
@@ -168,7 +169,7 @@ namespace Drill4dotNet
         m_pImplClient.Log() << L"CProfilerCallback::Initialize";
         try
         {
-            m_corProfilerInfo = CorProfilerInfo(pICorProfilerInfoUnk, LogToProClient(m_pImplClient));
+            m_corProfilerInfo = CreateCorProfilerInfo(pICorProfilerInfoUnk, LogToProClient(m_pImplClient));
 
             if (auto runtimeInformation = m_corProfilerInfo->TryGetRuntimeInformation();
                 runtimeInformation)
@@ -555,20 +556,7 @@ namespace Drill4dotNet
                 << std::endl
                 << functionBody;
 
-            MethodMalloc allocator = m_corProfilerInfo->GetILFunctionBodyAllocator(
-                info.moduleId,
-                LogToProClient(GetClient()));
-
-            BYTE* target = static_cast<BYTE*>(
-                allocator.Alloc(
-                    static_cast<uint32_t>(afterInjection.size())));
-
-            std::copy(
-                afterInjection.cbegin(),
-                afterInjection.cend(),
-                (std::byte*)(target));
-
-            m_corProfilerInfo->SetILFunctionBody(info, target);
+            m_corProfilerInfo->SetILFunctionBody(info, afterInjection);
             GetClient().Log() << L"Injected successfully.";
 
             return S_OK;
