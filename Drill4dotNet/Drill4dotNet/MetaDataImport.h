@@ -188,6 +188,48 @@ namespace Drill4dotNet
             return std::nullopt;
         }
 
+        // Gets the name of the given class/type with IMetaDataImport2::GetTypeDefProps.
+        // @param typeDefToken : metadata token of the class or type
+        // @returns : name of the class/type.
+        // Throws _com_error in case of an error.
+        std::wstring GetTypeName(const mdTypeDef typeDefToken) const
+        {
+            ULONG requiredLength;
+            CallComOrThrow(
+                [this, typeDefToken, &requiredLength]()
+                {
+                    return m_metaDataImport->GetTypeDefProps(
+                        typeDefToken,
+                        nullptr,
+                        0,
+                        &requiredLength,
+                        nullptr,
+                        nullptr);
+                },
+                L"Calling IMetadataImport2::GetTypeDefProps, 1-st try.");
+
+            if (0 == requiredLength)
+            {
+                return std::wstring{};
+            }
+            std::wstring result(requiredLength, L'\0');
+            CallComOrThrow(
+                [this, typeDefToken, requiredLength, &result]()
+                {
+                    ULONG cchDummy;
+                    return m_metaDataImport->GetTypeDefProps(
+                        typeDefToken,
+                        result.data(),
+                        requiredLength,
+                        &cchDummy,
+                        nullptr,
+                        nullptr);
+                },
+                L"Calling IMetadataImport2::GetTypeDefProps, 2-nd try.");
+            TrimTrailingNull(result);
+            return result;
+        }
+
         // Gets the combined name of the given function: { own name, class name }
         // @param functionToken : metadata token of the function
         // @returns : function's name and its class' name, or std::nullopt on error.
@@ -245,6 +287,58 @@ namespace Drill4dotNet
                 }
             }
             return std::nullopt;
+        }
+
+        // Gets the combined name of the given function: { own name, class name }
+        // @param functionToken : metadata token of the function
+        // @returns : function's name and its class' name
+        // Throws _com_error in case of an error.
+        FunctionName GetFunctionFullName(const mdToken functionToken) const
+        {
+            mdTypeDef classToken;
+            ULONG actualLength;
+            CallComOrThrow(
+                [this, functionToken, &classToken, &actualLength]()
+                {
+                    return m_metaDataImport->GetMethodProps(
+                        functionToken,
+                        &classToken,
+                        nullptr,
+                        0,
+                        &actualLength,
+                        nullptr,
+                        nullptr,
+                        nullptr,
+                        nullptr,
+                        nullptr);
+                },
+                L"Calling IMetadataImport2::GetMethodProps, 1-st call.");
+
+            std::wstring functionName;
+            if (actualLength > 0)
+            {
+                functionName.resize(actualLength, L'\0');
+                CallComOrThrow(
+                    [this, functionToken, actualLength, &functionName]()
+                    {
+                        ULONG cchDummy;
+                        return m_metaDataImport->GetMethodProps(
+                            functionToken,
+                            nullptr,
+                            functionName.data(),
+                            actualLength,
+                            &cchDummy,
+                            nullptr,
+                            nullptr,
+                            nullptr,
+                            nullptr,
+                            nullptr);
+                    },
+                    L"Calling IMetadataImport2::GetMethodProps, 2-nd call.");
+                TrimTrailingNull(functionName);
+            }
+            const auto className = GetTypeName(classToken);
+            return FunctionName{ functionName, className };
         }
     };
 }

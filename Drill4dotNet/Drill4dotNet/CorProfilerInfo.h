@@ -4,6 +4,7 @@
 #include <vector>
 
 #include "framework.h"
+#include "CoreInteract.h"
 #include "OutputUtils.h"
 #include "CorDataStructures.h"
 #include "ComWrapperBase.h"
@@ -18,7 +19,7 @@ namespace Drill4dotNet
     //     object allowing to output data with << in the
     //     same manner as standard output streams do.
     template <typename TLogger>
-    class CorProfilerInfo : protected ComWrapperBase<TLogger>
+    class CorProfilerInfo : protected ComWrapperBase<TLogger>, public ICoreInteract
     {
     private:
         ATL::CComQIPtr<ICorProfilerInfo3> m_corProfilerInfo{};
@@ -53,7 +54,7 @@ namespace Drill4dotNet
         }
 
         // Wraps ICorProfilerInfo3::SetEventMask.
-        auto SetEventMaskCallable(DWORD eventMask)
+        auto SetEventMaskCallable(DWORD eventMask) const
         {
             return [this, eventMask]()
             {
@@ -65,7 +66,7 @@ namespace Drill4dotNet
         auto SetEnterLeaveFunctionHooksCallable(
             FunctionEnter2* pFuncEnter,
             FunctionLeave2* pFuncLeave,
-            FunctionTailcall2* pFuncTailcall)
+            FunctionTailcall2* pFuncTailcall) const
         {
             return [this, pFuncEnter, pFuncLeave, pFuncTailcall]()
             {
@@ -77,7 +78,7 @@ namespace Drill4dotNet
         }
 
         // Wraps ICorProfilerInfo3::SetFunctionIDMapper.
-        auto SetFunctionIDMapperCallable(FunctionIDMapper* pFunc)
+        auto SetFunctionIDMapperCallable(FunctionIDMapper* pFunc) const
         {
             return [this, pFunc]()
             {
@@ -145,7 +146,7 @@ namespace Drill4dotNet
         //  Wraps ICorProfilerInfo3::SetILFunctionBody
         auto SetILFunctionBodyCallable(
             const FunctionInfo& target,
-            const LPCBYTE pbNewILMethodHeader)
+            const LPCBYTE pbNewILMethodHeader) const
         {
             return [this, target, pbNewILMethodHeader]
             {
@@ -175,10 +176,10 @@ namespace Drill4dotNet
             Init(pICorProfilerInfoUnk);
         }
 
-        // Creates wrapper with logging and error handling capabilities.
-        // Returns an empty optional in case of an error.
-        // pICorProfilerInfoUnk : should provide ICorProfilerInfo3.
-        // logger : tool to log the exceptions.
+        // Creates wrapper of `ICorProfilerInfo3` with logging and error handling capabilities.
+        // @returns CorProfilerInfo instance or std::nullopt in case of an error.
+        // @param pICorProfilerInfoUnk : should provide a query for ICorProfilerInfo3.
+        // @param logger : a tool to log the exceptions.
         static std::optional<CorProfilerInfo<TLogger>> TryCreate(IUnknown* pICorProfilerInfoUnk, const TLogger logger)
         {
             if (CorProfilerInfo<TLogger> result(logger)
@@ -192,7 +193,7 @@ namespace Drill4dotNet
 
         // Calls ICorProfilerInfo3::GetFunctionInfo with the given functionId.
         // Throws _com_error in case of an error.
-        FunctionInfo GetFunctionInfo(const FunctionID functionId) const
+        FunctionInfo GetFunctionInfo(const FunctionID functionId) const override
         {
             FunctionInfo result;
             this->CallComOrThrow(
@@ -203,7 +204,7 @@ namespace Drill4dotNet
 
         // Calls ICorProfilerInfo3::GetFunctionInfo with the given functionId.
         // Returns an empty optional in case of an error.
-        std::optional<FunctionInfo> TryGetFunctionInfo(const FunctionID functionId) const
+        std::optional<FunctionInfo> TryGetFunctionInfo(const FunctionID functionId) const override
         {
             if (FunctionInfo result
                 ; this->TryCallCom(
@@ -216,6 +217,7 @@ namespace Drill4dotNet
             return std::nullopt;
         }
 
+    private:
         // Calls ICorProfilerInfo3::GetModuleMetadata and creates
         // a MetadataImport wrapper around it.
         // The resulting object will become independent, and because
@@ -256,6 +258,7 @@ namespace Drill4dotNet
             return std::nullopt;
         }
 
+    public:
         // Gets the name of the function specified by the @param FunctionID.
         // Throws _com_error in case of an error.
         std::wstring GetFunctionName(const FunctionID functionId) const
@@ -291,10 +294,11 @@ namespace Drill4dotNet
             return std::nullopt;
         }
 
+    public:
         // Gets the combined name of the function: : { own name, class name }
         // @param FunctionID : ID of the function.
         // @returns function's name and its class' name, or std::nullopt on error.
-        std::optional<FunctionName> TryGetFunctionFullName(const FunctionID functionId) const
+        std::optional<FunctionName> TryGetFunctionFullName(const FunctionID functionId) const override
         {
             ATL::CComQIPtr<IMetaDataImport2, &IID_IMetaDataImport2> metaDataImportPtr{};
             if (mdToken functionToken;
@@ -315,11 +319,33 @@ namespace Drill4dotNet
             return std::nullopt;
         }
 
+        // Gets the combined name of the function: : { own name, class name }
+        // @param FunctionID : ID of the function.
+        // @returns function's name and its class' name
+        // Throws _com_error in case of an error.
+        FunctionName GetFunctionFullName(const FunctionID functionId) const override
+        {
+            ATL::CComQIPtr<IMetaDataImport2, &IID_IMetaDataImport2> metaDataImportPtr{};
+            mdToken functionToken;
+            CallComOrThrow(
+                [this, functionId, &metaDataImportPtr, &functionToken]()
+                {
+                    return m_corProfilerInfo->GetTokenAndMetaDataFromFunction(
+                        functionId,
+                        IID_IMetaDataImport2,
+                        (IUnknown**)&metaDataImportPtr,
+                        &functionToken);
+                },
+                L"Calling ICorProfilerInfo3::GetTokenAndMetaDataFromFunction.");
+            MetaDataImport<TLogger> metaDataImport(metaDataImportPtr, m_logger);
+            return metaDataImport.GetFunctionFullName(functionToken);
+        }
+
         // Calls ICorProfilerInfo3::GetILFunctionBody with the given FunctionInfo.
         // Returns vector with a copy of the bytes of the Intermediate Language
         // representation of the function body.
         // Throws _com_error in case of an error.
-        std::vector<std::byte> GetMethodIntermediateLanguageBody(const FunctionInfo& functionInfo) const
+        std::vector<std::byte> GetMethodIntermediateLanguageBody(const FunctionInfo& functionInfo) const override
         {
             LPCBYTE methodHeader;
             ULONG methodSize;
@@ -337,7 +363,7 @@ namespace Drill4dotNet
         // Returns vector with a copy of the bytes of the Intermediate Language
         // representation of the function body.
         // Returns an empty optional in case of an error.
-        std::optional<std::vector<std::byte>> TryGetMethodIntermediateLanguageBody(const FunctionInfo& functionInfo) const
+        std::optional<std::vector<std::byte>> TryGetMethodIntermediateLanguageBody(const FunctionInfo& functionInfo) const override
         {
             LPCBYTE methodHeader;
             ULONG methodSize;
@@ -356,14 +382,14 @@ namespace Drill4dotNet
 
         // Calls ICorProfilerInfo3::SetEventMask with the given mask.
         // Throws _com_error in case of an error.
-        void SetEventMask(DWORD eventMask)
+        void SetEventMask(const uint32_t eventMask) const override
         {
             this->CallComOrThrow(SetEventMaskCallable(eventMask), L"Failed to call CorProfilerInfo::SetEventMask.");
         }
 
         // Calls ICorProfilerInfo3::SetEventMask with the given mask.
         // Returns false in case of an error.
-        bool TrySetEventMask(DWORD eventMask)
+        bool TrySetEventMask(const uint32_t eventMask) const override
         {
             return this->TryCallCom(SetEventMaskCallable(eventMask) , L"Failed to call CorProfilerInfo::TrySetEventMask.");
         }
@@ -373,7 +399,7 @@ namespace Drill4dotNet
         void SetEnterLeaveFunctionHooks(
             FunctionEnter2* pFuncEnter,
             FunctionLeave2* pFuncLeave,
-            FunctionTailcall2* pFuncTailcall)
+            FunctionTailcall2* pFuncTailcall) const override
         {
             this->CallComOrThrow(
                 SetEnterLeaveFunctionHooksCallable(
@@ -388,7 +414,7 @@ namespace Drill4dotNet
         bool TrySetEnterLeaveFunctionHooks(
             FunctionEnter2* pFuncEnter,
             FunctionLeave2* pFuncLeave,
-            FunctionTailcall2* pFuncTailcall)
+            FunctionTailcall2* pFuncTailcall) const override
         {
             return this->TryCallCom(
                 SetEnterLeaveFunctionHooksCallable(
@@ -400,7 +426,7 @@ namespace Drill4dotNet
 
         // Calls ICorProfilerInfo3::SetFunctionIDMapper
         // Throws _com_error in case of an error.
-        void SetFunctionIDMapper(FunctionIDMapper* pFunc)
+        void SetFunctionIDMapper(FunctionIDMapper* pFunc) const override
         {
             this->CallComOrThrow(
                 SetFunctionIDMapperCallable(pFunc),
@@ -409,7 +435,7 @@ namespace Drill4dotNet
 
         // Calls ICorProfilerInfo3::SetFunctionIDMapper
         // Returns false in case of an error.
-        bool TrySetFunctionIDMapper(FunctionIDMapper* pFunc)
+        bool TrySetFunctionIDMapper(FunctionIDMapper* pFunc) const override
         {
             return this->TryCallCom(
                 SetFunctionIDMapperCallable(pFunc),
@@ -419,7 +445,7 @@ namespace Drill4dotNet
         // Gets application domain information
         // Wraps ICorProfilerInfo3::GetAppDomainInfo
         // @returns AppDomain's name and process, if obtained, std::nullopt otherwise.
-        std::optional<AppDomainInfo> TryGetAppDomainInfo(AppDomainID appDomainId)
+        std::optional<AppDomainInfo> TryGetAppDomainInfo(const AppDomainID appDomainId) const override
         {
             AppDomainInfo info;
             if (ULONG cchName;
@@ -461,10 +487,51 @@ namespace Drill4dotNet
             return std::nullopt;
         }
 
+        // Gets application domain information
+        // Throws _com_error in case of an error.
+        AppDomainInfo GetAppDomainInfo(const AppDomainID appDomainId) const override
+        {
+            AppDomainInfo info;
+            ULONG cchName;
+            CallComOrThrow(
+                [this, appDomainId, &cchName, &info]()
+                {
+                    return m_corProfilerInfo->GetAppDomainInfo(
+                        appDomainId,
+                        0,
+                        &cchName,
+                        nullptr,
+                        &info.processId);
+                },
+                L"Calling ICorProfilerInfo3::GetAppDomainInfo 1-st try.");
+
+            if (0 == cchName) // success, but zero-name
+            {
+                return info;
+            }
+            info.name.resize(cchName, L'\0');
+
+            CallComOrThrow(
+                [this, appDomainId, cchName, &info]()
+                {
+                    ULONG cchDrop;
+                    return m_corProfilerInfo->GetAppDomainInfo(
+                        appDomainId,
+                        cchName,
+                        &cchDrop,
+                        info.name.data(),
+                        &info.processId);
+                },
+                L"Calling ICorProfilerInfo3::GetAppDomainInfo 2-nd try.");
+
+            TrimTrailingNull(info.name);
+            return info;
+        }
+
         // Gets assembly information
         // Wraps ICorProfilerInfo3::GetAssemblyInfo
         // @returns Assembly's name, domain, and module, if obtained, std::nullopt otherwise.
-        std::optional<AssemblyInfo> TryGetAssemblyInfo(AssemblyID assemblyId)
+        std::optional<AssemblyInfo> TryGetAssemblyInfo(const AssemblyID assemblyId) const override
         {
             AssemblyInfo info;
             if (ULONG cchName;
@@ -508,10 +575,52 @@ namespace Drill4dotNet
             return std::nullopt;
         }
 
+        // Gets assembly information
+        // Wraps ICorProfilerInfo3::GetAssemblyInfo
+        // Throws _com_error in case of an error.
+        AssemblyInfo GetAssemblyInfo(const AssemblyID assemblyId) const override
+        {
+            AssemblyInfo info;
+            ULONG cchName;
+            CallComOrThrow(
+                [this, assemblyId, &cchName, &info]()
+                {
+                    return m_corProfilerInfo->GetAssemblyInfo(
+                        assemblyId,
+                        0,
+                        &cchName,
+                        nullptr,
+                        &info.appDomainId,
+                        &info.moduleId);
+                },
+                L"Calling ICorProfilerInfo3::GetAssemblyInfo 1-st try.");
+
+            if (0 == cchName) // success, but zero-name
+            {
+                return info;
+            }
+            info.name.resize(cchName, L'\0');
+            CallComOrThrow(
+                [this, assemblyId, cchName, &info]()
+                {
+                    ULONG cchDrop;
+                    return m_corProfilerInfo->GetAssemblyInfo(
+                        assemblyId,
+                        cchName,
+                        &cchDrop,
+                        info.name.data(),
+                        &info.appDomainId,
+                        &info.moduleId);
+                },
+                L"Calling ICorProfilerInfo3::GetAssemblyInfo 2-nd try.");
+            TrimTrailingNull(info.name);
+            return info;
+        }
+
         // Gets module information
         // Wraps ICorProfilerInfo3::GetModuleInfo
         // @returns Module's name, assembly, and base load address, if obtained, std::nullopt otherwise.
-        std::optional<ModuleInfo> TryGetModuleInfo(ModuleID moduleId)
+        std::optional<ModuleInfo> TryGetModuleInfo(const ModuleID moduleId) const override
         {
             ModuleInfo info;
             if (ULONG cchName;
@@ -555,11 +664,53 @@ namespace Drill4dotNet
             return std::nullopt;
         }
 
+        // Gets module information
+        // Wraps ICorProfilerInfo3::GetModuleInfo
+        // Throws _com_error in case of an error.
+        ModuleInfo GetModuleInfo(const ModuleID moduleId) const override
+        {
+            ModuleInfo info;
+            ULONG cchName;
+            CallComOrThrow(
+                [this, moduleId, &cchName, &info]()
+                {
+                    return m_corProfilerInfo->GetModuleInfo(
+                        moduleId,
+                        &info.baseLoadAddress,
+                        0,
+                        &cchName,
+                        nullptr,
+                        &info.assemblyId);
+                },
+                L"Calling ICorProfilerInfo3::GetModuleInfo 1-st try.");
+
+            if (0 == cchName) // success, but zero-name
+            {
+                return info;
+            }
+            info.name.resize(cchName, L'\0');
+            CallComOrThrow(
+                [this, moduleId, cchName, &info]()
+                {
+                    ULONG cchDrop;
+                    return m_corProfilerInfo->GetModuleInfo(
+                        moduleId,
+                        &info.baseLoadAddress,
+                        cchName,
+                        &cchDrop,
+                        info.name.data(),
+                        &info.assemblyId);
+                },
+                L"Calling ICorProfilerInfo3::GetModuleInfo 2-nd try.");
+            TrimTrailingNull(info.name);
+            return info;
+        }
+
         // Gets class (type) information
         // It wraps ICorProfilerInfo3::GetClassIDInfo and IMetaDataImport2::GetTypeDefProps
         // @param classId : ID of the class
         // @returns Class's name, module, token, if obtained, std::nullopt otherwise.
-        std::optional<ClassInfo> TryGetClassInfo(const ClassID classId) const
+        std::optional<ClassInfo> TryGetClassInfo(const ClassID classId) const override
         {
             ClassInfo info;
             if (TryCallCom(
@@ -583,7 +734,29 @@ namespace Drill4dotNet
             return std::nullopt;
         }
 
-        std::optional<RuntimeInformation> TryGetRuntimeInformation() const
+        // Gets class (type) information
+        // It wraps ICorProfilerInfo3::GetClassIDInfo and IMetaDataImport2::GetTypeDefProps
+        // @param classId : ID of the class
+        // Throws _com_error in case of an error.
+        ClassInfo GetClassInfo(const ClassID classId) const override
+        {
+            ClassInfo info;
+            CallComOrThrow(
+                [this, classId, &info]()
+                {
+                    return m_corProfilerInfo->GetClassIDInfo(
+                        classId,
+                        &info.moduleId,
+                        &info.typeDefToken);
+                },
+                L"Calling ICorProfilerInfo3::GetClassIDInfo.");
+
+            auto metadata = GetModuleMetadata(info.moduleId, m_logger);
+            info.name = metadata.GetTypeName(info.typeDefToken);
+            return info;
+        }
+
+        std::optional<RuntimeInformation> TryGetRuntimeInformation() const override
         {
             RuntimeInformation info;
             if (TryCallCom(
@@ -607,6 +780,29 @@ namespace Drill4dotNet
             return std::nullopt;
         }
 
+        RuntimeInformation GetRuntimeInformation() const override
+        {
+            RuntimeInformation info;
+            CallComOrThrow(
+                [this, &info]()
+                {
+                    return m_corProfilerInfo->GetRuntimeInformation(
+                        &info.clrInstanceId,
+                        &info.runtimeType,
+                        &info.majorVersion,
+                        &info.minorVersion,
+                        &info.buildNumber,
+                        &info.qfeVersion,
+                        0,
+                        nullptr,
+                        nullptr);
+                },
+                L"Calling ICorProfilerInfo3::GetRuntimeInformation.");
+
+            return info;
+        }
+
+    private:
         // Calls ICorProfilerInfo3::GetILFunctionBodyAllocator and creates
         // a MethodMalloc wrapper around it.
         // The resulting object will become independent, and because
@@ -647,22 +843,34 @@ namespace Drill4dotNet
             return std::nullopt;
         }
 
+    public:
         // Sets the given byte representation of a .net method body as
         // an implementation for the given method.
         // Calls ICorProfilerInfo3::SetILFunctionBody.
         // Throws _com_error in case of an error.
         // @param target : the target method
-        // @param newILMethodHeader : pointer to the first byte of a memory
-        //     block containing the method body; the block should be allocated
-        //     with MethodMalloc::Alloc or MethodMalloc::TryAlloc.
+        // @param newILMethodBody : vector of bytes containing the new method body
         void SetILFunctionBody(
             const FunctionInfo& target,
-            LPCBYTE newILMethodHeader)
+            const std::vector<std::byte>& newILMethodBody) const override
         {
+            MethodMalloc allocator = GetILFunctionBodyAllocator(
+                target.moduleId,
+                m_logger);
+
+            BYTE* buffer = static_cast<BYTE*>(
+                allocator.Alloc(
+                static_cast<uint32_t>(newILMethodBody.size())));
+
+            std::copy(
+                newILMethodBody.cbegin(),
+                newILMethodBody.cend(),
+                (std::byte*)(buffer));
+
             CallComOrThrow(
                 SetILFunctionBodyCallable(
                     target,
-                    newILMethodHeader),
+                    buffer),
                 L"Failed to call CorProfilerInfo::SetILFunctionBody"
             );
         }
@@ -672,17 +880,28 @@ namespace Drill4dotNet
         // Calls ICorProfilerInfo3::SetILFunctionBody.
         // Returns false in case of an error.
         // @param target : the target method
-        // @param newILMethodHeader : pointer to the first byte of a memory
-        //     block containing the method body; the block should be allocated
-        //     with MethodMalloc::Alloc or MethodMalloc::TryAlloc.
+        // @param newILMethodBody : vector of bytes containing the new method body
         bool TrySetILFunctionBody(
-            FunctionInfo target,
-            LPCBYTE newILMethodHeader)
+            const FunctionInfo& target,
+            const std::vector<std::byte>& newILMethodBody) const override
         {
+            MethodMalloc allocator = GetILFunctionBodyAllocator(
+                target.moduleId,
+                m_logger);
+
+            BYTE* buffer = static_cast<BYTE*>(
+                allocator.Alloc(
+                static_cast<uint32_t>(newILMethodBody.size())));
+
+            std::copy(
+                newILMethodBody.cbegin(),
+                newILMethodBody.cend(),
+                (std::byte*)(buffer));
+
             return this->TryCallCom(
                 SetILFunctionBodyCallable(
                     target,
-                    newILMethodHeader),
+                    buffer),
                 L"Failed to call CorProfilerInfo::TrySetILFunctionBody"
             );
         }
