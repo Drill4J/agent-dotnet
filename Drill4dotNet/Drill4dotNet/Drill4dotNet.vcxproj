@@ -237,6 +237,7 @@
     <ClInclude Include="ByteUtils.h" />
     <ClInclude Include="CoreInteract.h" />
     <ClInclude Include="MethodBody.h" />
+    <ClInclude Include="MethodHeader.h" />
     <ClInclude Include="MethodMalloc.h" />
     <ClInclude Include="OpCodes.h" />
     <ClInclude Include="CDrillProfiler.h" />
@@ -272,6 +273,7 @@
     </ClCompile>
     <ClCompile Include="InfoHandler.cpp" />
     <ClCompile Include="MethodBody.cpp" />
+    <ClCompile Include="MethodHeader.cpp" />
     <ClCompile Include="OpCodes.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
