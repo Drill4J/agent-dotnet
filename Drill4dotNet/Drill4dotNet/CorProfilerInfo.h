@@ -10,6 +10,7 @@
 #include "ComWrapperBase.h"
 #include "MetaDataImport.h"
 #include "MethodMalloc.h"
+#include "InfoHandler.h"
 
 namespace Drill4dotNet
 {
@@ -23,6 +24,7 @@ namespace Drill4dotNet
     {
     private:
         ATL::CComQIPtr<ICorProfilerInfo3> m_corProfilerInfo{};
+        std::shared_ptr<InfoHandler> m_InfoCache;
 
         CorProfilerInfo(const TLogger logger) : ComWrapperBase(logger)
         {
@@ -191,10 +193,28 @@ namespace Drill4dotNet
             return std::nullopt;
         }
 
+        void SetInfoCache(std::shared_ptr<InfoHandler>& cache) override
+        {
+            m_InfoCache = cache;
+        }
+
+        std::shared_ptr<InfoHandler> GetInfoCache() override
+        {
+            return m_InfoCache;
+        }
+
         // Calls ICorProfilerInfo3::GetFunctionInfo with the given functionId.
         // Throws _com_error in case of an error.
         FunctionInfo GetFunctionInfo(const FunctionID functionId) const override
         {
+            if (m_InfoCache)
+            {
+                if (const auto oInfo = m_InfoCache->TryGetFunctionInfo(functionId);
+                    oInfo.has_value())
+                {
+                    return oInfo.value();
+                }
+            }
             FunctionInfo result;
             this->CallComOrThrow(
                 GetFunctionInfoCallable(functionId, result),
@@ -214,6 +234,10 @@ namespace Drill4dotNet
                 L"Calling ICorProfilerInfo3::GetTokenAndMetaDataFromFunction.");
             MetaDataImport<TLogger> metaDataImport(metaDataImportPtr, m_logger);
             result.name = metaDataImport.GetFunctionFullName(functionToken);
+            if (m_InfoCache)
+            {
+                m_InfoCache->MapFunctionInfo(functionId, result);
+            }
             return result;
         }
 
@@ -221,6 +245,14 @@ namespace Drill4dotNet
         // Returns an empty optional in case of an error.
         std::optional<FunctionInfo> TryGetFunctionInfo(const FunctionID functionId) const override
         {
+            if (m_InfoCache)
+            {
+                if (auto oInfo = m_InfoCache->TryGetFunctionInfo(functionId);
+                    oInfo.has_value())
+                {
+                    return oInfo;
+                }
+            }
             if (FunctionInfo result
                 ; this->TryCallCom(
                     GetFunctionInfoCallable(functionId, result),
@@ -244,6 +276,10 @@ namespace Drill4dotNet
                         oFullName.has_value())
                     {
                         result.name = oFullName.value();
+                        if (m_InfoCache)
+                        {
+                            m_InfoCache->MapFunctionInfo(functionId, result);
+                        }
                         return result;
                     }
                 }
@@ -400,6 +436,14 @@ namespace Drill4dotNet
         // @returns AppDomain's name and process, if obtained, std::nullopt otherwise.
         std::optional<AppDomainInfo> TryGetAppDomainInfo(const AppDomainID appDomainId) const override
         {
+            if (m_InfoCache)
+            {
+                if (auto oInfo = m_InfoCache->TryGetAppDomainInfo(appDomainId);
+                    oInfo.has_value())
+                {
+                    return oInfo;
+                }
+            }
             AppDomainInfo info;
             if (ULONG cchName;
                 TryCallCom(
@@ -414,12 +458,8 @@ namespace Drill4dotNet
                 },
                 L"Calling ICorProfilerInfo3::GetAppDomainInfo 1-st try."))
             {
-                if (0 == cchName) // success, but zero-name
-                {
-                    return info;
-                }
                 info.name.resize(cchName, L'\0');
-                if (TryCallCom(
+                if (cchName > 0 && TryCallCom(
                     [this, appDomainId, cchName , &info]()
                     {
                         ULONG cchDrop;
@@ -430,12 +470,15 @@ namespace Drill4dotNet
                             info.name.data(),
                             &info.processId);
                     },
-                    L"Calling ICorProfilerInfo3::GetAppDomainInfo 2-nd try.")
-                    )
+                    L"Calling ICorProfilerInfo3::GetAppDomainInfo 2-nd try."))
                 {
                     TrimTrailingNull(info.name);
-                    return info;
                 }
+                if (m_InfoCache)
+                {
+                    m_InfoCache->MapAppDomainInfo(appDomainId, info);
+                }
+                return info;
             }
             return std::nullopt;
         }
@@ -444,6 +487,14 @@ namespace Drill4dotNet
         // Throws _com_error in case of an error.
         AppDomainInfo GetAppDomainInfo(const AppDomainID appDomainId) const override
         {
+            if (m_InfoCache)
+            {
+                if (auto oInfo = m_InfoCache->TryGetAppDomainInfo(appDomainId);
+                    oInfo.has_value())
+                {
+                    return oInfo.value();
+                }
+            }
             AppDomainInfo info;
             ULONG cchName;
             CallComOrThrow(
@@ -458,10 +509,8 @@ namespace Drill4dotNet
                 },
                 L"Calling ICorProfilerInfo3::GetAppDomainInfo 1-st try.");
 
-            if (0 == cchName) // success, but zero-name
+            if (cchName > 0)
             {
-                return info;
-            }
             info.name.resize(cchName, L'\0');
 
             CallComOrThrow(
@@ -478,6 +527,11 @@ namespace Drill4dotNet
                 L"Calling ICorProfilerInfo3::GetAppDomainInfo 2-nd try.");
 
             TrimTrailingNull(info.name);
+            }
+            if (m_InfoCache)
+            {
+                m_InfoCache->MapAppDomainInfo(appDomainId, info);
+            }
             return info;
         }
 
@@ -486,6 +540,14 @@ namespace Drill4dotNet
         // @returns Assembly's name, domain, and module, if obtained, std::nullopt otherwise.
         std::optional<AssemblyInfo> TryGetAssemblyInfo(const AssemblyID assemblyId) const override
         {
+            if (m_InfoCache)
+            {
+                if (auto oInfo = m_InfoCache->TryGetAssemblyInfo(assemblyId);
+                    oInfo.has_value())
+                {
+                    return oInfo;
+                }
+            }
             AssemblyInfo info;
             if (ULONG cchName;
                 TryCallCom(
@@ -501,12 +563,8 @@ namespace Drill4dotNet
                 },
                 L"Calling ICorProfilerInfo3::GetAssemblyInfo 1-st try."))
             {
-                if (0 == cchName) // success, but zero-name
-                {
-                    return info;
-                }
                 info.name.resize(cchName, L'\0');
-                if (TryCallCom(
+                if (cchName > 0 && TryCallCom(
                     [this, assemblyId, cchName, &info]()
                     {
                         ULONG cchDrop;
@@ -518,12 +576,15 @@ namespace Drill4dotNet
                             &info.appDomainId,
                             &info.moduleId);
                     },
-                    L"Calling ICorProfilerInfo3::GetAssemblyInfo 2-nd try.")
-                    )
+                    L"Calling ICorProfilerInfo3::GetAssemblyInfo 2-nd try."))
                 {
                     TrimTrailingNull(info.name);
-                    return info;
                 }
+                if (m_InfoCache)
+                {
+                    m_InfoCache->MapAssemblyInfo(assemblyId, info);
+                }
+                return info;
             }
             return std::nullopt;
         }
@@ -533,6 +594,14 @@ namespace Drill4dotNet
         // Throws _com_error in case of an error.
         AssemblyInfo GetAssemblyInfo(const AssemblyID assemblyId) const override
         {
+            if (m_InfoCache)
+            {
+                if (auto oInfo = m_InfoCache->TryGetAssemblyInfo(assemblyId);
+                    oInfo.has_value())
+                {
+                    return oInfo.value();
+                }
+            }
             AssemblyInfo info;
             ULONG cchName;
             CallComOrThrow(
@@ -548,10 +617,8 @@ namespace Drill4dotNet
                 },
                 L"Calling ICorProfilerInfo3::GetAssemblyInfo 1-st try.");
 
-            if (0 == cchName) // success, but zero-name
+            if (cchName > 0)
             {
-                return info;
-            }
             info.name.resize(cchName, L'\0');
             CallComOrThrow(
                 [this, assemblyId, cchName, &info]()
@@ -567,6 +634,11 @@ namespace Drill4dotNet
                 },
                 L"Calling ICorProfilerInfo3::GetAssemblyInfo 2-nd try.");
             TrimTrailingNull(info.name);
+            }
+            if (m_InfoCache)
+            {
+                m_InfoCache->MapAssemblyInfo(assemblyId, info);
+            }
             return info;
         }
 
@@ -575,6 +647,14 @@ namespace Drill4dotNet
         // @returns Module's name, assembly, and base load address, if obtained, std::nullopt otherwise.
         std::optional<ModuleInfo> TryGetModuleInfo(const ModuleID moduleId) const override
         {
+            if (m_InfoCache)
+            {
+                if (auto oInfo = m_InfoCache->TryGetModuleInfo(moduleId);
+                    oInfo.has_value())
+                {
+                    return oInfo;
+                }
+            }
             ModuleInfo info;
             if (ULONG cchName;
                 TryCallCom(
@@ -590,12 +670,8 @@ namespace Drill4dotNet
                 },
                 L"Calling ICorProfilerInfo3::GetModuleInfo 1-st try."))
             {
-                if (0 == cchName) // success, but zero-name
-                {
-                    return info;
-                }
                 info.name.resize(cchName, L'\0');
-                if (TryCallCom(
+                if (cchName > 0 && TryCallCom(
                     [this, moduleId, cchName, &info]()
                     {
                         ULONG cchDrop;
@@ -607,12 +683,15 @@ namespace Drill4dotNet
                             info.name.data(),
                             &info.assemblyId);
                     },
-                    L"Calling ICorProfilerInfo3::GetModuleInfo 2-nd try.")
-                    )
+                    L"Calling ICorProfilerInfo3::GetModuleInfo 2-nd try."))
                 {
                     TrimTrailingNull(info.name);
-                    return info;
                 }
+                if (m_InfoCache)
+                {
+                    m_InfoCache->MapModuleInfo(moduleId, info);
+                }
+                return info;
             }
             return std::nullopt;
         }
@@ -622,6 +701,14 @@ namespace Drill4dotNet
         // Throws _com_error in case of an error.
         ModuleInfo GetModuleInfo(const ModuleID moduleId) const override
         {
+            if (m_InfoCache)
+            {
+                if (auto oInfo = m_InfoCache->TryGetModuleInfo(moduleId);
+                    oInfo.has_value())
+                {
+                    return oInfo.value();
+                }
+            }
             ModuleInfo info;
             ULONG cchName;
             CallComOrThrow(
@@ -637,10 +724,8 @@ namespace Drill4dotNet
                 },
                 L"Calling ICorProfilerInfo3::GetModuleInfo 1-st try.");
 
-            if (0 == cchName) // success, but zero-name
+            if (cchName > 0)
             {
-                return info;
-            }
             info.name.resize(cchName, L'\0');
             CallComOrThrow(
                 [this, moduleId, cchName, &info]()
@@ -656,6 +741,11 @@ namespace Drill4dotNet
                 },
                 L"Calling ICorProfilerInfo3::GetModuleInfo 2-nd try.");
             TrimTrailingNull(info.name);
+            }
+            if (m_InfoCache)
+            {
+                m_InfoCache->MapModuleInfo(moduleId, info);
+            }
             return info;
         }
 
@@ -665,6 +755,14 @@ namespace Drill4dotNet
         // @returns Class's name, module, token, if obtained, std::nullopt otherwise.
         std::optional<ClassInfo> TryGetClassInfo(const ClassID classId) const override
         {
+            if (m_InfoCache)
+            {
+                if (auto oInfo = m_InfoCache->TryGetClassInfo(classId);
+                    oInfo.has_value())
+                {
+                    return oInfo;
+                }
+            }
             ClassInfo info;
             if (TryCallCom(
                 [this, classId, &info]()
@@ -678,9 +776,13 @@ namespace Drill4dotNet
             {
                 auto metadata = GetModuleMetadata(info.moduleId, m_logger);
                 if (const auto oName = metadata.TryGetTypeName(info.typeDefToken);
-                    oName)
+                    oName.has_value())
                 {
                     info.name = oName.value();
+                    if (m_InfoCache)
+                    {
+                        m_InfoCache->MapClassInfo(classId, info);
+                    }
                     return info;
                 }
             }
@@ -693,6 +795,14 @@ namespace Drill4dotNet
         // Throws _com_error in case of an error.
         ClassInfo GetClassInfo(const ClassID classId) const override
         {
+            if (m_InfoCache)
+            {
+                if (auto oInfo = m_InfoCache->TryGetClassInfo(classId);
+                    oInfo.has_value())
+                {
+                    return oInfo.value();
+                }
+            }
             ClassInfo info;
             CallComOrThrow(
                 [this, classId, &info]()
@@ -706,6 +816,10 @@ namespace Drill4dotNet
 
             auto metadata = GetModuleMetadata(info.moduleId, m_logger);
             info.name = metadata.GetTypeName(info.typeDefToken);
+            if (m_InfoCache)
+            {
+                m_InfoCache->MapClassInfo(classId, info);
+            }
             return info;
         }
 

@@ -15,7 +15,7 @@ namespace Drill4dotNet
         LogBuffer<std::wostream> Log() const;
         std::wistream& Key();
 
-        InfoHandler& GetInfoHandler()
+        std::shared_ptr<InfoHandler> GetInfoHandler()
         {
             return m_infoHandler;
         }
@@ -23,6 +23,6 @@ namespace Drill4dotNet
     protected:
         std::wostream& m_ostream;
         std::wistream& m_istream;
-        InfoHandler m_infoHandler;
+        std::shared_ptr<InfoHandler> m_infoHandler;
     };
 }

@@ -29,14 +29,14 @@ namespace Drill4dotNet
         return  m_pImplClient;
     }
 
-    inline InfoHandler& CProfilerCallback::GetInfoHandler()
+    inline std::shared_ptr<InfoHandler> CProfilerCallback::GetInfoHandler()
     {
         return m_pImplClient.GetInfoHandler();
     }
 
-    inline ICoreInteract& CProfilerCallback::GetCorProfilerInfo()
+    inline ICoreInteract* CProfilerCallback::GetCorProfilerInfo()
     {
-        return *(m_corProfilerInfo.get());
+        return m_corProfilerInfo.get();
     }
 
     namespace
@@ -53,7 +53,7 @@ namespace Drill4dotNet
         {
             if (!g_cb) return;
 
-            if (std::optional<FunctionInfo> functionInfo = g_cb->GetInfoHandler().TryGetFunctionInfo(funcId);
+            if (auto functionInfo = g_cb->GetCorProfilerInfo()->TryGetFunctionInfo(funcId);
                 functionInfo.has_value())
             {
                 g_cb->GetClient().Log() << L"Enter function: " << functionInfo->fullName();
@@ -62,7 +62,7 @@ namespace Drill4dotNet
             {
                 g_cb->GetClient().Log() << L"Enter function: " << funcId;
             }
-            g_cb->GetInfoHandler().FunctionCalled(funcId);
+            g_cb->GetInfoHandler()->FunctionCalled(funcId);
         }
 
         static void __stdcall fn_functionLeave(
@@ -74,7 +74,7 @@ namespace Drill4dotNet
         {
             if (!g_cb) return;
 
-            if (std::optional<FunctionInfo> functionInfo = g_cb->GetInfoHandler().TryGetFunctionInfo(funcId);
+            if (auto functionInfo = g_cb->GetCorProfilerInfo()->TryGetFunctionInfo(funcId);
                 functionInfo.has_value())
             {
                 g_cb->GetClient().Log() << L"Leave function: " << functionInfo->fullName();
@@ -93,7 +93,7 @@ namespace Drill4dotNet
         {
             if (!g_cb) return;
 
-            if (std::optional<FunctionInfo> functionInfo = g_cb->GetInfoHandler().TryGetFunctionInfo(funcId);
+            if (auto functionInfo = g_cb->GetCorProfilerInfo()->TryGetFunctionInfo(funcId);
                 functionInfo.has_value())
             {
                 g_cb->GetClient().Log() << L"Tailcall at function: " << functionInfo->fullName();
@@ -110,11 +110,10 @@ namespace Drill4dotNet
         {
             if (!g_cb) return funcId;
 
-            if (auto functionInfo = g_cb->GetCorProfilerInfo().TryGetFunctionInfo(funcId);
+            if (auto functionInfo = g_cb->GetCorProfilerInfo()->TryGetFunctionInfo(funcId);
                 functionInfo.has_value())
             {
                 g_cb->GetClient().Log() << "Mapping   function[" << funcId << "] to " << functionInfo->fullName();
-                g_cb->GetInfoHandler().MapFunctionInfo(funcId, functionInfo.value());
             }
 
             if (pbHookFunction)
@@ -170,9 +169,10 @@ namespace Drill4dotNet
         try
         {
             m_corProfilerInfo = CreateCorProfilerInfo(pICorProfilerInfoUnk, LogToProClient(m_pImplClient));
+            m_corProfilerInfo->SetInfoCache(GetInfoHandler());
 
             if (auto runtimeInformation = m_corProfilerInfo->TryGetRuntimeInformation();
-                runtimeInformation)
+                runtimeInformation.has_value())
             {
                 m_pImplClient.Log() 
                     << L"Drill profiler is running in:" << InSpaces(runtimeInformation->RuntimeType())
@@ -210,7 +210,7 @@ namespace Drill4dotNet
         try
         {
             g_cb = nullptr;
-            GetInfoHandler().OutputStatistics();
+            GetInfoHandler()->OutputStatistics();
             m_corProfilerInfo.reset();
         }
         catch (const _com_error & exception)
@@ -239,10 +239,9 @@ namespace Drill4dotNet
         {
             // valid when the Finished event is called
             std::optional<AppDomainInfo> info = m_corProfilerInfo->TryGetAppDomainInfo(appDomainId);
-            if (info)
+            if (info.has_value())
             {
-                m_pImplClient.Log() << L"Domain name: " << info->name << L", process id: " << info->processId;
-                GetInfoHandler().MapAppDomainInfo(appDomainId, info.value());
+                GetInfoHandler()->OutputAppDomainInfo(appDomainId);
             }
         }
         catch (const _com_error & exception)
@@ -262,7 +261,7 @@ namespace Drill4dotNet
         m_pImplClient.Log() << L"CProfilerCallback::AppDomainShutdownStarted(" << appDomainId << ")";
         try
         {
-            GetInfoHandler().OutputAppDomainInfo(appDomainId);
+            GetInfoHandler()->OutputAppDomainInfo(appDomainId);
         }
         catch (const std::exception & exception)
         {
@@ -276,7 +275,7 @@ namespace Drill4dotNet
         m_pImplClient.Log() << L"CProfilerCallback::AppDomainShutdownFinished(" << appDomainId << "), with status: " << HexOutput(hrStatus);
         try
         {
-            GetInfoHandler().OutputAppDomainInfo(appDomainId);
+            GetInfoHandler()->OutputAppDomainInfo(appDomainId);
         }
         catch (const std::exception & exception)
         {
@@ -298,10 +297,9 @@ namespace Drill4dotNet
         {
             // valid when the Finished event is called
             std::optional<AssemblyInfo> info = m_corProfilerInfo->TryGetAssemblyInfo(assemblyId);
-            if (info)
+            if (info.has_value())
             {
-                GetInfoHandler().MapAssemblyInfo(assemblyId, info.value());
-                GetInfoHandler().OutputAssemblyInfo(assemblyId);
+                GetInfoHandler()->OutputAssemblyInfo(assemblyId);
             }
         }
         catch (const _com_error & exception)
@@ -321,7 +319,7 @@ namespace Drill4dotNet
         m_pImplClient.Log() << L"CProfilerCallback::AssemblyUnloadStarted(" << assemblyId << ")";
         try
         {
-            GetInfoHandler().OutputAssemblyInfo(assemblyId);
+            GetInfoHandler()->OutputAssemblyInfo(assemblyId);
         }
         catch (const std::exception & exception)
         {
@@ -335,7 +333,7 @@ namespace Drill4dotNet
         m_pImplClient.Log() << L"CProfilerCallback::AssemblyUnloadFinished(" << assemblyId << "), with status: " << HexOutput(hrStatus);
         try
         {
-            GetInfoHandler().OutputAssemblyInfo(assemblyId);
+            GetInfoHandler()->OutputAssemblyInfo(assemblyId);
         }
         catch (const std::exception & exception)
         {
@@ -357,10 +355,9 @@ namespace Drill4dotNet
         {
             // valid when the Finished event is called
             std::optional<ModuleInfo> info = m_corProfilerInfo->TryGetModuleInfo(moduleId);
-            if (info)
+            if (info.has_value())
             {
-                GetInfoHandler().MapModuleInfo(moduleId, info.value());
-                GetInfoHandler().OutputModuleInfo(moduleId);
+                GetInfoHandler()->OutputModuleInfo(moduleId);
             }
         }
         catch (const _com_error & exception)
@@ -380,7 +377,7 @@ namespace Drill4dotNet
         m_pImplClient.Log() << L"CProfilerCallback::ModuleUnloadStarted(" << moduleId << ")";
         try
         {
-            GetInfoHandler().OutputModuleInfo(moduleId);
+            GetInfoHandler()->OutputModuleInfo(moduleId);
         }
         catch (const std::exception & exception)
         {
@@ -394,7 +391,7 @@ namespace Drill4dotNet
         m_pImplClient.Log() << L"CProfilerCallback::ModuleUnloadFinished(" << moduleId << ")";
         try
         {
-            GetInfoHandler().OutputModuleInfo(moduleId);
+            GetInfoHandler()->OutputModuleInfo(moduleId);
         }
         catch (const std::exception & exception)
         {
@@ -421,10 +418,9 @@ namespace Drill4dotNet
         {
             // valid when the Finished event is called
             auto info = m_corProfilerInfo->TryGetClassInfo(classId);
-            if (info)
+            if (info.has_value())
             {
-                GetInfoHandler().MapClassInfo(classId, info.value());
-                GetInfoHandler().OutputClassInfo(classId);
+                GetInfoHandler()->OutputClassInfo(classId);
             }
         }
         catch (const _com_error & exception)
@@ -444,7 +440,7 @@ namespace Drill4dotNet
         m_pImplClient.Log() << L"CProfilerCallback::ClassUnloadStarted(" << classId << ")";
         try
         {
-            GetInfoHandler().OutputClassInfo(classId);
+            GetInfoHandler()->OutputClassInfo(classId);
         }
         catch (const std::exception & exception)
         {
@@ -458,7 +454,7 @@ namespace Drill4dotNet
         m_pImplClient.Log() << L"CProfilerCallback::ClassUnloadFinished(" << classId << ")";
         try
         {
-            GetInfoHandler().OutputClassInfo(classId);
+            GetInfoHandler()->OutputClassInfo(classId);
         }
         catch (const std::exception & exception)
         {

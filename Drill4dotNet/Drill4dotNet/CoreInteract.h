@@ -6,6 +6,9 @@
 
 namespace Drill4dotNet
 {
+    // Additional facility to cache information data structures
+    class InfoHandler;
+
     // Interface to interact with CLR: to request information and to set profiler options
     class ICoreInteract
     {
@@ -95,6 +98,9 @@ namespace Drill4dotNet
         virtual bool TrySetILFunctionBody(
             const FunctionInfo& target,
             const std::vector<std::byte>& newILMethodBody) const = 0;
+
+        virtual void SetInfoCache(std::shared_ptr<InfoHandler>& cache) = 0;
+        virtual std::shared_ptr<InfoHandler> GetInfoCache() = 0;
     };
 
     // Factory-like function to create an instance of `ICoreInteract` interface. Throws on errors.

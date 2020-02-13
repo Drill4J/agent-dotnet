@@ -39,10 +39,6 @@ namespace Drill4dotNet
             {
                 return it->second;
             }
-            else
-            {
-                Log() << "InfoHandler::TryGetFunctionInfo: cannot find function by id [" << id << "].";
-            }
         }
         catch (const std::exception & ex)
         {
@@ -59,10 +55,6 @@ namespace Drill4dotNet
                 m_functionCounts.end() != it)
             {
                 it->second.callCount += 1;
-            }
-            else
-            {
-                Log() << "InfoHandler::FunctionCalled: cannot find function by id [" << id << "].";
             }
         }
         catch (const std::exception & ex)
@@ -108,10 +100,6 @@ namespace Drill4dotNet
             {
                 return it->second;
             }
-            else
-            {
-                Log() << "InfoHandler::TryGetAppDomainInfo: cannot find App Domain info by id [" << id << "].";
-            }
         }
         catch (const std::exception & ex)
         {
@@ -149,10 +137,6 @@ namespace Drill4dotNet
                 m_assemblyInfos.end() != it)
             {
                 return it->second;
-            }
-            else
-            {
-                Log() << "InfoHandler::TryGetAssemblyInfo: cannot find Assembly info by id [" << id << "].";
             }
         }
         catch (const std::exception & ex)
@@ -200,10 +184,6 @@ namespace Drill4dotNet
             {
                 return it->second;
             }
-            else
-            {
-                Log() << "InfoHandler::TryGetModuleInfo: cannot find Module info by id [" << id << "].";
-            }
         }
         catch (const std::exception & ex)
         {
@@ -247,10 +227,6 @@ namespace Drill4dotNet
                 m_classInfos.end() != it)
             {
                 return it->second;
-            }
-            else
-            {
-                Log() << "InfoHandler::TryGetClassInfo: cannot find Class info by id [" << id << "].";
             }
         }
         catch (const std::exception & ex)

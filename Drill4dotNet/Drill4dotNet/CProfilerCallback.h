@@ -43,8 +43,8 @@ namespace Drill4dotNet
     public:
         CProfilerCallback(ProClient& client);
         ProClient& GetClient();
-        ICoreInteract& GetCorProfilerInfo();
-        InfoHandler& GetInfoHandler();
+        ICoreInteract* GetCorProfilerInfo();
+        std::shared_ptr<InfoHandler> GetInfoHandler();
 
         // Inherited via IUnknown
         virtual HRESULT __stdcall QueryInterface(REFIID riid, void** ppvObject) override;
