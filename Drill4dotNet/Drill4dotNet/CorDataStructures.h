@@ -5,19 +5,20 @@
 
 namespace Drill4dotNet
 {
+    struct FunctionName
+    {
+        std::wstring ownName;
+        std::wstring className;
+    };
     struct FunctionInfo
     {
         ClassID classId;
         ModuleID moduleId;
         mdToken token;
-    };
-    struct FunctionName
-    {
-        std::wstring name;
-        std::wstring className;
+        FunctionName name;
         std::wstring fullName() const
         {
-            return className + L"." + name;
+            return name.className + L"." + name.ownName;
         }
     };
     struct AppDomainInfo

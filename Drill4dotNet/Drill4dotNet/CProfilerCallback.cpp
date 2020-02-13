@@ -53,10 +53,10 @@ namespace Drill4dotNet
         {
             if (!g_cb) return;
 
-            if (std::optional<FunctionName> functionName = g_cb->GetInfoHandler().TryGetFunctionName(funcId);
-                functionName)
+            if (std::optional<FunctionInfo> functionInfo = g_cb->GetInfoHandler().TryGetFunctionInfo(funcId);
+                functionInfo.has_value())
             {
-                g_cb->GetClient().Log() << L"Enter function: " << functionName->fullName();
+                g_cb->GetClient().Log() << L"Enter function: " << functionInfo->fullName();
             }
             else
             {
@@ -74,10 +74,10 @@ namespace Drill4dotNet
         {
             if (!g_cb) return;
 
-            if (std::optional<FunctionName> functionName = g_cb->GetInfoHandler().TryGetFunctionName(funcId);
-                functionName)
+            if (std::optional<FunctionInfo> functionInfo = g_cb->GetInfoHandler().TryGetFunctionInfo(funcId);
+                functionInfo.has_value())
             {
-                g_cb->GetClient().Log() << L"Leave function: " << functionName->fullName();
+                g_cb->GetClient().Log() << L"Leave function: " << functionInfo->fullName();
             }
             else
             {
@@ -93,10 +93,10 @@ namespace Drill4dotNet
         {
             if (!g_cb) return;
 
-            if (std::optional<FunctionName> functionName = g_cb->GetInfoHandler().TryGetFunctionName(funcId);
-                functionName)
+            if (std::optional<FunctionInfo> functionInfo = g_cb->GetInfoHandler().TryGetFunctionInfo(funcId);
+                functionInfo.has_value())
             {
-                g_cb->GetClient().Log() << L"Tailcall at function: " << functionName->fullName();
+                g_cb->GetClient().Log() << L"Tailcall at function: " << functionInfo->fullName();
             }
             else
             {
@@ -110,11 +110,11 @@ namespace Drill4dotNet
         {
             if (!g_cb) return funcId;
 
-            if (auto functionName = g_cb->GetCorProfilerInfo().TryGetFunctionFullName(funcId);
-                functionName)
+            if (auto functionInfo = g_cb->GetCorProfilerInfo().TryGetFunctionInfo(funcId);
+                functionInfo.has_value())
             {
-                g_cb->GetClient().Log() << "Mapping   function[" << funcId << "] to " << functionName->fullName();
-                g_cb->GetInfoHandler().MapFunctionName(funcId, functionName.value());
+                g_cb->GetClient().Log() << "Mapping   function[" << funcId << "] to " << functionInfo->fullName();
+                g_cb->GetInfoHandler().MapFunctionInfo(funcId, functionInfo.value());
             }
 
             if (pbHookFunction)
@@ -481,24 +481,22 @@ namespace Drill4dotNet
             // HelloWorld.Program.MyInjectionTarget function, at the place of
             // the Console.WriteLine call.
 
-            const std::optional<FunctionName> functionName{
-                m_corProfilerInfo->TryGetFunctionFullName(functionId) };
-
-            const FunctionInfo info = m_corProfilerInfo->GetFunctionInfo(functionId);
+            const FunctionInfo functionInfo{
+                m_corProfilerInfo->GetFunctionInfo(functionId) };
 
             const std::vector<std::byte> functionBytes{
-                m_corProfilerInfo->GetMethodIntermediateLanguageBody(info) };
+                m_corProfilerInfo->GetMethodIntermediateLanguageBody(functionInfo) };
 
             GetClient().Log()
                 << L"Compiling function "
                 << InSquareBrackets(functionId)
                 << L" "
-                << functionName->fullName()
+                << functionInfo.fullName()
                 << L" IL Body size: "
                 << functionBytes.size()
                 << L" bytes";
 
-            if (!functionName.has_value() || functionName->fullName() != L"HelloWorld.Program.MyInjectionTarget")
+            if (functionInfo.fullName() != L"HelloWorld.Program.MyInjectionTarget")
             {
                 return S_OK;
             }
@@ -556,7 +554,7 @@ namespace Drill4dotNet
                 << std::endl
                 << functionBody;
 
-            m_corProfilerInfo->SetILFunctionBody(info, afterInjection);
+            m_corProfilerInfo->SetILFunctionBody(functionInfo, afterInjection);
             GetClient().Log() << L"Injected successfully.";
 
             return S_OK;

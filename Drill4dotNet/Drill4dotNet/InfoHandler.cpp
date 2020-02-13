@@ -17,36 +17,36 @@ namespace Drill4dotNet
         return LogBuffer<std::wostream>(m_ostream);
     }
 
-    void InfoHandler::MapFunctionName(const FunctionID id, const FunctionName& info) noexcept
+    void InfoHandler::MapFunctionInfo(const FunctionID id, const FunctionInfo& info) noexcept
     {
         try
         {
-            m_functionNames[id] = info;
+            m_functionInfos[id] = info;
             m_functionCounts[id] = { 0 };
         }
         catch (const std::exception & ex)
         {
-            Log() << "InfoHandler::MapFunctionName: exception while inserting function info by id [" << id << "]. " << ex.what();
+            Log() << "InfoHandler::MapFunctionInfo: exception while inserting function info by id [" << id << "]. " << ex.what();
         }
     }
 
-    std::optional<FunctionName> InfoHandler::TryGetFunctionName(const FunctionID id) const noexcept
+    std::optional<FunctionInfo> InfoHandler::TryGetFunctionInfo(const FunctionID id) const noexcept
     {
         try
         {
-            if (const auto it = m_functionNames.find(id);
-                m_functionNames.end() != it)
+            if (const auto it = m_functionInfos.find(id);
+                m_functionInfos.end() != it)
             {
                 return it->second;
             }
             else
             {
-                Log() << "InfoHandler::TryGetFunctionName: cannot find function by id [" << id << "].";
+                Log() << "InfoHandler::TryGetFunctionInfo: cannot find function by id [" << id << "].";
             }
         }
         catch (const std::exception & ex)
         {
-            Log() << "InfoHandler::TryGetFunctionName: exception while accessing function info by id [" << id << "]. " << ex.what();
+            Log() << "InfoHandler::TryGetFunctionInfo: exception while accessing function info by id [" << id << "]. " << ex.what();
         }
         return std::nullopt;
     }
@@ -74,7 +74,7 @@ namespace Drill4dotNet
     void InfoHandler::OutputStatistics() const
     {
         Log() << L"Statistics:";
-        Log() << L"Total number of functions mapped: " << m_functionNames.size();
+        Log() << L"Total number of functions mapped: " << m_functionInfos.size();
 
         size_t countFunctionsCalled = std::count_if(
             m_functionCounts.cbegin(),

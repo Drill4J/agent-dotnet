@@ -72,10 +72,6 @@ namespace Drill4dotNet
         // Gets information about Functon (Method) by id. Returns std::nullopt in case of errors.
         virtual std::optional<FunctionInfo> TryGetFunctionInfo(const FunctionID functionId) const = 0;
 
-        //TODO: merge to above
-        virtual FunctionName GetFunctionFullName(const FunctionID functionId) const = 0;
-        virtual std::optional<FunctionName> TryGetFunctionFullName(const FunctionID functionId) const = 0;
-
         // Gets the Intermediate Language representation of the Function body. Throws on errors.
         // @returns a vector of bytes containing the function body in IL.
         // @param functionInfo : identifies the Function. @see GetFunctionInfo.
