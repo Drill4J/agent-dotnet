@@ -199,6 +199,21 @@ namespace Drill4dotNet
             this->CallComOrThrow(
                 GetFunctionInfoCallable(functionId, result),
                 L"Failed to call CorProfilerInfo::GetFunctionInfo.");
+
+            ATL::CComQIPtr<IMetaDataImport2, &IID_IMetaDataImport2> metaDataImportPtr{};
+            mdToken functionToken;
+            CallComOrThrow(
+                [this, functionId, &metaDataImportPtr, &functionToken]()
+                {
+                    return m_corProfilerInfo->GetTokenAndMetaDataFromFunction(
+                        functionId,
+                        IID_IMetaDataImport2,
+                        (IUnknown**)&metaDataImportPtr,
+                        &functionToken);
+                },
+                L"Calling ICorProfilerInfo3::GetTokenAndMetaDataFromFunction.");
+            MetaDataImport<TLogger> metaDataImport(metaDataImportPtr, m_logger);
+            result.name = metaDataImport.GetFunctionFullName(functionToken);
             return result;
         }
 
@@ -211,7 +226,27 @@ namespace Drill4dotNet
                     GetFunctionInfoCallable(functionId, result),
                     L"Failed to call CorProfilerInfo::TryGetFunctionInfo."))
             {
-                return result;
+                ATL::CComQIPtr<IMetaDataImport2, &IID_IMetaDataImport2> metaDataImportPtr{};
+                if (mdToken functionToken;
+                    TryCallCom(
+                    [this, functionId, &metaDataImportPtr, &functionToken]()
+                    {
+                        return m_corProfilerInfo->GetTokenAndMetaDataFromFunction(
+                            functionId,
+                            IID_IMetaDataImport2,
+                            (IUnknown**)&metaDataImportPtr,
+                            &functionToken);
+                    },
+                    L"Calling ICorProfilerInfo3::GetTokenAndMetaDataFromFunction."))
+                {
+                    MetaDataImport<TLogger> metaDataImport(metaDataImportPtr, m_logger);
+                    if (auto oFullName = metaDataImport.TryGetFunctionFullName(functionToken);
+                        oFullName.has_value())
+                    {
+                        result.name = oFullName.value();
+                        return result;
+                    }
+                }
             }
 
             return std::nullopt;
@@ -259,88 +294,6 @@ namespace Drill4dotNet
         }
 
     public:
-        // Gets the name of the function specified by the @param FunctionID.
-        // Throws _com_error in case of an error.
-        std::wstring GetFunctionName(const FunctionID functionId) const
-        {
-            try
-            {
-                FunctionInfo functionInfo{ GetFunctionInfo(functionId) };
-                return GetModuleMetadata(functionInfo.moduleId, m_logger)
-                    .GetMethodName(functionInfo.token);
-            }
-            catch (const _com_error&)
-            {
-                m_logger.Log() << L"CorProfilerInfo::GetFunctionName failed.";
-                throw;
-            }
-        }
-
-        // Gets the name of the function specified by the @param FunctionID.
-        // @returns function's name or std::nullopt in case of an error.
-        std::optional<std::wstring> TryGetFunctionName(const FunctionID functionId) const
-        {
-            if (const auto oFunctionInfo = TryGetFunctionInfo(functionId);
-                oFunctionInfo)
-            {
-                if (const auto oName = GetModuleMetadata(oFunctionInfo->moduleId, m_logger)
-                    .TryGetMethodName(oFunctionInfo->token);
-                    oName)
-                {
-                    return oName.value();
-                }
-            }
-            m_logger.Log() << L"CorProfilerInfo::TryGetFunctionName failed.";
-            return std::nullopt;
-        }
-
-    public:
-        // Gets the combined name of the function: : { own name, class name }
-        // @param FunctionID : ID of the function.
-        // @returns function's name and its class' name, or std::nullopt on error.
-        std::optional<FunctionName> TryGetFunctionFullName(const FunctionID functionId) const override
-        {
-            ATL::CComQIPtr<IMetaDataImport2, &IID_IMetaDataImport2> metaDataImportPtr{};
-            if (mdToken functionToken;
-                TryCallCom(
-                [this, functionId, &metaDataImportPtr, &functionToken]()
-                {
-                    return m_corProfilerInfo->GetTokenAndMetaDataFromFunction(
-                        functionId, 
-                        IID_IMetaDataImport2, 
-                        (IUnknown**)&metaDataImportPtr,
-                        &functionToken);
-                },
-                L"Calling ICorProfilerInfo3::GetTokenAndMetaDataFromFunction."))
-            {
-                MetaDataImport<TLogger> metaDataImport(metaDataImportPtr, m_logger);
-                return metaDataImport.TryGetFunctionFullName(functionToken);
-            }
-            return std::nullopt;
-        }
-
-        // Gets the combined name of the function: : { own name, class name }
-        // @param FunctionID : ID of the function.
-        // @returns function's name and its class' name
-        // Throws _com_error in case of an error.
-        FunctionName GetFunctionFullName(const FunctionID functionId) const override
-        {
-            ATL::CComQIPtr<IMetaDataImport2, &IID_IMetaDataImport2> metaDataImportPtr{};
-            mdToken functionToken;
-            CallComOrThrow(
-                [this, functionId, &metaDataImportPtr, &functionToken]()
-                {
-                    return m_corProfilerInfo->GetTokenAndMetaDataFromFunction(
-                        functionId,
-                        IID_IMetaDataImport2,
-                        (IUnknown**)&metaDataImportPtr,
-                        &functionToken);
-                },
-                L"Calling ICorProfilerInfo3::GetTokenAndMetaDataFromFunction.");
-            MetaDataImport<TLogger> metaDataImport(metaDataImportPtr, m_logger);
-            return metaDataImport.GetFunctionFullName(functionToken);
-        }
-
         // Calls ICorProfilerInfo3::GetILFunctionBody with the given FunctionInfo.
         // Returns vector with a copy of the bytes of the Intermediate Language
         // representation of the function body.

@@ -18,7 +18,7 @@ namespace Drill4dotNet
     using TAssemblyInfoMap = std::unordered_map<AssemblyID, AssemblyInfo>;
     using TModuleInfoMap = std::unordered_map<ModuleID, ModuleInfo>;
     using TClassInfoMap = std::unordered_map<ClassID, ClassInfo>;
-    using TFunctionNameMap = std::unordered_map<FunctionID, FunctionName>;
+    using TFunctionInfoMap = std::unordered_map<FunctionID, FunctionInfo>;
     using TFunctionRuntimeInfoMap = std::unordered_map<FunctionID, FunctionRuntimeInfo>;
 
     class InfoHandler
@@ -27,8 +27,8 @@ namespace Drill4dotNet
         explicit InfoHandler(std::wostream& log);
 
         void OutputStatistics() const;
-        void MapFunctionName(const FunctionID id, const FunctionName& info) noexcept;
-        std::optional<FunctionName> TryGetFunctionName(const FunctionID id) const noexcept;
+        void MapFunctionInfo(const FunctionID id, const FunctionInfo& info) noexcept;
+        std::optional<FunctionInfo> TryGetFunctionInfo(const FunctionID id) const noexcept;
         void FunctionCalled(const FunctionID id) noexcept;
         void MapAppDomainInfo(const AppDomainID id, const AppDomainInfo& info) noexcept;
         std::optional<AppDomainInfo> TryGetAppDomainInfo(const AppDomainID id) const noexcept;
@@ -46,7 +46,7 @@ namespace Drill4dotNet
         using Logger = LogBuffer<std::wostream>;
         Logger Log() const;
         std::wostream& m_ostream;
-        TFunctionNameMap m_functionNames;
+        TFunctionInfoMap m_functionInfos;
         TFunctionRuntimeInfoMap m_functionCounts;
         TAppDomainInfoMap m_appDomainInfos;
         TAssemblyInfoMap m_assemblyInfos;
