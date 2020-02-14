@@ -17,11 +17,11 @@ namespace Drill4dotNet
         // The header storing information about other method structures.
         MethodHeader m_header;
 
-        // The parsed instructions.
-        std::vector<OpCodeVariant> m_instructions;
+        // The instructions.
+        InstructionStream m_stream;
 
         // Parses a byte representation of instructions into a vector.
-        static std::vector<OpCodeVariant> Decompile(
+        static InstructionStream Decompile(
             const std::vector<std::byte>& bodyBytes,
             uint8_t headerSize,
             const AbsoluteOffset codeSize);
@@ -44,53 +44,65 @@ namespace Drill4dotNet
         //    must be in range [begin(), end()]
         // @param opcode : the instruction to insert.
         void Insert(
-            const std::vector<OpCodeVariant>::const_iterator position,
+            const ConstStreamPosition position,
             const OpCodeVariant opcode);
 
         // Gets the beginning of the instructions list.
-        std::vector<OpCodeVariant>::const_iterator begin() const noexcept
+        ConstStreamPosition begin() const& noexcept
         {
-            return m_instructions.cbegin();
+            return m_stream.cbegin();
         }
 
         // Gets the ending of the instructions list.
-        std::vector<OpCodeVariant>::const_iterator end() const noexcept
+        ConstStreamPosition end() const& noexcept
         {
-            return m_instructions.cend();
+            return m_stream.cend();
         }
 
-        // Allows printing the instructions to standard streams.
-        template <typename TChar>
-        friend std::basic_ostream<TChar>& operator <<(std::basic_ostream<TChar>& target, const MethodBody& data)
+        // Gets the instructions stream for reading.
+        const InstructionStream& Stream() const& noexcept
         {
-            for (const auto& x : data.m_instructions)
-            {
-                x.Visit([&target](const auto opcode)
-                {
-                    using T = std::remove_cv_t<decltype(opcode)>;
-                    target << T::Name();
+            return m_stream;
+        }
 
-                    if constexpr (T::HasArgument())
-                    {
-                        target << L" ";
-                        if constexpr (std::is_same_v<T::ArgumentType, OpCodeArgumentType::InlineSwitch>
-                            || std::is_same_v<T::ArgumentType, OpCodeArgumentType::InlinePhi>)
-                        {
-                            const auto& argument = opcode.Argument();
-                            target << InSquareBrackets(argument.size()) << InCurlyBrackets(Delimitered(argument, L", "));
-                        }
-                        else
-                        {
-                            target << opcode.Argument();
-                        }
-                    }
-
-                    target << L";" << std::endl;
-                });
-            }
-
-            return target;
+        // Gets the instructions stream.
+        InstructionStream Stream() && noexcept
+        {
+            return std::move(m_stream);
         }
     };
+
+    // Allows printing the instructions to standard streams.
+    template <typename TChar>
+    std::basic_ostream<TChar>& operator <<(std::basic_ostream<TChar>& target, const MethodBody& data)
+    {
+        for (const auto& element : data.Stream())
+        {
+            element.Visit([&target](const auto opcode)
+                {
+                using T = std::remove_cv_t<decltype(opcode)>;
+                target << T::Name();
+
+                if constexpr (T::HasArgument())
+                    {
+                    target << L" ";
+                    if constexpr (std::is_same_v<T::ArgumentType, OpCodeArgumentType::InlineSwitch>
+                            || std::is_same_v<T::ArgumentType, OpCodeArgumentType::InlinePhi>)
+                        {
+                        const auto& argument = opcode.Argument();
+                        target << InSquareBrackets(argument.size()) << InCurlyBrackets(Delimitered(argument, L", "));
+                    }
+                    else
+                    {
+                        target << opcode.Argument();
+                            }
+                        }
+
+                target << L";" << std::endl;
+            });
+                    }
+
+        return target;
+    }
 }
 
