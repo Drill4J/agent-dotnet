@@ -35,11 +35,11 @@ namespace Drill4dotNet
     {
     public:
         // The instructions stream to store parsed instructions.
-        std::vector<OpCodeVariant>& Target;
+        InstructionStream& Target;
 
         // Creates a new converter with the given values.
         ArgumentConverter(
-            std::vector<OpCodeVariant>& target) noexcept
+            InstructionStream& target) noexcept
             : Target { target }
         {
         }
@@ -100,13 +100,13 @@ namespace Drill4dotNet
     MethodBody::MethodBody(const std::vector<std::byte>& bodyBytes)
         : m_header(bodyBytes)
     {
-        m_instructions = Decompile(
+        m_stream = Decompile(
             bodyBytes,
             m_header.Size(),
             m_header.CodeSize());
     }
 
-    std::vector<OpCodeVariant> MethodBody::Decompile(
+    InstructionStream MethodBody::Decompile(
         const std::vector<std::byte>& bodyBytes,
         uint8_t headerSize,
         const AbsoluteOffset codeSize)
@@ -114,7 +114,7 @@ namespace Drill4dotNet
         // Uses
         // const BYTE* OpInfo::fetch(const BYTE * instrPtr, OpArgsVal * args)
         OpInfo parser{};
-        std::vector<OpCodeVariant> result{};
+        InstructionStream result{};
         const auto begin = reinterpret_cast<const BYTE*>(bodyBytes.data() + headerSize);
         const auto end = begin + codeSize;
         auto currentInstruction{ begin };
@@ -164,7 +164,7 @@ namespace Drill4dotNet
 
         m_header.AppendToBytes(result);
 
-        for (const auto& instruction : m_instructions)
+        for (const auto& instruction : m_stream)
         {
             instruction.m_code.AppendToVector(result);
             std::visit(
@@ -205,7 +205,7 @@ namespace Drill4dotNet
     }
 
     void MethodBody::Insert(
-        const std::vector<OpCodeVariant>::const_iterator position,
+        const ConstStreamPosition position,
         const OpCodeVariant opcode)
     {
         // Dangerous: need to update branching instructions, exceptions handling, and maxstack
@@ -216,7 +216,7 @@ namespace Drill4dotNet
         }
 
         m_header.SetCodeSize(static_cast<AbsoluteOffset>(newCodeSize));
-        m_instructions.insert(position, opcode);
+        m_stream.insert(position, opcode);
     }
 }
 
