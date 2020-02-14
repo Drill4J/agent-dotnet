@@ -96,5 +96,5 @@ In addition to `setruntimeenv.cmd`, you can register the COM DLL in the system u
 
 * The profiler only outputs to stdout; it is not controlled or configured.
 * Only Windows 64-bit (x64) platform is currently supported.
-* ATM, the agent injects CEE_BREAK instruction to the target sample function. Injection is not supported to functions with exceptions, generic functions, unmanaged (native) functions.
+* ATM, the agent injects artificial calls to Console.WriteLine into the target sample function. Injection is not supported to functions with exceptions, generic functions, unmanaged (native) functions.
 * ATM, the profiler is not thread-safe.

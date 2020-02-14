@@ -477,9 +477,11 @@ namespace Drill4dotNet
         GetClient().Log() << L"CProfilerCallback::JITCompilationStarted";
         try
         {
-            // This example injection will insert a debugger break into the
-            // HelloWorld.Program.MyInjectionTarget function, at the place of
-            // the Console.WriteLine call.
+            // This example injection will insert artificial calls to Console.WriteLine
+            // into the HelloWorld.Program.MyInjectionTarget function, at the place of
+            // the second Console.WriteLine call, and in the finally clause. Also some
+            // NOPs will be added to show ability to turn short branching instructions
+            // into long ones.
 
             const FunctionInfo functionInfo{
                 m_corProfilerInfo->GetFunctionInfo(functionId) };
@@ -523,20 +525,112 @@ namespace Drill4dotNet
                 return S_OK;
             }
 
-            const auto insertionPosition
+            const auto findSecondCall = [this, &body{ std::as_const(functionBody) }]()
             {
-                FindInstruction<OpCode_CEE_CALL>(
-                    functionBody.begin(),
-                    functionBody.end())
+                const auto result = FindInstruction<OpCode_CEE_CALL>(
+                    FindNextInstruction(
+                        FindInstruction<OpCode_CEE_CALL>(
+                            body.begin(),
+                            body.end()),
+                        body.end()),
+                    body.end());
+                if (result == body.end())
+                {
+                    throw std::logic_error("Error: position for injection was not found. "
+                        "Need to update the example or the injection.");
+                }
+
+                return result;
             };
 
-            if (insertionPosition == functionBody.end())
+            functionBody.Insert(
+                findSecondCall() + 1,
+                OpCode_CEE_LDLOC_0{});
+
+            functionBody.Insert(
+                findSecondCall() + 2,
+                OpCode_CEE_LDC_I4_1{});
+
+            Label label = functionBody.CreateLabel();
+
+            functionBody.Insert(
+                findSecondCall() + 3,
+                OpCode_CEE_BLT_S { ShortJump { label } });
+
+            functionBody.Insert(
+                findSecondCall() + 4,
+                OpCode_CEE_LDC_I4 { 42 });
+
+            const auto callPosition = findSecondCall();
+            functionBody.Insert(
+                callPosition + 5,
+                std::get<OpCodeVariant>(*callPosition));
+
+            for (int i = 0; i != 128; ++i)
             {
-                GetClient().Log() << L"Error: position for injection was not found. Need to update the example or the injection.";
-                return S_OK;
+                functionBody.Insert(
+                    findSecondCall() + 6,
+                    OpCode_CEE_NOP{});
             }
 
-            functionBody.Insert(insertionPosition, OpCode_CEE_BREAK{});
+            // Presense of stloc.3 instruction means that
+            // MyInjectionTarget has been compiled in Debug.
+            // This in turn means there is a string variable s,
+            // and we can inject Console.WriteLine(s);
+            if (FindInstruction<OpCode_CEE_STLOC_3>(
+                functionBody.begin(),
+                functionBody.end()) != functionBody.end())
+            {
+                for (const auto& section : functionBody.ExceptionSections())
+                {
+                    for (const auto& clause : section.Clauses())
+                    {
+                        if (!clause.IsFinally())
+                        {
+                            continue;
+                        }
+
+                        const auto& findEndFinally = [this, clause, &body{ std::as_const(functionBody) }]()
+                        {
+                            return FindInstruction<OpCode_CEE_ENDFINALLY>(
+                                FindLabel(
+                                    body.Stream(),
+                                    clause.HandlerOffset()),
+                                FindLabel(
+                                    body.Stream(),
+                                    clause.HandlerEndOffset()));
+                        };
+
+                        const auto& findCallInTry = [this, clause, &body{ std::as_const(functionBody) }]()
+                        {
+                            const auto endTry = FindLabel(
+                                body.Stream(),
+                                clause.TryEndOffset());
+                            const auto result = FindInstruction<OpCode_CEE_CALL>(
+                                FindLabel(
+                                    body.Stream(),
+                                    clause.TryOffset()),
+                                endTry);
+                            if (result == endTry)
+                            {
+                                throw std::logic_error("Error: position for injection was not found. "
+                                    "Need to update the example or the injection.");
+                            }
+
+                            return result;
+                        };
+
+                        functionBody.Insert(findEndFinally(), OpCode_CEE_LDLOC_3{});
+                        functionBody.Insert(
+                            findEndFinally(),
+                            std::get<OpCodeVariant>(*findCallInTry()));
+                    }
+                }
+            }
+
+            functionBody.MarkLabel(
+                FindInstruction<OpCode_CEE_RET>(functionBody.begin(), functionBody.end()),
+                label);
 
             const std::vector<std::byte> afterInjection = functionBody.Compile();
             GetClient().Log()
