@@ -60,7 +60,7 @@ namespace Drill4dotNet
     private:
         // The constructor is hidden in the private section,
         // so only TOpCodeTemplate can inherit this class.
-        OpCodeBase()
+        OpCodeBase() noexcept
         {
         }
 
@@ -108,14 +108,14 @@ namespace Drill4dotNet
         // Creates a new opcode value with the
         // given argument.
         // @param argument : the value to use.
-        OpCode(const TArgument argument)
+        OpCode(const TArgument argument) noexcept
             : OpCodeBase(),
             m_argument{ argument }
         {
         }
 
         // Gets the inline argument.
-        TArgument Argument() const
+        TArgument Argument() const noexcept
         {
             return m_argument;
         }
@@ -136,7 +136,7 @@ namespace Drill4dotNet
         OpCodeArgumentType::InlineNone>
     {
     public:
-        OpCode()
+        OpCode() noexcept
             : OpCodeBase()
         {
         }
