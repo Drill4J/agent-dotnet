@@ -17,6 +17,25 @@ namespace Drill4dotNet
         }
     }
 
+    // Calculates how far the given iterator must be advanced
+    // to achieve the given byte alignment.
+    // alignment : the alignment in bytes
+    // @param position : the iterator, which must made aligned.
+    // @param vector : the vector of to which the position belongs.
+    template <size_t alignment>
+    ptrdiff_t AdvanceToBoundary(
+        const std::vector<std::byte>::const_iterator position,
+        const std::vector<std::byte>& vector)
+    {
+        ptrdiff_t result = (position - vector.cbegin()) % alignment;
+        if (result == 0)
+        {
+            return result;
+        }
+
+        return alignment - result;
+    }
+
     // Gets the value indicating whether
     // the given numeric value cannot be converted to
     // another numeric type without an overflow.

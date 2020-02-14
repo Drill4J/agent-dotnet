@@ -199,6 +199,22 @@ namespace Drill4dotNet
             }
         }
 
+        if (m_header.HasExceptionsSections())
+        {
+            auto codeEnd = bodyBytes.cbegin() + m_header.Size() + m_header.CodeSize();
+            auto sectionBeginning = codeEnd + AdvanceToBoundary<4>(codeEnd, bodyBytes);
+            bool moreSections;
+            do
+            {
+                ExceptionsSection section(
+                    sectionBeginning,
+                    bodyBytes.cend(),
+                    m_stream,
+                    m_labelCreator);
+                m_exceptionSections.push_back(section);
+                moreSections = section.HasMoreSections();
+            } while (moreSections);
+        }
 
         size_t instructionsCounter { 0 };
         for (const auto& jumpTable : converter.JumpOffsets)
@@ -303,7 +319,19 @@ namespace Drill4dotNet
             }
         }
 
-        // Dangerous: need to add processing of exception clauses;
+        if (m_header.HasExceptionsSections())
+        {
+            const ptrdiff_t padding { AdvanceToBoundary<4>(result.cend(), result) };
+            for (size_t i = 0; i != padding; ++i)
+            {
+                result.push_back(std::byte { 0 });
+            }
+
+            for (const auto& section : m_exceptionSections)
+            {
+                section.AppendToBytes(result);
+            }
+        }
 
         return result;
     }
@@ -312,7 +340,7 @@ namespace Drill4dotNet
         const ConstStreamPosition position,
         const OpCodeVariant opcode)
     {
-        // Dangerous: need to update branching instructions, exceptions handling, and maxstack
+        // Dangerous: maxstack
         const int64_t newCodeSize = int64_t { m_header.CodeSize() } + opcode.SizeWithArgument();
         if (!m_header.IsValidCodeSize(newCodeSize))
         {

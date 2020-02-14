@@ -45,6 +45,9 @@ namespace Drill4dotNet
         // Allows to get the instructions size from the tiny header.
         inline static const std::byte s_TinyHeaderSizeMask{ ~s_TinyHeaderFlagsMask };
 
+        // Identifies whether the method has additional data sections.
+        inline static const uint16_t s_SectionsFlag{ CorILMethod_MoreSects };
+
     public:
         // Parses a method header from the given body bytes.
         // @param methodBody : contains method header, instructions stream,
@@ -54,6 +57,14 @@ namespace Drill4dotNet
         // Serializes data from this header to the given bytes vector.
         // @param target : the bytes vector to save data to.
         void AppendToBytes(std::vector<std::byte>& target) const;
+
+        // Gets the value indicating whether
+        // there are one or more additional data
+        // sections after the instructions stream.
+        constexpr bool HasExceptionsSections() const noexcept
+        {
+            return (m_flags & s_SectionsFlag) != 0;
+        }
 
         // Size of this header, in bytes.
         constexpr uint8_t Size() const noexcept
