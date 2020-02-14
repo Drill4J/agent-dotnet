@@ -27,43 +27,75 @@ static void DbgAssertDialog(const char* szFile, int iLine, const char* szExpr)
 
 namespace Drill4dotNet
 {
-    template <typename TArgument>
-    auto ConvertArgument(const OpArgsVal argument)
+    // Helps to convert OpArgsVal into values for MethodBody.
+    // Provides method AppendStream, which can be called from
+    // a macro for different inline argument types in an uniform way.
+    template <>
+    class MethodBody::ArgumentConverter<OpArgsVal>
     {
-        if constexpr (std::is_same_v<TArgument, OpCodeArgumentType::InlineNone>)
+    public:
+        // The instructions stream to store parsed instructions.
+        std::vector<OpCodeVariant>& Target;
+
+        // Creates a new converter with the given values.
+        ArgumentConverter(
+            std::vector<OpCodeVariant>& target) noexcept
+            : Target { target }
         {
-            return std::monostate{};
         }
-        else if constexpr (
-            std::is_same_v<TArgument, OpCodeArgumentType::ShortInlineR>
-            || std::is_same_v<TArgument, OpCodeArgumentType::InlineR>)
+
+        // Appends the next instruction to the stream.
+        // TArgument : the instruction's inline argument type.
+        // @param firstByte : the first byte of the instruction's code.
+        // @param secondByte : the second byte of the instruction's code.
+        // @param rawArgument : the value to construct the instruction's
+        //     inline argument from.
+        template <typename TArgument>
+        void AppendStream(
+            const std::byte firstByte,
+            const std::byte secondByte,
+            const OpArgsVal& rawArgument)
         {
-            return static_cast<TArgument>(argument.r);
+            OpCodeVariant::InstructionCode code{ firstByte, secondByte };
+            OpCodeVariant::VariantType argument{};
+            if constexpr (std::is_same_v<TArgument, OpCodeArgumentType::InlineNone>)
+            {
+                argument = std::monostate{};
+            }
+            else if constexpr (
+                std::is_same_v<TArgument, OpCodeArgumentType::ShortInlineR>
+                || std::is_same_v<TArgument, OpCodeArgumentType::InlineR>)
+            {
+                argument = static_cast<TArgument>(rawArgument.r);
+            }
+            else if constexpr (
+                std::is_same_v<TArgument, OpCodeArgumentType::InlineI8>)
+            {
+                argument = static_cast<TArgument>(rawArgument.i8);
+            }
+            else if constexpr (
+                std::is_same_v<TArgument, OpCodeArgumentType::InlineSwitch>)
+            {
+                auto begin = (int32_t*)(rawArgument.switch_.targets);
+                auto end = begin + rawArgument.switch_.count;
+
+                argument = std::vector<int32_t>(begin, end);
+            }
+            else if constexpr (
+                std::is_same_v<TArgument, OpCodeArgumentType::InlinePhi>)
+            {
+                auto begin = (uint16_t*)(rawArgument.phi.vars);
+                auto end = begin + rawArgument.phi.count;
+                argument = std::vector<uint16_t>(begin, end);
+            }
+            else
+            {
+                argument = static_cast<TArgument>(rawArgument.i);
+            }
+
+            Target.emplace_back(OpCodeVariant(code, argument));
         }
-        else if constexpr (
-            std::is_same_v<TArgument, OpCodeArgumentType::InlineI8>)
-        {
-            return static_cast<TArgument>(argument.i8);
-        }
-        else if constexpr (
-            std::is_same_v<TArgument, OpCodeArgumentType::InlineSwitch>)
-        {
-            auto begin = (int32_t*)(argument.switch_.targets);
-            auto end = begin + argument.switch_.count;
-            return std::vector<int32_t>(begin, end);
-        }
-        else if constexpr (
-            std::is_same_v<TArgument, OpCodeArgumentType::InlinePhi>)
-        {
-            auto begin = (uint16_t*)(argument.phi.vars);
-            auto end = begin + argument.phi.count;
-            return std::vector<uint16_t>(begin, end);
-        }
-        else
-        {
-            return static_cast<TArgument>(argument.i);
-        }
-    }
+    };
 
     MethodBody::MethodBody(const std::vector<std::byte>& bodyBytes)
         : m_header(bodyBytes)
@@ -86,6 +118,7 @@ namespace Drill4dotNet
         const auto begin = reinterpret_cast<const BYTE*>(bodyBytes.data() + headerSize);
         const auto end = begin + codeSize;
         auto currentInstruction{ begin };
+        ArgumentConverter<OpArgsVal> converter { result };
         while (currentInstruction < end)
         {
             OpArgsVal inlineArguments;
@@ -107,9 +140,10 @@ namespace Drill4dotNet
     controlBehavior) \
             case opcode_t:: ## canonicalName : \
             { \
-                result.push_back( OpCodeVariant ( \
-                    OpCodeVariant::InstructionCode { std::byte { byte1 }, std::byte {byte2} }, \
-                    OpCodeVariant::VariantType(ConvertArgument<OpCodeArgumentType :: ## inlineArgumentType >(inlineArguments)))); \
+                converter.AppendStream<OpCodeArgumentType :: ## inlineArgumentType >( \
+                    std::byte { byte1 }, \
+                    std::byte { byte2 }, \
+                    inlineArguments); \
             } \
 \
             break;

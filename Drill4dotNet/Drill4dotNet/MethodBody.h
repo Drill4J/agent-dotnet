@@ -26,6 +26,11 @@ namespace Drill4dotNet
             uint8_t headerSize,
             const AbsoluteOffset codeSize);
 
+
+        // Specialized for .net's OpArgsVal to allow
+        // getting instruction arguments from it.
+        template <typename TOpArgsVal>
+        class ArgumentConverter;
     public:
         // Creates the object representation of the method body.
         // @param bodyBytes : the bytes of method body.
