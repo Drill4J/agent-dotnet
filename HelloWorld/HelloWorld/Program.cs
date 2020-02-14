@@ -9,8 +9,6 @@ namespace HelloWorld
             MyInjectionTarget();
 
             Console.WriteLine("Hello World!");
-            Console.WriteLine("Press Enter.");
-            Console.ReadLine();
         }
 
         private static void MyInjectionTarget()

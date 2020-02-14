@@ -4,21 +4,6 @@ This repository contains a native agent to profile .NET applications and to repo
 
 The profiler is a COM DLL loaded to Common Language Runtime process on startup. It provides a component class and implements necessary interfaces.
 
-Agent DLL binaries can be found under `./bin/$Platform/$Configuration/Drill4dotNet/Drill4dotNet.dll`, for example: `./bin/x64/Release/Drill4dotNet/Drill4dotNet.dll`
-
-The current version just outputs information to the console window. 
-
-- Start cmd.
-- Run `./setruntimeenv.cmd` in the top repository folder to configure the environment for profiling. It can be run without elevation. The environment settings affect both .NET Core runtime and .NET Framework CLR, whichever is installed.
-- Run a .NET application in the same console session, for example:
-    ```
-    dotnet.exe .\bin\x64\Release\HelloWorld\netcoreapp3.1\HelloWorld.dll
-    ```
-- The profiler prints to stdout the information about events from the target application executed in CLR.
-
-
-In addition to `setruntimeenv.cmd`, you can register the COM DLL in the system using command `regsvr32.exe Drill4dotNet.dll`. To register/unregister, you need administrative privileges.
-
 # Sources
 
 Source repository is located at GitHub: https://github.com/Drill4J/agent-dotnet
@@ -29,6 +14,24 @@ git clone --recurse-submodules https://github.com/Drill4J/agent-dotnet
 ```
 
 Note: `agent-dotnet` module depends on `dotnet/runtime` repository, located at GitHib: https://github.com/dotnet/runtime
+
+# Visual Studio 2019 installation
+
+The project is built with Visual Studio 2019 (or corresponding MS Build tools).
+
+Visual Studio 2019 installation configuration (required):
+
+- Workloads:
+  - Desktop development with C++;
+  - .NET desktop development;
+  - .NET Core cross-platform development.
+- Individual components (make sure the following ones are selected):
+  - MSVC v142 - VS 2019 C++ x64/x86 build tools (latest available);
+  - C++ ATL for latest v142 build tools (x86 & x64);
+  - Windows 10 SDK (latest available);
+  - .NET Core 3.1 SDK
+  - .NET Framework 4.7.2 SDK or .NET Framework 4.8 SDK
+
 
 # Solution and projects
 
@@ -47,7 +50,7 @@ Visual Studio 2019 solution `Drill4dotNet.sln` in the top repository folder cons
 
 
 `Drill4dotNet.vcxproj` project is created in ATL COM frame; it uses latest Platform SDK (10.0) and dependency profiling files from [dotnet/runtime](https://github.com/dotnet/runtime) repository as a submodule.
-It uses C++ 17 language standard.
+It is written in C++ 17 language standard.
 
 Note: Do not build (deselect in Batch Build and Configuration Manager) `Drill4dotNetPS.vcxproj`; it is reserved for the future.
 
@@ -55,7 +58,35 @@ Note: Do not build (deselect in Batch Build and Configuration Manager) Win32 con
 
 `HelloWorld.csproj` project requires .NET Core 3.1 SDK to be installed. If you have different version installed, change Target framework in the project properties. 
 
-`HelloWorldFramework.csproj` project requires .NET Framework 4.x SDK to be installed. If you have different version installed, change Target framework in the project properties. 
+`HelloWorldFramework.csproj` project requires .NET Framework 4.7.2 SDK to be installed. If you have different version installed, change Target framework in the project properties. 
+
+Note: You can run HelloWorld.csproj (set As StratUp Project) from the IDE and under debugger. The project defines necessary Environment variables under Debug page. 
+
+# Running Drill dotNet agent
+
+Agent DLL binaries can be found under `./bin/$Platform/$Configuration/Drill4dotNet/Drill4dotNet.dll`, for example: `./bin/x64/Release/Drill4dotNet/Drill4dotNet.dll`
+
+Sample projects binaries can be found here:
+- `./bin/$Platform/$Configuration/HelloWorld/netcoreapp3.1/HelloWorld.exe`
+- `./bin/$Platform/$Configuration/HelloWorldFramework/HelloWorldFramework.exe`
+
+The current version just outputs information to the console window. 
+
+- Start cmd. 
+- Configure cmd window to keep a large amount of lines: System menu / Properties / Layout / Screen Buffer Size / Height = 9999 (maximum).
+- Run `./setruntimeenv.cmd` in the top repository folder to configure the environment for profiling. It can be run without elevation. The environment settings affect both .NET Core runtime and .NET Framework CLR, whichever is installed and will be running in this console.
+- Run a .NET application in the same console session, for example:
+    ```
+    dotnet.exe .\bin\x64\Release\HelloWorld\netcoreapp3.1\HelloWorld.dll
+    ```
+- The profiler prints to stdout the information about events from the target application executed in CLR.
+- You can redirect the output to a file, for example:
+    ```
+    .\bin\x64\Release\HelloWorldFramework\HelloWorldFramework.exe >profiling.log
+    ```
+
+
+In addition to `setruntimeenv.cmd`, you can register the COM DLL in the system using command `regsvr32.exe Drill4dotNet.dll`. To register/unregister, you need administrative privileges.
 
 
 # Limitations
