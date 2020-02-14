@@ -63,6 +63,19 @@ namespace Drill4dotNet
         const ConstStreamPosition source,
         const LongJump::Offset offset);
 
+    // Searches for an instruction in the given
+    // instructions stream, which would be
+    // located in the given amount of bytes from the
+    // beginning of the method.
+    // Returns cend() of stream, if no corresponding
+    // position found.
+    // @param stream : the instructions stream to search in.
+    // @param offset : unsigned offset, in bytes, 0 corresponds
+    //     the first instruction of the method.
+    ConstStreamPosition ResolveAbsoluteOffset(
+        const InstructionStream& stream,
+        const AbsoluteOffset offset);
+
     // Searches for the position of the N-th instruction from
     // the beginning of the given instructions stream.
     // Returns cend() of stream, if no corresponding
@@ -79,6 +92,14 @@ namespace Drill4dotNet
     LongJump::Offset CalculateJumpOffset(
         const InstructionStream& stream,
         const ConstStreamPosition from,
+        const ConstStreamPosition to);
+
+    // Calculate distance in bytes between the
+    // method start and the given instruction.
+    // @param stream : the instructions stream the instruction belongs to.
+    // @param to : the instruction to calculate distance to.
+    AbsoluteOffset CalculateAbsoluteOffset(
+        const InstructionStream& instructionStream,
         const ConstStreamPosition to);
 
     // Returns the position in the instruction stream,

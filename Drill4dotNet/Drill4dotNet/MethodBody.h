@@ -2,6 +2,7 @@
 
 #include "OpCodes.h"
 #include "InstructionStream.h"
+#include "ExceptionsSection.h"
 #include "MethodHeader.h"
 
 namespace Drill4dotNet
@@ -23,6 +24,8 @@ namespace Drill4dotNet
         // The tool to emit new labels.
         LabelCreator m_labelCreator;
 
+        // Sections with descriptions of try-catch and try-finally clauses.
+        std::vector<ExceptionsSection> m_exceptionSections;
 
         // Specialized for .net's OpArgsVal to allow
         // getting instruction arguments from it.
@@ -92,6 +95,18 @@ namespace Drill4dotNet
         {
             return std::move(m_stream);
         }
+
+        // Gets the information about try-catch and try-finally clauses for reading.
+        const std::vector<ExceptionsSection>& ExceptionSections() const& noexcept
+        {
+            return m_exceptionSections;
+        }
+
+        // Gets the information about try-catch and try-finally clauses.
+        std::vector<ExceptionsSection> ExceptionSections() && noexcept
+        {
+            return std::move(m_exceptionSections);
+        }
     };
 
     // Allows printing the instructions to standard streams.
@@ -100,7 +115,7 @@ namespace Drill4dotNet
     {
         for (const auto& element : data.Stream())
         {
-            std::visit([&target](const auto& instructionOrLabel)
+            std::visit([&target, &sections = data.ExceptionSections()](const auto& instructionOrLabel)
                 {
                     using T = std::decay_t<decltype(instructionOrLabel)>;
                     target << instructionOrLabel;
@@ -112,6 +127,14 @@ namespace Drill4dotNet
                     else
                     {
                         target << L": ";
+
+                        for (const auto& section : sections)
+                        {
+                            for (const auto& clause : section.Clauses())
+                            {
+                                clause.WriteTryCatchIfNeeded(target, instructionOrLabel);
+                            }
+                        }
                     }
                 },
                 element);

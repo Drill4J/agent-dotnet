@@ -156,6 +156,18 @@ namespace Drill4dotNet
         return SkipLabels(currentInstruction, end);
     }
 
+    ConstStreamPosition ResolveAbsoluteOffset(
+        const InstructionStream& stream,
+        const AbsoluteOffset offset)
+    {
+        return SkipLabels(
+            ReachPositiveOffset(
+                stream.cbegin(),
+                stream.cend(),
+                offset),
+            stream.cend());
+    }
+
     ConstStreamPosition GetNthInstruction(const InstructionStream& stream, const size_t number)
     {
         ptrdiff_t instructions{ 0 };
@@ -214,6 +226,13 @@ namespace Drill4dotNet
         }
 
         return static_cast<LongJump::Offset>(result);
+    }
+
+    AbsoluteOffset CalculateAbsoluteOffset(
+        const InstructionStream& instructionStream,
+        const ConstStreamPosition to)
+    {
+        return CalculateDistance(instructionStream.cbegin(), to);
     }
 
     ConstStreamPosition FindLabel(
