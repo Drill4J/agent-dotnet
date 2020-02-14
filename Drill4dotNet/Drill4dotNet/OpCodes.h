@@ -11,6 +11,155 @@
 
 namespace Drill4dotNet
 {
+    // Represents a label, which can be put before an
+    // instruction to mark a specific location in the
+    // instructions stream.
+    class Label
+    {
+    public:
+        // Type of the label number.
+        using Id = uint32_t;
+
+    private:
+        // Stores the label number.
+        Id m_id;
+
+        // Creates a new Label with the given id.
+        // @param id : the id of the label.
+        constexpr Label(Id id)
+            : m_id { id }
+        {
+        }
+
+        // The constructor is not meant to be used directly.
+        // LabelCreator should be used instead to create new labels.
+        friend class LabelCreator;
+    public:
+
+        // The id of the label. Ids of labels
+        // inside one instructions stream are unique.
+        // But labels from different instructions stream
+        // may have the same id.
+        constexpr Id GetId() const
+        {
+            return m_id;
+        }
+    };
+
+    // Compares the given labels by Id.
+    // Returns true if the ids are the same.
+    // @param left : the first label to compare.
+    // @param right : the second label to compare.
+    constexpr bool operator==(const Label left, const Label right)
+    {
+        return left.GetId() == right.GetId();
+    }
+
+    // Compares the given labels by Id.
+    // Returns true if the ids are the different.
+    // @param left : the first label to compare.
+    // @param right : the second label to compare.
+    constexpr bool operator!=(const Label left, const Label right)
+    {
+        return !(left == right);
+    }
+
+    // Support for writing labels to standard output streams.
+    // @param target : the stream to output data to.
+    // @param value : the label to output.
+    template <typename TChar>
+    std::basic_ostream<TChar>& operator <<(
+        std::basic_ostream<TChar>& target,
+        Label value)
+    {
+        target << L"Label_" << value.GetId();
+        return target;
+    }
+
+    // Represents a jump from some instruction in the
+    // instructions stream.
+    // .NET stores the jump as an offset, in bytes,
+    // between instruction immediately following the branching
+    // (source), and the jump target instruction. This way, 0
+    // will mean the instruction immediately following the
+    // branching instruction.
+    // TOffset : type of byte offset between source and target
+    //     instructions. This type determines how far jump the
+    //     inline argument of the source instruction can store.
+    template <typename TOffset>
+    class Jump
+    {
+    private:
+        // The label before the target instruction.
+        Label m_label;
+
+    public:
+        // Type of byte offset between source and target
+        // instructions. This type determines how far jump the
+        // inline argument of the source instruction can store.
+        using Offset = TOffset;
+
+        // Gets the value indicating whether the
+        // given offset can be stored in the inline
+        // argument.
+        template <typename TSourceOffset>
+        static constexpr bool CanSafelyStoreOffset(const TSourceOffset offset) noexcept
+        {
+            return !Overflows<TOffset>(offset);
+        }
+
+        // Creates a new instance.
+        // @param label : the label before the target instruction.
+        constexpr Jump(const Label label)
+            : m_label(label)
+        {
+        }
+
+        // Gets the label before the target instruction.
+        constexpr Label Label() const
+        {
+            return m_label;
+        }
+    };
+
+    // Compares the given jumps by their targets.
+    // Returns true if the jumps have the same targets.
+    // @param left : the first jump to compare.
+    // @param right : the second jump to compare.
+    template <typename TOffset>
+    constexpr bool operator==(const Jump<TOffset> left, const Jump<TOffset> right)
+    {
+        return left.Label() == right.Label();
+    }
+
+    // Compares the given jumps by their targets.
+    // Returns true if the jumps have different targets.
+    // @param left : the first jump to compare.
+    // @param right : the second jump to compare.
+    template <typename TOffset>
+    constexpr bool operator!=(const Jump<TOffset> left, const Jump<TOffset> right)
+    {
+        return !(left == right);
+    }
+
+    // Support for writing jump targets to standard output streams.
+    // @param target : the stream to output data to.
+    // @param value : the jump to output.
+    template <typename TOffset, typename TChar>
+    std::basic_ostream<TChar>& operator <<(
+        std::basic_ostream<TChar>& target,
+        Jump<TOffset> value)
+    {
+        target << value.Label();
+        return target;
+    }
+
+    // Type of jumps which is used by the short form of branching instructions.
+    using ShortJump = Jump<int8_t>;
+
+    // Type of jumps which is used by the long form of branching instructions.
+    using LongJump = Jump<int32_t>;
+
     // Unit to measure sizes of instructions,
     // sizes of instructions streams, and
     // distances from instructions stream start to
@@ -27,7 +176,7 @@ namespace Drill4dotNet
         using InlineVar = uint16_t;
         using InlineI = int32_t;
         using InlineR = double;
-        using InlineBrTarget = int32_t;
+        using InlineBrTarget = LongJump;
         using InlineI8 = int64_t;
         using InlineMethod = uint32_t;
         using InlineField = uint32_t;
@@ -36,12 +185,12 @@ namespace Drill4dotNet
         using InlineSig = uint32_t;
         using InlineRVA = uint32_t;
         using InlineTok = uint32_t;
-        using InlineSwitch = std::vector<int32_t>;
+        using InlineSwitch = std::vector<LongJump>;
         using InlinePhi = std::vector<uint16_t>;
         using ShortInlineVar = uint8_t;
         using ShortInlineI = int8_t;
         using ShortInlineR = float;
-        using ShortInlineBrTarget = int8_t;
+        using ShortInlineBrTarget = ShortJump;
     };
 
     // Common base class for all opcodes.
@@ -466,6 +615,56 @@ public: \
 #include "UnDefineOpCodesGeneratorSpecializations.h"
 #undef OPDEF_REAL_INSTRUCTION
             }
+        }
+
+        template <typename TChar>
+        friend std::basic_ostream<TChar>& operator <<(
+            std::basic_ostream<TChar>& target,
+            const OpCodeVariant& variant)
+        {
+            variant.Visit([&target](const auto &opcode)
+            {
+                using T = std::decay_t<decltype(opcode)>;
+                target << T::Name();
+
+                if constexpr (T::HasArgument())
+                {
+                    target << L" ";
+                    if constexpr (std::is_same_v<T::ArgumentType, OpCodeArgumentType::InlineSwitch>
+                        || std::is_same_v<T::ArgumentType, OpCodeArgumentType::InlinePhi>)
+                    {
+                        const auto& argument = opcode.Argument();
+                        target << InSquareBrackets(argument.size()) << InCurlyBrackets(Delimitered(argument, L", "));
+                    }
+                    else
+                    {
+                        target << opcode.Argument();
+                    }
+                }
+
+                target << L";";
+            });
+
+            return target;
+        }
+
+        // Compares with another OpCodeVariant.
+        // Returns true if the other OpCodeVariant stores the
+        // same instruction with the same inline arguments.
+        // @param other : the OpCodeVariant to compare with.
+        bool operator==(const OpCodeVariant& other) const noexcept
+        {
+            return m_code == other.m_code && m_argument == other.m_argument;
+        }
+
+        // Compares with another OpCodeVariant.
+        // Returns true if the other OpCodeVariant stores the
+        // a different instruction, or the same instruction with
+        // different inline arguments.
+        // @param other : the OpCodeVariant to compare with.
+        bool operator!=(const OpCodeVariant& other) const noexcept
+        {
+            return !(*this == other);
         }
     };
 }

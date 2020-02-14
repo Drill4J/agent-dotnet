@@ -17,20 +17,30 @@ namespace Drill4dotNet
         // The header storing information about other method structures.
         MethodHeader m_header;
 
-        // The instructions.
+        // The instructions and labels.
         InstructionStream m_stream;
 
-        // Parses a byte representation of instructions into a vector.
-        static InstructionStream Decompile(
-            const std::vector<std::byte>& bodyBytes,
-            uint8_t headerSize,
-            const AbsoluteOffset codeSize);
+        // The tool to emit new labels.
+        LabelCreator m_labelCreator;
 
 
         // Specialized for .net's OpArgsVal to allow
         // getting instruction arguments from it.
         template <typename TOpArgsVal>
         class ArgumentConverter;
+
+        // Converts to the long form all short branching instructions,
+        // which jumps are too far to be stored in these short instructions.
+        void TurnJumpsToLongIfNeeded();
+
+        // Helper function for TurnJumpsToLongIfNeeded().
+        // If the given instructions stream position contains an instruction,
+        // and the instruction is a short branching instruction,
+        // and the jump in the instruction is too far to be stored in the instruction,
+        // replaces the instruction with the long jump alternative.
+        // Returns true if the instruction has been replaced.
+        bool ConvertJumpInstructionToLongIfNeeded(const StreamPosition instructionPosition);
+
     public:
         // Creates the object representation of the method body.
         // @param bodyBytes : the bytes of method body.
@@ -46,6 +56,18 @@ namespace Drill4dotNet
         void Insert(
             const ConstStreamPosition position,
             const OpCodeVariant opcode);
+
+        // Declares a new Label.
+        // For each created label MarkLabel must be called exactly
+        // 1 time to define the location the label points to.
+        Label CreateLabel();
+
+        // Defines where the given label points to.
+        // @param target : the position to which the label targets.
+        // @param label : the label which has not been yet defined.
+        void MarkLabel(
+            const ConstStreamPosition target,
+            const Label label);
 
         // Gets the beginning of the instructions list.
         ConstStreamPosition begin() const& noexcept
@@ -78,29 +100,22 @@ namespace Drill4dotNet
     {
         for (const auto& element : data.Stream())
         {
-            element.Visit([&target](const auto opcode)
+            std::visit([&target](const auto& instructionOrLabel)
                 {
-                using T = std::remove_cv_t<decltype(opcode)>;
-                target << T::Name();
+                    using T = std::decay_t<decltype(instructionOrLabel)>;
+                    target << instructionOrLabel;
 
-                if constexpr (T::HasArgument())
+                    if constexpr (std::is_same_v<T, OpCodeVariant>)
                     {
-                    target << L" ";
-                    if constexpr (std::is_same_v<T::ArgumentType, OpCodeArgumentType::InlineSwitch>
-                            || std::is_same_v<T::ArgumentType, OpCodeArgumentType::InlinePhi>)
-                        {
-                        const auto& argument = opcode.Argument();
-                        target << InSquareBrackets(argument.size()) << InCurlyBrackets(Delimitered(argument, L", "));
+                        target << std::endl;
                     }
                     else
                     {
-                        target << opcode.Argument();
-                            }
-                        }
-
-                target << L";" << std::endl;
-            });
+                        target << L": ";
                     }
+                },
+                element);
+        }
 
         return target;
     }
