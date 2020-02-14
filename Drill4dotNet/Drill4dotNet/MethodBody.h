@@ -1,6 +1,8 @@
 #pragma once
 
 #include "OpCodes.h"
+#include "InstructionStream.h"
+#include "MethodHeader.h"
 
 namespace Drill4dotNet
 {
@@ -12,38 +14,11 @@ namespace Drill4dotNet
     class MethodBody
     {
     private:
-        // 2 bits for tiny header, 12 bits for fat header
-        uint16_t m_flags;
-
-        // Size of header in bytes.
-        // Has value "1" for tiny header, or
-        // value from the fat header (typically 12)
-        uint8_t m_headerSize;
-
-        // fat header only
-        std::optional<uint16_t> m_maxStack;
-
-        // 6 bits for tiny header, 32 bits for fat header
-        AbsoluteOffset m_codeSize;
-
-        // 32 bits in fat header only
-        std::optional<uint32_t> m_localVariables;
-
-        // If there were a fat header bigger that the current
-        // standard.
-        std::vector<std::byte> m_fatHeaderRemainder;
+        // The header storing information about other method structures.
+        MethodHeader m_header;
 
         // The parsed instructions.
         std::vector<OpCodeVariant> m_instructions;
-
-        // Identifies the tiny method header type.
-        inline static const std::byte s_TinyHeaderFlag{ CorILMethod_TinyFormat };
-
-        // Allows to get the flags from the tiny header.
-        inline static const std::byte s_TinyHeaderFlagsMask{ 0b00000011 };
-
-        // Allows to get the instructions size from the tiny header.
-        inline static const std::byte s_TinyHeaderSizeMask{ ~s_TinyHeaderFlagsMask };
 
         // Parses a byte representation of instructions into a vector.
         static std::vector<OpCodeVariant> Decompile(

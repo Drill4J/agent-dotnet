@@ -1,7 +1,22 @@
 #pragma once
 
+#include <array>
+
 namespace Drill4dotNet
 {
+    // Appends the binary representation of the
+    // given object to the bytes vector.
+    // @param target : the vector to append bytes to.
+    // @param value : the object to extract raw bytes from.
+    template <typename T>
+    void AppendAsBytes(std::vector<std::byte>& target, const T& value)
+    {
+        for (const auto b : (std::array<std::byte, sizeof(T)>&)value)
+        {
+            target.push_back(b);
+        }
+    }
+
     // Gets the value indicating whether
     // the given numeric value cannot be converted to
     // another numeric type without an overflow.
