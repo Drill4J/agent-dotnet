@@ -1,8 +1,6 @@
 #include "pch.h"
 #include "MethodBody.h"
 
-#include <array>
-
 // The TARGET_* defines are only needed for <opinfo.cpp>
 #ifdef _M_AMD64
 #define TARGET_AMD64
@@ -68,34 +66,12 @@ namespace Drill4dotNet
     }
 
     MethodBody::MethodBody(const std::vector<std::byte>& bodyBytes)
+        : m_header(bodyBytes)
     {
-        if ((bodyBytes[0] & s_TinyHeaderFlagsMask) == s_TinyHeaderFlag)
-        { // tiny header
-            m_flags = static_cast<uint16_t>(bodyBytes[0] & s_TinyHeaderFlagsMask);
-            m_headerSize = sizeof(std::byte);
-            m_maxStack = std::nullopt;
-            m_codeSize = static_cast<AbsoluteOffset>(bodyBytes[0] & s_TinyHeaderSizeMask) >> 2;
-            m_localVariables = std::nullopt;
-        }
-        else
-        { // fat header
-            const IMAGE_COR_ILMETHOD_FAT& fatHeader
-                = *reinterpret_cast<const IMAGE_COR_ILMETHOD_FAT*>(bodyBytes.data());
-            m_flags = fatHeader.Flags;
-            m_headerSize = static_cast<uint8_t>(sizeof(uint32_t) * fatHeader.Size);
-            m_maxStack = static_cast<uint16_t>(fatHeader.MaxStack);
-            m_codeSize = fatHeader.CodeSize;
-            m_localVariables = fatHeader.LocalVarSigTok == 0
-                ? std::optional<uint32_t>(std::nullopt) : fatHeader.LocalVarSigTok;
-            m_fatHeaderRemainder.assign(
-                bodyBytes.cbegin() + sizeof(fatHeader),
-                bodyBytes.cbegin() + m_headerSize);
-        }
-
         m_instructions = Decompile(
             bodyBytes,
-            m_headerSize,
-            m_codeSize);
+            m_header.Size(),
+            m_header.CodeSize());
     }
 
     std::vector<OpCodeVariant> MethodBody::Decompile(
@@ -147,39 +123,12 @@ namespace Drill4dotNet
         return result;
     }
 
-    template <typename T>
-    void AppendAsBytes(std::vector<std::byte>& target, const T& value)
-    {
-        for (const auto b : (std::array<std::byte, sizeof(T)>&)value)
-        {
-            target.push_back(b);
-        }
-    }
-
     std::vector<std::byte> MethodBody::Compile() const
     {
         std::vector<std::byte> result{};
-        result.reserve(m_instructions.size() + m_headerSize); // each instruction takes at least 1 byte, so all this storage will be used
+        result.reserve(m_header.Size() + m_header.CodeSize());
 
-        if (m_headerSize == sizeof(std::byte)) // Dangerous, need to recalculate header type
-        { // tiny header
-            result.push_back(std::byte{ m_flags | m_codeSize << 2 }); // Dangerous, need to recalculate m_codeSize
-        }
-        else
-        { // fat header
-            IMAGE_COR_ILMETHOD_FAT header;
-            header.Flags = m_flags;
-            header.Size = m_headerSize / sizeof(uint32_t); // Dangerous, assert m_headerSize / sizeof(int32_t) == 0
-            header.MaxStack = m_maxStack.value(); // Dangerous, may be std::nullopt
-            header.LocalVarSigTok = m_localVariables.has_value() ? *m_localVariables : 0;
-            header.CodeSize = m_codeSize; // Dangerous, need to recalculate m_codeSize
-
-            AppendAsBytes(result, header);
-            std::copy(
-                m_fatHeaderRemainder.cbegin(),
-                m_fatHeaderRemainder.cend(),
-                std::back_inserter(result));
-        }
+        m_header.AppendToBytes(result);
 
         for (const auto& instruction : m_instructions)
         {
@@ -226,7 +175,13 @@ namespace Drill4dotNet
         const OpCodeVariant opcode)
     {
         // Dangerous: need to update branching instructions, exceptions handling, and maxstack
-        m_codeSize += opcode.SizeWithArgument();
+        const int64_t newCodeSize = int64_t { m_header.CodeSize() } + opcode.SizeWithArgument();
+        if (!m_header.IsValidCodeSize(newCodeSize))
+        {
+            throw std::overflow_error("There is no room in the target method to insert the new instruction");
+        }
+
+        m_header.SetCodeSize(static_cast<AbsoluteOffset>(newCodeSize));
         m_instructions.insert(position, opcode);
     }
 }
