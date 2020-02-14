@@ -525,13 +525,9 @@ namespace Drill4dotNet
 
             const auto insertionPosition
             {
-                std::find_if(
+                FindInstruction<OpCode_CEE_CALL>(
                     functionBody.begin(),
-                    functionBody.end(),
-                    [](const OpCodeVariant& variant)
-                    {
-                        return variant.HoldsAlternative<OpCode_CEE_CALL>();
-                    })
+                    functionBody.end())
             };
 
             if (insertionPosition == functionBody.end())

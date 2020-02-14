@@ -38,7 +38,12 @@ namespace Drill4dotNet
                 }
                 else if constexpr (std::is_same_v<T, OpCodeArgumentType::InlineSwitch>)
                 {
-                    return static_cast<AbsoluteOffset>(argument.size() * sizeof(int32_t) + sizeof(int32_t));
+                    return static_cast<AbsoluteOffset>(argument.size() * sizeof(LongJump::Offset) + sizeof(uint32_t));
+                }
+                else if constexpr (std::is_same_v<T, OpCodeArgumentType::ShortInlineBrTarget>
+                    || std::is_same_v<T, OpCodeArgumentType::InlineBrTarget>)
+                {
+                    return static_cast<AbsoluteOffset>(sizeof(T::Offset));
                 }
                 else
                 {
