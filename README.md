@@ -41,6 +41,7 @@ Visual Studio 2019 solution `Drill4dotNet.sln` in the top repository folder cons
   - `Drill4dotNet` folder with a couple of C++ projects:
     - `Drill4dotNet.vcxproj` to build the COM DLL `Drill4dotNet.dll`;
     - `Drill4dotNetPS.vcxproj` proxy/stub DLL (not used);
+	- `Drill4dotNet-Tests.vcxproj` tests for `Drill4dotNet.dll`;
   - `HelloWorld` folder with a couple of sample C# projects:
     - `HelloWorld.csproj` to build an application to run in .NET Core 3.1 runtime;
     - `HelloWorldFramework.csproj` to build an application to run in .NET Framework 4.x CLR;

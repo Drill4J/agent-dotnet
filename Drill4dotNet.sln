@@ -30,6 +30,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		setruntimeenv.cmd = setruntimeenv.cmd
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Drill4dotNet-Tests", "Drill4dotNet\Drill4dotNet-Tests\Drill4dotNet-Tests.vcxproj", "{CAB5EE21-B337-459B-998E-C6588620F35D}"
+	ProjectSection(ProjectDependencies) = postProject
+		{2AB82CE8-683B-4984-A566-9FFC579E3B47} = {2AB82CE8-683B-4984-A566-9FFC579E3B47}
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -50,6 +55,10 @@ Global
 		{2AB82CE8-683B-4984-A566-9FFC579E3B47}.Release|x64.Build.0 = Release|x64
 		{5A2A665D-549C-4698-95BC-E5BCF70473D4}.Debug|x64.ActiveCfg = Debug|x64
 		{5A2A665D-549C-4698-95BC-E5BCF70473D4}.Release|x64.ActiveCfg = Release|x64
+		{CAB5EE21-B337-459B-998E-C6588620F35D}.Debug|x64.ActiveCfg = Debug|x64
+		{CAB5EE21-B337-459B-998E-C6588620F35D}.Debug|x64.Build.0 = Debug|x64
+		{CAB5EE21-B337-459B-998E-C6588620F35D}.Release|x64.ActiveCfg = Release|x64
+		{CAB5EE21-B337-459B-998E-C6588620F35D}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -59,6 +68,7 @@ Global
 		{B3AD0592-681C-4C80-8DCD-D97F8ECCF041} = {E621FC48-1856-4CE5-AF7C-1D6A902B0861}
 		{2AB82CE8-683B-4984-A566-9FFC579E3B47} = {165F5CAF-C1CD-433E-9313-566EC89C8A2A}
 		{5A2A665D-549C-4698-95BC-E5BCF70473D4} = {165F5CAF-C1CD-433E-9313-566EC89C8A2A}
+		{CAB5EE21-B337-459B-998E-C6588620F35D} = {165F5CAF-C1CD-433E-9313-566EC89C8A2A}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {21899A74-A1ED-440D-8A6E-7136113832DA}
