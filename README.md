@@ -29,6 +29,7 @@ Visual Studio 2019 installation configuration (required):
   - MSVC v142 - VS 2019 C++ x64/x86 build tools (latest available);
   - C++ ATL for latest v142 build tools (x86 & x64);
   - Windows 10 SDK (latest available);
+  - Test Adapter for Google Test;
   - .NET Core 3.1 SDK
   - .NET Framework 4.7.2 SDK or .NET Framework 4.8 SDK
 
@@ -41,6 +42,7 @@ Visual Studio 2019 solution `Drill4dotNet.sln` in the top repository folder cons
   - `Drill4dotNet` folder with a couple of C++ projects:
     - `Drill4dotNet.vcxproj` to build the COM DLL `Drill4dotNet.dll`;
     - `Drill4dotNetPS.vcxproj` proxy/stub DLL (not used);
+    - `Drill4dotNet-Tests.vcxproj` unit tests for `Drill4dotNet.vcxproj`;
   - `HelloWorld` folder with a couple of sample C# projects:
     - `HelloWorld.csproj` to build an application to run in .NET Core 3.1 runtime;
     - `HelloWorldFramework.csproj` to build an application to run in .NET Framework 4.x CLR;
