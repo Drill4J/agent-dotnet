@@ -44,6 +44,27 @@
     <ClCompile Include="..\Drill4dotNet\MethodHeader.cpp">
       <Filter>Tested Source</Filter>
     </ClCompile>
+    <ClCompile Include="ExceptionClauseTests.cpp">
+      <Filter>Unit Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="ExceptionsSectionTests.cpp">
+      <Filter>Unit Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="InstructionStreamTests.cpp">
+      <Filter>Unit Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="MethodBodyTests.cpp">
+      <Filter>Unit Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="MethodHeaderTests.cpp">
+      <Filter>Unit Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="OpCodeVariantTests.cpp">
+      <Filter>Unit Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="ByteUtilsTests.cpp">
+      <Filter>Unit Tests</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
