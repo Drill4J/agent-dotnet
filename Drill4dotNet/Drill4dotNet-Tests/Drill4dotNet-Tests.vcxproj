@@ -44,8 +44,8 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Drill4dotNet{165F5CAF-C1CD-433E-9313-566EC89C8A2A}">
-      <Project>{165f5caf-c1cd-433e-9313-566ec89c8a2a}</Project>
+    <ProjectReference Include="..\Drill4dotNet\Drill4dotNet.vcxproj">
+      <Project>{2ab82ce8-683b-4984-a566-9ffc579e3b47}</Project>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
