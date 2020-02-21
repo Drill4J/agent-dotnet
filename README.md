@@ -43,6 +43,7 @@ Visual Studio 2019 solution `Drill4dotNet.sln` in the top repository folder cons
     - `Drill4dotNet.vcxproj` to build the COM DLL `Drill4dotNet.dll`;
     - `Drill4dotNetPS.vcxproj` proxy/stub DLL (not used);
     - `Drill4dotNet-Tests.vcxproj` unit tests for `Drill4dotNet.vcxproj`;
+      - This project automatically downloads and installs NuGet package `gmock.v1.10.0` to `./packages` folder;
   - `HelloWorld` folder with a couple of sample C# projects:
     - `HelloWorld.csproj` to build an application to run in .NET Core 3.1 runtime;
     - `HelloWorldFramework.csproj` to build an application to run in .NET Framework 4.x CLR;
@@ -51,7 +52,7 @@ Visual Studio 2019 solution `Drill4dotNet.sln` in the top repository folder cons
     - `setruntimeenv.cmd` (see above).
 
 
-`Drill4dotNet.vcxproj` project is created in ATL COM frame; it uses latest Platform SDK (10.0) and dependency profiling files from [dotnet/runtime](https://github.com/dotnet/runtime) repository as a submodule.
+`Drill4dotNet.vcxproj` project is created in ATL COM frame; it uses latest Platform SDK (10.0) and dependency profiling files from [dotnet/runtime](https://github.com/dotnet/runtime) repository as a submodule in `./dependencies` folder.
 It is written in C++ 17 language standard.
 
 Note: Do not build (deselect in Batch Build and Configuration Manager) `Drill4dotNetPS.vcxproj`; it is reserved for the future.
