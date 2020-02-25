@@ -6,9 +6,12 @@
 #include <unordered_map>
 #include "LogBuffer.h"
 #include "CorDataStructures.h"
+#include <filesystem>
 
 namespace Drill4dotNet
 {
+    extern std::filesystem::path s_Drill4dotNetLibFilePath;
+
     struct FunctionRuntimeInfo
     {
         unsigned long callCount = 0UL;

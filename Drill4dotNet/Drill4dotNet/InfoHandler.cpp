@@ -7,6 +7,8 @@
 
 namespace Drill4dotNet
 {
+    std::filesystem::path s_Drill4dotNetLibFilePath;
+
     InfoHandler::InfoHandler(std::wostream& log)
         : m_ostream(log)
     {
