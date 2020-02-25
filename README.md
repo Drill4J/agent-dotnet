@@ -44,6 +44,7 @@ Visual Studio 2019 solution `Drill4dotNet.sln` in the top repository folder cons
     - `Drill4dotNetPS.vcxproj` proxy/stub DLL (not used);
     - `Drill4dotNet-Tests.vcxproj` unit tests for `Drill4dotNet.vcxproj`;
       - This project automatically downloads and installs NuGet package `gmock.v1.10.0` to `./packages` folder;
+    - `Injection.csproj` to build .NET `Injection.dll` to be injected to the target application by the profiler.
   - `HelloWorld` folder with a couple of sample C# projects:
     - `HelloWorld.csproj` to build an application to run in .NET Core 3.1 runtime;
     - `HelloWorldFramework.csproj` to build an application to run in .NET Framework 4.x CLR;
@@ -67,7 +68,9 @@ Note: You can run HelloWorld.csproj (set As StratUp Project) from the IDE and un
 
 # Running Drill dotNet agent
 
-Agent DLL binaries can be found under `./bin/$Platform/$Configuration/Drill4dotNet/Drill4dotNet.dll`, for example: `./bin/x64/Release/Drill4dotNet/Drill4dotNet.dll`
+Agent DLL binaries can be found under `./bin/$Platform/$Configuration/Drill4dotNet/` (for example: `./bin/x64/Release/Drill4dotNet/`):
+- `Drill4dotNet.dll`
+- `Injection.dll`
 
 Sample projects binaries can be found here:
 - `./bin/$Platform/$Configuration/HelloWorld/netcoreapp3.1/HelloWorld.exe`

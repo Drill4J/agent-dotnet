@@ -305,4 +305,21 @@ namespace Drill4dotNet
             target.resize(newSize);
         }
     }
+
+    // If the given string has null characters at the end,
+    // removes them.
+    template<typename TChar>
+    std::basic_string<TChar>& TrimTrailingNulls(std::basic_string<TChar>& target)
+    {
+        using MyType = std::basic_string<TChar>;
+        if (target.size() > 0)
+        {
+            const auto newSize = target.find_last_not_of(L'\0');
+            if (newSize != MyType::npos)
+            {
+                target.resize(newSize+1);
+            }
+        }
+        return target;
+    }
 }

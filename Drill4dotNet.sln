@@ -18,6 +18,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HelloWorldFramework", "Hell
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Drill4dotNet", "Drill4dotNet\Drill4dotNet\Drill4dotNet.vcxproj", "{2AB82CE8-683B-4984-A566-9FFC579E3B47}"
+	ProjectSection(ProjectDependencies) = postProject
+		{2D761E31-20C2-47A6-B928-260C0F590A92} = {2D761E31-20C2-47A6-B928-260C0F590A92}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Drill4dotNetPS", "Drill4dotNet\Drill4dotNetPS\Drill4dotNetPS.vcxproj", "{5A2A665D-549C-4698-95BC-E5BCF70473D4}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -32,6 +35,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Drill4dotNet-Tests", "Drill4dotNet\Drill4dotNet-Tests\Drill4dotNet-Tests.vcxproj", "{CAB5EE21-B337-459B-998E-C6588620F35D}"
 	ProjectSection(ProjectDependencies) = postProject
+		{2D761E31-20C2-47A6-B928-260C0F590A92} = {2D761E31-20C2-47A6-B928-260C0F590A92}
 		{2AB82CE8-683B-4984-A566-9FFC579E3B47} = {2AB82CE8-683B-4984-A566-9FFC579E3B47}
 	EndProjectSection
 EndProject
@@ -39,6 +43,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Calculator", "HelloWorld\Ca
 	ProjectSection(ProjectDependencies) = postProject
 		{2AB82CE8-683B-4984-A566-9FFC579E3B47} = {2AB82CE8-683B-4984-A566-9FFC579E3B47}
 	EndProjectSection
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Injection", "Drill4dotNet\Injection\Injection.csproj", "{2D761E31-20C2-47A6-B928-260C0F590A92}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -68,6 +74,10 @@ Global
 		{FF353E74-9149-4160-82B2-2E6223743DA5}.Debug|x64.Build.0 = Debug|x64
 		{FF353E74-9149-4160-82B2-2E6223743DA5}.Release|x64.ActiveCfg = Release|x64
 		{FF353E74-9149-4160-82B2-2E6223743DA5}.Release|x64.Build.0 = Release|x64
+		{2D761E31-20C2-47A6-B928-260C0F590A92}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{2D761E31-20C2-47A6-B928-260C0F590A92}.Debug|x64.Build.0 = Debug|Any CPU
+		{2D761E31-20C2-47A6-B928-260C0F590A92}.Release|x64.ActiveCfg = Release|Any CPU
+		{2D761E31-20C2-47A6-B928-260C0F590A92}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -79,6 +89,7 @@ Global
 		{5A2A665D-549C-4698-95BC-E5BCF70473D4} = {165F5CAF-C1CD-433E-9313-566EC89C8A2A}
 		{CAB5EE21-B337-459B-998E-C6588620F35D} = {165F5CAF-C1CD-433E-9313-566EC89C8A2A}
 		{FF353E74-9149-4160-82B2-2E6223743DA5} = {E621FC48-1856-4CE5-AF7C-1D6A902B0861}
+		{2D761E31-20C2-47A6-B928-260C0F590A92} = {165F5CAF-C1CD-433E-9313-566EC89C8A2A}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {21899A74-A1ED-440D-8A6E-7136113832DA}

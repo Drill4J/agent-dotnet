@@ -153,6 +153,10 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
     </Link>
+    <PostBuildEvent>
+      <Command>copy "$(SolutionDir)bin\AnyCPU\$(Configuration)\Injection\netcoreapp3.1\Injection.dll" "$(OutDir)"</Command>
+      <Message>Copy injection.dll</Message>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -171,6 +175,10 @@
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
     </Link>
+    <PostBuildEvent>
+      <Command>copy "$(SolutionDir)bin\AnyCPU\$(Configuration)\Injection\netcoreapp3.1\Injection.dll" "$(OutDir)"</Command>
+      <Message>Copy injection.dll</Message>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
