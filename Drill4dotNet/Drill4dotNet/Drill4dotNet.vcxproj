@@ -264,6 +264,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CDrillProfiler.cpp" />
+    <ClCompile Include="CorGUIDs.cpp" />
     <ClCompile Include="CorProfilerInfo.cpp" />
     <ClCompile Include="CProfilerCallback.cpp" />
     <ClCompile Include="dllmain.cpp" />
