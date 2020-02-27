@@ -234,6 +234,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="ByteUtils.h" />
     <ClInclude Include="CoreInteract.h" />
     <ClInclude Include="MethodBody.h" />
     <ClInclude Include="MethodMalloc.h" />
