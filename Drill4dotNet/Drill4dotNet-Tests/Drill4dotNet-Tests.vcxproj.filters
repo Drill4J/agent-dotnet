@@ -29,6 +29,9 @@
     <ClCompile Include="CProfilerCallbackTest.cpp">
       <Filter>Unit Tests</Filter>
     </ClCompile>
+    <ClCompile Include="..\Drill4dotNet\CorGUIDs.cpp">
+      <Filter>Tested Source</Filter>
+    </ClCompile>
     <ClCompile Include="..\Drill4dotNet\InstructionStream.cpp">
       <Filter>Tested Source</Filter>
     </ClCompile>

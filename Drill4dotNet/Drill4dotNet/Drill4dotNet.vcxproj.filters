@@ -135,6 +135,9 @@
     <ClCompile Include="CorProfilerInfo.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="CorGUIDs.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="InstructionStream.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
