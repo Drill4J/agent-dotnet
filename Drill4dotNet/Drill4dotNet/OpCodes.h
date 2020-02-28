@@ -8,6 +8,7 @@
 #include <type_traits>
 
 #include "ByteUtils.h"
+#include "CodeSize.h"
 
 namespace Drill4dotNet
 {
@@ -159,12 +160,6 @@ namespace Drill4dotNet
 
     // Type of jumps which is used by the long form of branching instructions.
     using LongJump = Jump<int32_t>;
-
-    // Unit to measure sizes of instructions,
-    // sizes of instructions streams, and
-    // distances from instructions stream start to
-    // a specific instruction.
-    using AbsoluteOffset = uint32_t;
 
     // Defines possible options for type of
     // an OpCode inline argument, for reference see
@@ -424,7 +419,7 @@ namespace Drill4dotNet
             }
 
             // Gets the size of binary representation, in bytes.
-            constexpr AbsoluteOffset Size() const
+            constexpr CodeSize Size() const
             {
                 return IsOneByte() ? 1 : 2;
             }
@@ -581,7 +576,7 @@ public: \
         // Gets the size of binary representation of the
         // opcode this variant contains, including the instruction
         // code and the inline argument (if any).
-        AbsoluteOffset SizeWithArgument() const;
+        CodeSize SizeWithArgument() const;
 
         // Calls the visitor with the instruction this variant contains.
         // TVisitor must provide overload for each possible OpCode_* class.

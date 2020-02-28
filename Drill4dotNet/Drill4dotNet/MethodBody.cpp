@@ -161,7 +161,7 @@ namespace Drill4dotNet
         // const BYTE* OpInfo::fetch(const BYTE * instrPtr, OpArgsVal * args)
         OpInfo parser{};
         const auto begin = reinterpret_cast<const BYTE*>(bodyBytes.data() + m_header.Size());
-        const auto end = begin + m_header.CodeSize();
+        const auto end = begin + CodeSize::ValueType { m_header.CodeSize() };
         auto currentInstruction{ begin };
         ArgumentConverter<OpArgsVal> converter { m_stream, m_labelCreator };
         while (currentInstruction < end)
@@ -201,7 +201,7 @@ namespace Drill4dotNet
 
         if (m_header.HasExceptionsSections())
         {
-            auto codeEnd = bodyBytes.cbegin() + m_header.Size() + m_header.CodeSize();
+            auto codeEnd = bodyBytes.cbegin() + m_header.Size() + CodeSize::ValueType { m_header.CodeSize() };
             auto sectionBeginning = codeEnd + AdvanceToBoundary<4>(codeEnd, bodyBytes);
             bool moreSections;
             do
@@ -241,7 +241,7 @@ namespace Drill4dotNet
     std::vector<std::byte> MethodBody::Compile() const
     {
         std::vector<std::byte> result{};
-        result.reserve(m_header.Size() + m_header.CodeSize());
+        result.reserve(m_header.CodeSize() + m_header.Size());
 
         m_header.AppendToBytes(result);
 
@@ -262,7 +262,7 @@ namespace Drill4dotNet
                         }
                         else if constexpr (std::is_same_v<T, OpCodeArgumentType::InlineSwitch>)
                         {
-                            AppendAsBytes(result, static_cast<AbsoluteOffset>(argument.size()));
+                            AppendAsBytes(result, CodeSize(static_cast<CodeSize::NonOverflowingType>(argument.size())));
                             for (const auto jump : argument)
                             {
                                 auto labelPosition = FindLabel(m_stream, jump.Label());
@@ -341,13 +341,7 @@ namespace Drill4dotNet
         const OpCodeVariant opcode)
     {
         // Dangerous: maxstack
-        const int64_t newCodeSize = int64_t { m_header.CodeSize() } + opcode.SizeWithArgument();
-        if (!m_header.IsValidCodeSize(newCodeSize))
-        {
-            throw std::overflow_error("There is no room in the target method to insert the new instruction");
-        }
-
-        m_header.SetCodeSize(static_cast<AbsoluteOffset>(newCodeSize));
+        m_header.SetCodeSize(m_header.CodeSize() + opcode.SizeWithArgument());
         m_stream.insert(position, opcode);
         TurnJumpsToLongIfNeeded();
     }
@@ -460,16 +454,8 @@ namespace Drill4dotNet
                         }
 
                         OpCodeVariant newInstruction{ TLong(LongJump(label)) };
-                        const int64_t newCodeSize = int64_t{ m_header.CodeSize() }
-                            + newInstruction.SizeWithArgument()
-                            - instruction->SizeWithArgument();
-
-                        if (!m_header.IsValidCodeSize(newCodeSize))
-                        {
-                            throw std::overflow_error("There is no room in the target method to convert an existing instruction to long variant");
-                        }
-
-                        m_header.SetCodeSize(static_cast<AbsoluteOffset>(newCodeSize));
+                        m_header.SetCodeSize(
+                            m_header.CodeSize() + newInstruction.SizeWithArgument() - instruction->SizeWithArgument());
                         *instructionPosition = newInstruction;
 
                         result = true;

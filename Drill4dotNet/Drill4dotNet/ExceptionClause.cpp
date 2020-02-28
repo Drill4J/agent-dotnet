@@ -5,10 +5,10 @@
 namespace Drill4dotNet
 {
     // Maximum size of a protected code block, which can be represented by a small header.
-    const uint8_t s_MaxSmallExceptionClauseCodeSize = std::numeric_limits<uint8_t>::max();
+    const CodeSize::NonOverflowingType s_MaxSmallExceptionClauseCodeSize = std::numeric_limits<uint8_t>::max();
 
     // Maximum offset of a protected code block, which can be represented by a small header.
-    const uint16_t s_MaxSmallExceptionClauseOffset = std::numeric_limits<uint16_t>::max();
+    const CodeSize::NonOverflowingType s_MaxSmallExceptionClauseOffset = std::numeric_limits<uint16_t>::max();
 
     template <typename THeader>
     ExceptionClause::ExceptionClause(
@@ -20,19 +20,19 @@ namespace Drill4dotNet
         m_tryOffset{ CreateLabelAtAbsoluteOffset(
             target,
             labelCreator,
-            static_cast<AbsoluteOffset>(header.TryOffset)) },
+            header.TryOffset) },
         m_tryEndOffset{ CreateLabelAtAbsoluteOffset(
             target,
             labelCreator,
-            static_cast<AbsoluteOffset>(header.TryOffset + header.TryLength)) },
+            header.TryOffset + header.TryLength) },
         m_handlerOffset{ CreateLabelAtAbsoluteOffset(
             target,
             labelCreator,
-            static_cast<AbsoluteOffset>(header.HandlerOffset)) },
+            header.HandlerOffset) },
         m_handlerEndOffset{ CreateLabelAtAbsoluteOffset(
             target,
             labelCreator,
-            static_cast<AbsoluteOffset>(header.HandlerOffset + header.HandlerLength)) },
+            header.HandlerOffset + header.HandlerLength) },
         m_target{ target }
     {
         if ((header.Flags & COR_ILEXCEPTION_CLAUSE_FILTER) != 0)
@@ -40,7 +40,7 @@ namespace Drill4dotNet
             m_handler = CreateLabelAtAbsoluteOffset(
                 target,
                 labelCreator,
-                static_cast<AbsoluteOffset>(header.FilterOffset));
+                header.FilterOffset);
         }
         else
         {
@@ -73,7 +73,7 @@ namespace Drill4dotNet
     Label ExceptionClause::CreateLabelAtAbsoluteOffset(
         InstructionStream& target,
         LabelCreator& labelCreator,
-        const AbsoluteOffset offset)
+        const DWORD offset)
     {
         const ConstStreamPosition insertionPoint = ResolveAbsoluteOffset(target, offset);
         if (insertionPoint == target.cend())
@@ -101,17 +101,17 @@ namespace Drill4dotNet
         const Label begin,
         const Label end) const
     {
-        const LongJump::Offset beginOffset = CalculateAbsoluteOffset(begin);
+        const CodeSize::NonOverflowingType beginOffset { CalculateAbsoluteOffset(begin) };
         if (beginOffset > s_MaxSmallExceptionClauseOffset)
         {
             return false;
         }
 
-        const LongJump::Offset endOffset = CalculateAbsoluteOffset(end);
+        const CodeSize::NonOverflowingType endOffset { CalculateAbsoluteOffset(end) };
         return endOffset - beginOffset <= s_MaxSmallExceptionClauseCodeSize;
     }
 
-    AbsoluteOffset ExceptionClause::CalculateAbsoluteOffset(const Label label) const
+    CodeSize::ValueType ExceptionClause::CalculateAbsoluteOffset(const Label label) const
     {
         const ConstStreamPosition labelPosition { FindLabel(m_target, label) };
         if (labelPosition == m_target.cend())
@@ -119,7 +119,7 @@ namespace Drill4dotNet
             throw std::logic_error("Compilation failed: unresolved label.");
         }
 
-        return Drill4dotNet::CalculateAbsoluteOffset(m_target, labelPosition);
+        return CodeSize::ValueType{ Drill4dotNet::CalculateAbsoluteOffset(m_target, labelPosition) };
     }
 
     template <typename Header>
@@ -127,7 +127,7 @@ namespace Drill4dotNet
     {
         Header result{};
         result.Flags = m_flags;
-        result.TryOffset = CalculateAbsoluteOffset(m_tryOffset);
+        result.TryOffset =  CalculateAbsoluteOffset(m_tryOffset);
         result.TryLength = CalculateAbsoluteOffset(m_tryEndOffset) - result.TryOffset;
         result.HandlerOffset = CalculateAbsoluteOffset(m_handlerOffset);
         result.HandlerLength = CalculateAbsoluteOffset(m_handlerEndOffset) - result.HandlerOffset;

@@ -9,37 +9,109 @@ namespace Drill4dotNet
     // sizes of instructions streams.
     class CodeSize
     {
+    public:
+        using ValueType = uint32_t;
+        using NonOverflowingType = int64_t;
+
     private:
-        uint32_t m_size;
+        ValueType m_size;
 
     public:
-        using NonOverflowingSize = int64_t;
-
-        constexpr static bool IsValidCodeSize(NonOverflowingSize size) noexcept
+        constexpr static bool IsValidCodeSize(const NonOverflowingType size) noexcept
         {
-            // return !Overflows...
+            using SizeType = decltype(std::declval<CodeSize>().m_size);
+            return !Overflows<SizeType>(size);
         }
 
-        constexpr CodeSize(uint32_t size) noexcept
-        {}
+        constexpr CodeSize(const ValueType size) noexcept
+            : m_size(size)
+        {
+        }
 
-        constexpr CodeSize(NonOverflowingSize size)
+        explicit constexpr CodeSize(const NonOverflowingType size)
+            : m_size(0)
         {
             if (!IsValidCodeSize(size))
             {
-                throw 0; // ...
+                throw std::runtime_error("The given size cannot be represented as CodeSize");
             }
+
+            m_size = size;
         }
 
-        operator uint32_t() const noexcept;
-        operator NonOverflowing() const noexcept;
+        constexpr explicit operator ValueType() const noexcept
+        {
+            return m_size;
+        }
 
-        operator <<() const;
-
-    
+        constexpr explicit operator NonOverflowingType() const noexcept
+        {
+            return m_size;
+        }
     };
 
-    NonOverflowing operator +(CodeSize a, CodeSize b);
-    NonOverflowing operator +(CodeSize::NonOverflowing a, CodeSize b);
-    NonOverflowing operator +(CodeSize a, CodeSize::NonOverflowing b);
+    constexpr CodeSize::NonOverflowingType operator+(const CodeSize a, const CodeSize::NonOverflowingType b) noexcept
+    {
+        return b + CodeSize::NonOverflowingType { a };
+    }
+
+    constexpr CodeSize::NonOverflowingType operator+(const CodeSize a, const CodeSize b) noexcept
+    {
+        return a + CodeSize::NonOverflowingType { b };
+    }
+
+    constexpr CodeSize::NonOverflowingType operator+(const CodeSize::NonOverflowingType a, const CodeSize b) noexcept
+    {
+        return b + a;
+    }
+
+    constexpr CodeSize::NonOverflowingType operator-(const CodeSize a) noexcept
+    {
+        return -CodeSize::NonOverflowingType { a };
+    }
+
+    constexpr CodeSize::NonOverflowingType operator-(const CodeSize a, const CodeSize::NonOverflowingType b) noexcept
+    {
+        return a + (-b);
+    }
+
+    constexpr CodeSize::NonOverflowingType operator-(const CodeSize a, const CodeSize b) noexcept
+    {
+        return a + (-b);
+    }
+
+    constexpr CodeSize::NonOverflowingType operator-(const CodeSize::NonOverflowingType a, const CodeSize b) noexcept
+    {
+        return a + (-b);
+    }
+
+    constexpr CodeSize::NonOverflowingType operator*(const CodeSize::NonOverflowingType a, const CodeSize b) noexcept
+    {
+        return a * CodeSize::NonOverflowingType { b };
+    }
+
+    constexpr CodeSize::NonOverflowingType operator*(const CodeSize a, const CodeSize::NonOverflowingType b) noexcept
+    {
+        return b * a;
+    }
+
+    constexpr CodeSize::NonOverflowingType operator*(const CodeSize a, const CodeSize b) noexcept
+    {
+        return CodeSize::NonOverflowingType { a } * b;
+    }
+
+    constexpr CodeSize::NonOverflowingType operator/(const CodeSize::NonOverflowingType a, const CodeSize b) noexcept
+    {
+        return a / CodeSize::NonOverflowingType{ b };
+    }
+
+    constexpr CodeSize::NonOverflowingType operator/(const CodeSize a, const CodeSize::NonOverflowingType b) noexcept
+    {
+        return CodeSize::NonOverflowingType { a } / b;
+    }
+
+    constexpr CodeSize::NonOverflowingType operator/(const CodeSize a, const CodeSize b) noexcept
+    {
+        return CodeSize::NonOverflowingType { a } / b;
+    }
 }

@@ -22,32 +22,32 @@ namespace Drill4dotNet
         return !std::holds_alternative<std::monostate>(m_argument);
     }
 
-    AbsoluteOffset OpCodeVariant::SizeWithArgument() const
+    CodeSize OpCodeVariant::SizeWithArgument() const
     {
-        AbsoluteOffset instructionSize { m_code.Size() };
-        return instructionSize + std::visit([](const auto& argument)
+        const CodeSize instructionSize { m_code.Size() };
+        return instructionSize + std::visit([](const auto& argument) -> CodeSize
             {
                 using T = std::decay_t<decltype(argument)>;
                 if constexpr (std::is_same_v<T, std::monostate>)
                 {
-                    return static_cast<AbsoluteOffset>(0);
+                    return 0;
                 }
                 else if constexpr (std::is_same_v<T, OpCodeArgumentType::InlinePhi>)
                 {
-                    return static_cast<AbsoluteOffset>(argument.size() * sizeof(uint16_t) + sizeof(uint8_t));
+                    return argument.size() * sizeof(uint16_t) + sizeof(uint8_t);
                 }
                 else if constexpr (std::is_same_v<T, OpCodeArgumentType::InlineSwitch>)
                 {
-                    return static_cast<AbsoluteOffset>(argument.size() * sizeof(LongJump::Offset) + sizeof(uint32_t));
+                    return argument.size() * sizeof(LongJump::Offset) + sizeof(uint32_t);
                 }
                 else if constexpr (std::is_same_v<T, OpCodeArgumentType::ShortInlineBrTarget>
                     || std::is_same_v<T, OpCodeArgumentType::InlineBrTarget>)
                 {
-                    return static_cast<AbsoluteOffset>(sizeof(T::Offset));
+                    return sizeof(T::Offset);
                 }
                 else
                 {
-                    return static_cast<AbsoluteOffset>(sizeof(argument));
+                    return sizeof(argument);
                 }
             },
             m_argument);

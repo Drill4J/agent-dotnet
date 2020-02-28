@@ -27,7 +27,7 @@ namespace Drill4dotNet
         std::optional<uint16_t> m_maxStack;
 
         // 6 bits for tiny header, 32 bits for fat header
-        AbsoluteOffset m_codeSize;
+        CodeSize m_codeSize{ uint32_t{0} };
 
         // 32 bits in fat header only
         std::optional<uint32_t> m_localVariables;
@@ -73,13 +73,13 @@ namespace Drill4dotNet
         }
 
         // Size of the instructions stream, in bytes.
-        constexpr AbsoluteOffset CodeSize() const noexcept
+        constexpr CodeSize CodeSize() const noexcept
         {
             return m_codeSize;
         }
 
         // Sets the size of the instructions stream, in bytes.
-        void SetCodeSize(const AbsoluteOffset codeSize) noexcept;
+        void SetCodeSize(const Drill4dotNet::CodeSize codeSize) noexcept;
 
         // Gets the value indicating whether
         // this header can store the given length of an

@@ -9,17 +9,17 @@ namespace Drill4dotNet
     // If the given stream element is an instruction, returns
     // its size with argument, in bytes. Returns 0 for label.
     // @param position : instruction or label.
-    AbsoluteOffset InstructionSize(const StreamElement& position) noexcept
+    CodeSize InstructionSize(const StreamElement& position) noexcept
     {
         return std::visit(
-            [](const auto& instruction)
+            [](const auto& instruction)->CodeSize
             {
                 if constexpr (std::is_same_v<std::decay_t<decltype(instruction)>, OpCodeVariant>)
                 {
                     return instruction.SizeWithArgument();
                 }
 
-                return AbsoluteOffset { 0 };
+                return 0;
             },
             position);
     }
@@ -34,20 +34,20 @@ namespace Drill4dotNet
     ConstStreamPosition ReachPositiveOffset(
         const ConstStreamPosition start,
         const ConstStreamPosition end,
-        const AbsoluteOffset target)
+        const CodeSize target)
     {
-        AbsoluteOffset distance { 0 };
+        CodeSize::NonOverflowingType distance { 0 };
         return std::find_if(
             start,
             end,
             [&distance, target](const StreamElement& instruction)
             {
-                if (distance == target)
+                if (distance == CodeSize::NonOverflowingType{ target })
                 {
                     return true;
                 }
 
-                distance += InstructionSize(instruction);
+                distance = distance + InstructionSize(instruction);
                 return false;
             });
     }
@@ -66,12 +66,12 @@ namespace Drill4dotNet
         const ConstStreamPosition end,
         const LongJump::Offset target)
     {
-        AbsoluteOffset distance { 0 };
+        CodeSize::NonOverflowingType distance { 0 };
         ConstStreamPosition current { start };
         while (current != begin)
         {
             --current;
-            distance -= InstructionSize(*current);
+            distance = distance - InstructionSize(*current);
             if (distance == target)
             {
                 return current;
@@ -158,7 +158,7 @@ namespace Drill4dotNet
 
     ConstStreamPosition ResolveAbsoluteOffset(
         const InstructionStream& stream,
-        const AbsoluteOffset offset)
+        const CodeSize offset)
     {
         return SkipLabels(
             ReachPositiveOffset(
@@ -194,7 +194,7 @@ namespace Drill4dotNet
     // @param from : the first instruction to count.
     // @param to : the first instruction not to count.
     //     Must be after from.
-    AbsoluteOffset CalculateDistance(
+    CodeSize::NonOverflowingType CalculateDistance(
         const ConstStreamPosition from,
         const ConstStreamPosition to)
     {
@@ -203,8 +203,8 @@ namespace Drill4dotNet
         return std::accumulate(
             from,
             to,
-            AbsoluteOffset { 0 },
-            [](const AbsoluteOffset sum, const StreamElement& variant) noexcept
+            CodeSize::NonOverflowingType { 0 },
+            [](const CodeSize::NonOverflowingType sum, const StreamElement& variant) noexcept
             {
                 return sum + InstructionSize(variant);
             });
@@ -228,7 +228,7 @@ namespace Drill4dotNet
         return static_cast<LongJump::Offset>(result);
     }
 
-    AbsoluteOffset CalculateAbsoluteOffset(
+    CodeSize CalculateAbsoluteOffset(
         const InstructionStream& instructionStream,
         const ConstStreamPosition to)
     {

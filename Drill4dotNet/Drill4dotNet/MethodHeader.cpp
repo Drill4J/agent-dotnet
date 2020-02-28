@@ -22,7 +22,7 @@ namespace Drill4dotNet
             m_flags = static_cast<uint16_t>(firstByte & s_TinyHeaderFlagsMask);
             m_headerSize = 1;
             m_maxStack = std::nullopt;
-            m_codeSize = static_cast<AbsoluteOffset>(firstByte & s_TinyHeaderSizeMask) >> 2;
+            m_codeSize = static_cast<uint32_t>((firstByte & s_TinyHeaderSizeMask) >> 2);
             m_localVariables = std::nullopt;
         }
         else
@@ -57,7 +57,7 @@ namespace Drill4dotNet
     {
         if (m_headerSize == sizeof(std::byte)) // Dangerous, need to recalculate header type
         { // tiny header
-            target.push_back(std::byte{ m_flags | m_codeSize << 2 });
+            target.push_back(std::byte{ m_flags | CodeSize::ValueType { m_codeSize } << 2 });
         }
         else
         { // fat header
@@ -66,7 +66,7 @@ namespace Drill4dotNet
             header.Size = m_headerSize / sizeof(uint32_t); // Dangerous, assert m_headerSize / sizeof(int32_t) == 0
             header.MaxStack = m_maxStack.value(); // Dangerous, may be std::nullopt
             header.LocalVarSigTok = m_localVariables.has_value() ? *m_localVariables : 0;
-            header.CodeSize = m_codeSize; // Dangerous, need to recalculate m_codeSize
+            header.CodeSize = CodeSize::ValueType { m_codeSize };
 
             AppendAsBytes(target, header);
             std::copy(
@@ -76,7 +76,7 @@ namespace Drill4dotNet
         }
     }
 
-    void MethodHeader::SetCodeSize(const AbsoluteOffset codeSize) noexcept
+    void MethodHeader::SetCodeSize(const Drill4dotNet::CodeSize codeSize) noexcept
     {
         m_codeSize = codeSize;
     }

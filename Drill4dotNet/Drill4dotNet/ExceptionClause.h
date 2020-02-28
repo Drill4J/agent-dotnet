@@ -48,7 +48,7 @@ namespace Drill4dotNet
         static Label CreateLabelAtAbsoluteOffset(
             InstructionStream& target,
             LabelCreator& labelCreator,
-            const AbsoluteOffset offset);
+            const DWORD offset);
 
         // Creates a new instance from the given type of header.
         // Adds new labels to the target instructions stream.
@@ -69,7 +69,7 @@ namespace Drill4dotNet
 
         // Calculates the absolute offset.
         // @param label : the label to calculate offset of.
-        AbsoluteOffset CalculateAbsoluteOffset(const Label label) const;
+        CodeSize::ValueType CalculateAbsoluteOffset(const Label label) const;
 
         // Creates a header of the given type, storing the
         // information from this instance.

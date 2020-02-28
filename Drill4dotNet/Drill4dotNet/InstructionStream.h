@@ -74,7 +74,7 @@ namespace Drill4dotNet
     //     the first instruction of the method.
     ConstStreamPosition ResolveAbsoluteOffset(
         const InstructionStream& stream,
-        const AbsoluteOffset offset);
+        const CodeSize offset);
 
     // Searches for the position of the N-th instruction from
     // the beginning of the given instructions stream.
@@ -98,7 +98,7 @@ namespace Drill4dotNet
     // method start and the given instruction.
     // @param stream : the instructions stream the instruction belongs to.
     // @param to : the instruction to calculate distance to.
-    AbsoluteOffset CalculateAbsoluteOffset(
+    CodeSize CalculateAbsoluteOffset(
         const InstructionStream& instructionStream,
         const ConstStreamPosition to);
 
