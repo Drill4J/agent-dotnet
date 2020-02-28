@@ -46,37 +46,44 @@ namespace Drill4dotNet
             LongJump::Offset Offset;
         };
 
+        struct ResultItem
+        {
+            OpCodeVariant Instruction{};
+
+            std::vector<Jump> OutgoingJumps{};
+        };
+
         // The instructions stream to store parsed instructions.
-        InstructionStream& Target;
+        std::vector<ResultItem> Result{};
 
         // The tool to emit new labels.
-        LabelCreator& LabelCreator;
-
-        // For each position in Target, has corresponding vector
-        // of jumps from that position.
-        std::vector<std::vector<Jump>> JumpOffsets;
+        LabelCreator LabelCreator{};
 
     private:
+        template <typename TJump>
+        struct CreateJumpResult
+        {
+            TJump InlineArgument;
+            Jump Target;
+        };
+
         // Adds a new Jump with the given offset to JumpOffsets.
         // Returns a Jump to store in a branching instruction argument.
         // TJump : ShortJump or LongJump
         // @param jumpOffset : the offset in bytes.
         template <typename TJump>
-        TJump CreateJump(const LongJump::Offset jumpOffset)
+        CreateJumpResult<TJump> CreateJump(const LongJump::Offset jumpOffset)
         {
             const Label label { LabelCreator.CreateLabel() };
-            JumpOffsets.back().push_back( Jump { label, jumpOffset } );
-            return TJump { label };
+            return CreateJumpResult<TJump>{
+                TJump { label },
+                Jump { label, jumpOffset } };
         }
 
     public:
 
         // Creates a new converter with the given values.
-        ArgumentConverter(
-            InstructionStream& target,
-            Drill4dotNet::LabelCreator& labelCreator) noexcept
-            : Target { target },
-            LabelCreator { labelCreator }
+        ArgumentConverter()
         {
         }
 
@@ -94,7 +101,7 @@ namespace Drill4dotNet
         {
             OpCodeVariant::InstructionCode code{ firstByte, secondByte };
             OpCodeVariant::VariantType argument{};
-            JumpOffsets.emplace_back();
+            std::vector<Jump> jumps{};
             if constexpr (std::is_same_v<TArgument, OpCodeArgumentType::InlineNone>)
             {
                 argument = std::monostate{};
@@ -119,9 +126,12 @@ namespace Drill4dotNet
 
                 std::vector<LongJump> jumpTable{};
                 jumpTable.reserve(count);
-                std::for_each(begin, end, [this, &jumpTable](LongJump::Offset offset)
+                jumps.reserve(count);
+                std::for_each(begin, end, [this, &jumps, &jumpTable](LongJump::Offset offset)
                     {
-                        jumpTable.push_back(CreateJump<LongJump>(offset));
+                        const auto jump { CreateJump<LongJump>(offset) };
+                        jumps.push_back(jump.Target);
+                        jumpTable.push_back(jump.InlineArgument);
                     });
 
                 argument = jumpTable;
@@ -138,19 +148,26 @@ namespace Drill4dotNet
             {
                 const LongJump::Offset offset { static_cast<ShortJump::Offset>(
                     rawArgument.i) };
-                argument = CreateJump<TArgument>(offset);
+                const auto jump { CreateJump<TArgument>(offset) };
+                jumps.push_back(jump.Target);
+                argument = jump.InlineArgument;
             }
             else if constexpr (
                 std::is_same_v<TArgument, OpCodeArgumentType::InlineBrTarget>)
             {
-                argument = CreateJump<TArgument>(rawArgument.i);
+                const auto jump{ CreateJump<TArgument>(rawArgument.i) };
+                jumps.push_back(jump.Target);
+                argument = jump.InlineArgument;
             }
             else
             {
                 argument = static_cast<TArgument>(rawArgument.i);
             }
 
-            Target.emplace_back(OpCodeVariant(code, argument));
+            Result.push_back(
+                ResultItem {
+                    OpCodeVariant(code, argument),
+                    jumps });
         }
     };
 
@@ -163,7 +180,7 @@ namespace Drill4dotNet
         const auto begin = reinterpret_cast<const BYTE*>(bodyBytes.data() + m_header.Size());
         const auto end = begin + CodeSize::ValueType { m_header.CodeSize() };
         auto currentInstruction{ begin };
-        ArgumentConverter<OpArgsVal> converter { m_stream, m_labelCreator };
+        ArgumentConverter<OpArgsVal> converter{};
         while (currentInstruction < end)
         {
             OpArgsVal inlineArguments;
@@ -199,6 +216,13 @@ namespace Drill4dotNet
             }
         }
 
+        m_labelCreator = converter.LabelCreator;
+        m_stream.reserve(converter.Result.size());
+        for (const auto& item : converter.Result)
+        {
+            m_stream.push_back(std::move(item.Instruction));
+        }
+
         if (m_header.HasExceptionsSections())
         {
             auto codeEnd = bodyBytes.cbegin() + m_header.Size() + CodeSize::ValueType { m_header.CodeSize() };
@@ -217,9 +241,9 @@ namespace Drill4dotNet
         }
 
         size_t instructionsCounter { 0 };
-        for (const auto& jumpTable : converter.JumpOffsets)
+        for (const auto& item : converter.Result)
         {
-            for (const auto jump : jumpTable)
+            for (const auto jump : item.OutgoingJumps)
             {
                 auto insertAt { ResolveJumpOffset(
                     m_stream,
