@@ -29,6 +29,18 @@
     <ClCompile Include="CProfilerCallbackTest.cpp">
       <Filter>Unit Tests</Filter>
     </ClCompile>
+    <ClCompile Include="..\Drill4dotNet\InstructionStream.cpp">
+      <Filter>Tested Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Drill4dotNet\ExceptionsSection.cpp">
+      <Filter>Tested Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Drill4dotNet\ExceptionClause.cpp">
+      <Filter>Tested Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Drill4dotNet\MethodHeader.cpp">
+      <Filter>Tested Source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
