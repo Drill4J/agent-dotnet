@@ -25,7 +25,7 @@ public:
     }
 
     std::unique_ptr<CoreInteractMock> coreInteractMock;
-    std::unique_ptr <ProClient> proClient;
+    std::unique_ptr<ProClient> proClient;
     std::unique_ptr<CProfilerCallback> profilerCallback;
 };
 
@@ -35,7 +35,7 @@ namespace Drill4dotNet
     std::unique_ptr<ICoreInteract> CreateCorProfilerInfo(TQueryInterface query, const TLogger logger)
     {
         // we pass ownership over the caller
-        return std::unique_ptr<ICoreInteract>(reinterpret_cast<CProfilerCallbackTest*>(query)->coreInteractMock.release());
+        return std::move(reinterpret_cast<CProfilerCallbackTest*>(query)->coreInteractMock);
     }
 
     template
@@ -47,7 +47,7 @@ namespace Drill4dotNet
     std::unique_ptr<ICoreInteract> TryCreateCorProfilerInfo(TQueryInterface query, const TLogger logger)
     {
         // we pass ownership over the caller
-        return std::unique_ptr<ICoreInteract>(reinterpret_cast<CProfilerCallbackTest*>(query)->coreInteractMock.release());
+        return std::move(reinterpret_cast<CProfilerCallbackTest*>(query)->coreInteractMock);
     }
 
     template
