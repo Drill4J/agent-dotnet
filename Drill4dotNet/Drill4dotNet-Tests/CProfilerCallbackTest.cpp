@@ -9,37 +9,33 @@ using namespace testing;
 class CProfilerCallbackTest : public Test
 {
 public:
-    CProfilerCallbackTest()
-    {
-    }
 
     void SetUp()
     {
-        profilerCallback = new CProfilerCallback(*proClient);
+        coreInteractMock = std::make_unique<CoreInteractMock>();
+        proClient = std::make_unique<ProClient>();
+        profilerCallback = std::make_unique<CProfilerCallback>(*proClient.get());
     }
 
     void TearDown()
     {
-        delete profilerCallback;
+        profilerCallback.release();
+        proClient.release();
+        coreInteractMock.release();
     }
 
-    ~CProfilerCallbackTest()
-    {
-        delete proClient;
-    }
-
-    ProClient * proClient = new ProClient;
-    CProfilerCallback * profilerCallback = nullptr;
+    std::unique_ptr<CoreInteractMock> coreInteractMock;
+    std::unique_ptr <ProClient> proClient;
+    std::unique_ptr<CProfilerCallback> profilerCallback;
 };
 
 namespace Drill4dotNet
 {
-    static CoreInteractMock* coreInteractMock(new CoreInteractMock);
-
     template<typename TQueryInterface, typename TLogger>
     std::unique_ptr<ICoreInteract> CreateCorProfilerInfo(TQueryInterface query, const TLogger logger)
     {
-        return std::unique_ptr<ICoreInteract>(coreInteractMock);
+        // we pass ownership over the caller
+        return std::unique_ptr<ICoreInteract>(reinterpret_cast<CProfilerCallbackTest*>(query)->coreInteractMock.release());
     }
 
     template
@@ -50,7 +46,8 @@ namespace Drill4dotNet
     template<typename TQueryInterface, typename TLogger>
     std::unique_ptr<ICoreInteract> TryCreateCorProfilerInfo(TQueryInterface query, const TLogger logger)
     {
-        return std::unique_ptr<ICoreInteract>(coreInteractMock);
+        // we pass ownership over the caller
+        return std::unique_ptr<ICoreInteract>(reinterpret_cast<CProfilerCallbackTest*>(query)->coreInteractMock.release());
     }
 
     template
@@ -66,24 +63,22 @@ TEST_F(CProfilerCallbackTest, GetClient)
     EXPECT_EQ(&_proClient, &(_obj.GetClient()));
 }
 
-TEST_F(CProfilerCallbackTest, Initialize)
+TEST_F(CProfilerCallbackTest, Initialize_Shutdown)
 {
+    // We have to pair each Initialize() by Shutdown() to properly clean up resources
+    // ...until we change the design of ownership on CorProfilerInterface.
     const auto rti_expected = std::optional<RuntimeInformation>({ 0, COR_PRF_DESKTOP_CLR, 9, 9, 999, 8 });
     EXPECT_CALL(*coreInteractMock, TryGetRuntimeInformation()).WillOnce(Return(rti_expected));
     EXPECT_CALL(*coreInteractMock, SetEventMask(_)).WillOnce(Return());
     EXPECT_CALL(*coreInteractMock, SetEnterLeaveFunctionHooks(_,_,_)).WillOnce(Return());
     EXPECT_CALL(*coreInteractMock, SetFunctionIDMapper(_)).WillOnce(Return());
 
-    IUnknown* p = (IUnknown *)(~(NULL));
+    IUnknown* p = reinterpret_cast<IUnknown*>(this);
     EXPECT_HRESULT_SUCCEEDED(profilerCallback->Initialize(p));
     EXPECT_EQ(typeid(CoreInteractMock), typeid(profilerCallback->GetCorProfilerInfo()) );
-    EXPECT_EQ(coreInteractMock, &profilerCallback->GetCorProfilerInfo());
-}
 
-TEST_F(CProfilerCallbackTest, Shutdown)
-{
     EXPECT_HRESULT_SUCCEEDED(profilerCallback->Shutdown());
-    EXPECT_EQ(NULL, &profilerCallback->GetCorProfilerInfo());
+    EXPECT_EQ(nullptr, &profilerCallback->GetCorProfilerInfo());
 }
 
 // Attach definitions of IID_ICorProfilerCallback, IID_ICorProfilerCallback2, IID_ICorProfilerInfo2, IID_ICorProfilerInfo3, etc.
