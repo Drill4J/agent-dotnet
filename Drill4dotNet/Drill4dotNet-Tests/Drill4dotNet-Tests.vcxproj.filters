@@ -11,9 +11,42 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)..\..\lib\native\src\gmock\gmock-all.cc">
       <Filter>Package Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\Drill4dotNet\CProfilerCallback.cpp">
+      <Filter>Tested Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Drill4dotNet\ProClient.cpp">
+      <Filter>Tested Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Drill4dotNet\InfoHandler.cpp">
+      <Filter>Tested Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Drill4dotNet\MethodBody.cpp">
+      <Filter>Tested Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Drill4dotNet\OpCodes.cpp">
+      <Filter>Tested Source</Filter>
+    </ClCompile>
+    <ClCompile Include="CProfilerCallbackTest.cpp">
+      <Filter>Unit Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Drill4dotNet\InstructionStream.cpp">
+      <Filter>Tested Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Drill4dotNet\ExceptionsSection.cpp">
+      <Filter>Tested Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Drill4dotNet\ExceptionClause.cpp">
+      <Filter>Tested Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Drill4dotNet\MethodHeader.cpp">
+      <Filter>Tested Source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
+    <ClInclude Include="CoreInteractMock.h">
+      <Filter>Unit Tests</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config">
