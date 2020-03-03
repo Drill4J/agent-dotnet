@@ -15,6 +15,9 @@ public:
         coreInteractMock = std::make_unique<CoreInteractMock>();
         proClient = std::make_unique<ProClient>();
         profilerCallback = std::make_unique<CProfilerCallback>(*proClient.get());
+        WCHAR injectionFileName[_MAX_PATH];
+        ::GetModuleFileName(NULL, injectionFileName, _MAX_PATH);
+        Drill4dotNet::s_Drill4dotNetLibFilePath = injectionFileName;
     }
 
     void TearDown()

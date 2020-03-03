@@ -127,6 +127,7 @@
       <ModuleDefinitionFile>.\Drill4dotNet.def</ModuleDefinitionFile>
       <RegisterOutput>false</RegisterOutput>
       <AdditionalOptions>/ignore:4099 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalDependencies>Rometadata.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>copy "$(SolutionDir)bin\AnyCPU\$(Configuration)\Injection\netcoreapp3.1\Injection.dll" "$(OutDir)"
@@ -165,6 +166,7 @@
       <ModuleDefinitionFile>.\Drill4dotNet.def</ModuleDefinitionFile>
       <RegisterOutput>false</RegisterOutput>
       <AdditionalOptions>/ignore:4099 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalDependencies>Rometadata.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>copy "$(SolutionDir)bin\AnyCPU\$(Configuration)\Injection\netcoreapp3.1\Injection.dll" "$(OutDir)"
@@ -206,6 +208,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <RegisterOutput>false</RegisterOutput>
       <AdditionalOptions>/ignore:4099 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalDependencies>Rometadata.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>copy "$(SolutionDir)bin\AnyCPU\$(Configuration)\Injection\netcoreapp3.1\Injection.dll" "$(OutDir)"
@@ -246,6 +249,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <RegisterOutput>false</RegisterOutput>
       <AdditionalOptions>/ignore:4099 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalDependencies>Rometadata.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>copy "$(SolutionDir)bin\AnyCPU\$(Configuration)\Injection\netcoreapp3.1\Injection.dll" "$(OutDir)"
