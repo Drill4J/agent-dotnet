@@ -7,6 +7,7 @@
 #include "OpCodes.h"
 #include "MethodBody.h"
 #include <comdef.h>
+#include <rometadata.h>
 
 namespace Drill4dotNet
 {
@@ -170,6 +171,135 @@ namespace Drill4dotNet
         try
         {
             m_corProfilerInfo = CreateCorProfilerInfo(pICorProfilerInfoUnk, LogToProClient(m_pImplClient));
+
+            struct InjectionMetaData
+            {
+                mdAssembly  Assembly = 0;
+                mdTypeDef   Class = 0;
+                mdMethodDef Function = 0;
+            } injection;
+
+            HRESULT hr;
+            ATL::CComQIPtr<IMetaDataDispenser, &IID_IMetaDataDispenser> metaDataDispenser;
+            #pragma message("TODO: replace library function `MetaDataGetDispenser` with own implementation")
+            hr = MetaDataGetDispenser(
+                CLSID_CorMetaDataDispenser,
+                IID_IMetaDataDispenser,
+                (LPVOID*)&metaDataDispenser
+            );
+            m_pImplClient.Log() << L"MetaDataGetDispenser: " << HexOutput(hr);
+
+            ATL::CComQIPtr<IMetaDataAssemblyImport, &IID_IMetaDataAssemblyImport> metaDataAssemblyImport;
+            const std::filesystem::path pathInjection = Drill4dotNet::s_Drill4dotNetLibFilePath.parent_path() / L"Injection.dll";
+            hr = metaDataDispenser->OpenScope(
+                pathInjection.c_str(),
+                ofRead,
+                IID_IMetaDataAssemblyImport,
+                (IUnknown**)&metaDataAssemblyImport);
+            m_pImplClient.Log() << L"OpenScope(" << pathInjection.wstring() << L", IMetaDataAssemblyImport): " << HexOutput(hr);
+
+            ATL::CComQIPtr<IMetaDataImport, &IID_IMetaDataImport> metaDataImport;
+            hr = metaDataDispenser->OpenScope(
+                pathInjection.c_str(),
+                ofRead,
+                IID_IMetaDataImport,
+                (IUnknown**)&metaDataImport);
+            m_pImplClient.Log() << L"OpenScope(" << pathInjection.wstring() << L", IMetaDataImport): " << HexOutput(hr);
+
+            hr = metaDataAssemblyImport->GetAssemblyFromScope(&injection.Assembly);
+            m_pImplClient.Log()
+                << L"GetAssemblyFromScope(): " << HexOutput(hr)
+                << L" token: " << HexOutput(injection.Assembly);
+
+            ULONG cchName = 1024ul;
+            std::wstring szName(cchName, L'\0');
+            DWORD dwAssemblyFlags;
+            hr = metaDataAssemblyImport->GetAssemblyProps(
+                injection.Assembly,
+                nullptr,
+                nullptr,
+                nullptr,
+                szName.data(),
+                cchName,
+                &cchName,
+                nullptr,
+                &dwAssemblyFlags
+            );
+            TrimTrailingNulls(szName);
+            m_pImplClient.Log()
+                << L"GetAssemblyProps(): " << HexOutput(hr)
+                << L" name: " << szName
+                << L" flags: " << HexOutput(dwAssemblyFlags);
+
+            hr = metaDataImport->FindTypeDefByName(
+                #pragma message("TODO: Choose a unique name for injection class.")
+                L"Drill4dotNet.CInjection",
+                NULL,
+                &injection.Class
+            );
+            m_pImplClient.Log()
+                << L"FindTypeDefByName('Drill4dotNet.CInjection'): " << HexOutput(hr);
+
+            ULONG chTypeDef = 1024ul;
+            std::wstring szTypeDef(chTypeDef, L'\0');
+            DWORD dwTypeDefFlags;
+            hr = metaDataImport->GetTypeDefProps(
+                injection.Class,
+                szTypeDef.data(),
+                chTypeDef,
+                &chTypeDef,
+                &dwTypeDefFlags,
+                nullptr
+            );
+            m_pImplClient.Log()
+                << L"GetTypeDefProps(" << HexOutput(injection.Class) << L"): " << HexOutput(hr)
+                << " Name: " << szTypeDef.c_str()
+                << " Flags: " << HexOutput(dwTypeDefFlags);
+
+            HCORENUM hEnum2 = nullptr;
+            ULONG cTokens = 1;
+            hr = metaDataImport->EnumMethodsWithName(
+                &hEnum2,
+                injection.Class,
+                #pragma message("TODO: Choose a unique name for injection method.")
+                L"FInjection",
+                &injection.Function, // pass as array of 1 element
+                1,
+                &cTokens
+            );
+            m_pImplClient.Log()
+                << L"EnumMethodsWithName('FInjection'): " << HexOutput(hr)
+                << L" Methods: " << cTokens;
+
+            if (cTokens != 1)
+            {
+                throw std::runtime_error("Invalid meta data information about 'Drill4dotNet.CInjection.FInjection' function.");
+            }
+            mdTypeDef tkTypeDef;
+            ULONG chMethod = 1024UL;
+            std::wstring szMethod(chMethod, L'\0');
+            DWORD dwAttr, dwImplFlags;
+            hr = metaDataImport->GetMethodProps(
+                injection.Function,
+                &tkTypeDef,
+                szMethod.data(),
+                chMethod,
+                &chMethod,
+                &dwAttr,
+                nullptr,
+                nullptr,
+                nullptr,
+                &dwImplFlags
+            );
+            TrimTrailingNulls(szMethod);
+            m_pImplClient.Log()
+                << L"GetMethodProps(" << HexOutput(injection.Function) << L"): " << HexOutput(hr)
+                << L" TypeDef: " << HexOutput(tkTypeDef)
+                << L" Name: " << szMethod
+                << L" Attr: " << HexOutput(dwAttr)
+                << L" Flags: " << HexOutput(dwImplFlags);
+
+            metaDataImport->CloseEnum(hEnum2);
 
             if (auto runtimeInformation = m_corProfilerInfo->TryGetRuntimeInformation();
                 runtimeInformation)
