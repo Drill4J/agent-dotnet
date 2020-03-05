@@ -71,3 +71,29 @@ TEST(OpCodeVariantTests, CreateWithArgument)
     ASSERT_TRUE(variant.GetIf<OpCode::CEE_LDC_I4>().has_value());
     EXPECT_EQ(expectedConstant, variant.GetIf<OpCode::CEE_LDC_I4>()->Argument());
 }
+
+// Checks the aspects describing stack
+// behavior are properly added to OpCode::CEE_* classes.
+
+static_assert(OpCode::CEE_ADD::IsStackPushBehaviorKnown);
+static_assert(OpCode::CEE_ADD::ItemsPushedToStack == 1);
+static_assert(OpCode::CEE_ADD::IsStackPopBehaviorKnown);
+static_assert(OpCode::CEE_ADD::ItemsPoppedFromStack == 2);
+
+static_assert(OpCode::CEE_BRFALSE::IsStackPushBehaviorKnown);
+static_assert(OpCode::CEE_BRFALSE::ItemsPushedToStack == 0);
+static_assert(OpCode::CEE_BRFALSE::IsStackPopBehaviorKnown);
+static_assert(OpCode::CEE_BRFALSE::ItemsPoppedFromStack == 1);
+
+static_assert(!OpCode::CEE_CALL::IsStackPushBehaviorKnown);
+static_assert(!OpCode::CEE_CALL::IsStackPopBehaviorKnown);
+// These will not even compile:
+// static_assert(OpCode::CEE_CALL::ItemsPushedToStack == 1);
+// static_assert(OpCode::CEE_CALL::ItemsPoppedFromStack == 2);
+
+static_assert(OpCode::CEE_RET::IsStackPushBehaviorKnown);
+static_assert(OpCode::CEE_RET::ItemsPushedToStack == 0);
+static_assert(!OpCode::CEE_RET::IsStackPopBehaviorKnown);
+// This will not even compile:
+// static_assert(OpCode::CEE_RET::ItemsPoppedFromStack == 1);
+
