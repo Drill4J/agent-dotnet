@@ -32,9 +32,9 @@ TEST(OpCodeVariantTests, Create)
     const OpCodeVariant variant {};
 
     // Assert
-    AssertVariantHolds<OpCode_CEE_NOP>(variant);
+    AssertVariantHolds<OpCode::CEE_NOP>(variant);
     EXPECT_EQ(1, variant.SizeWithArgument());
-    EXPECT_TRUE(variant.GetIf<OpCode_CEE_NOP>().has_value());
+    EXPECT_TRUE(variant.GetIf<OpCode::CEE_NOP>().has_value());
 }
 
 // Checks OpCodeVariant is created with a specific
@@ -45,12 +45,12 @@ TEST(OpCodeVariantTests, CreateWithoutArgument)
     // Arrange
 
     // Act
-    const OpCodeVariant variant { OpCode_CEE_ADD { } };
+    const OpCodeVariant variant { OpCode::CEE_ADD { } };
 
     // Assert
-    AssertVariantHolds<OpCode_CEE_ADD>(variant);
+    AssertVariantHolds<OpCode::CEE_ADD>(variant);
     EXPECT_EQ(1, variant.SizeWithArgument());
-    EXPECT_TRUE(variant.GetIf<OpCode_CEE_ADD>().has_value());
+    EXPECT_TRUE(variant.GetIf<OpCode::CEE_ADD>().has_value());
 }
 
 // Checks OpCodeVariant is created with a specific
@@ -62,12 +62,12 @@ TEST(OpCodeVariantTests, CreateWithArgument)
     const OpCodeArgumentType::InlineI expectedConstant { 42 };
 
     // Act
-    const OpCodeVariant variant { OpCode_CEE_LDC_I4 { expectedConstant } };
-    const std::optional<OpCode_CEE_LDC_I4> actualOpCode = variant.GetIf<OpCode_CEE_LDC_I4>();
+    const OpCodeVariant variant { OpCode::CEE_LDC_I4 { expectedConstant } };
+    const std::optional<OpCode::CEE_LDC_I4> actualOpCode = variant.GetIf<OpCode::CEE_LDC_I4>();
 
     // Assert
-    AssertVariantHolds<OpCode_CEE_LDC_I4>(variant);
+    AssertVariantHolds<OpCode::CEE_LDC_I4>(variant);
     EXPECT_EQ(5, variant.SizeWithArgument());
-    ASSERT_TRUE(variant.GetIf<OpCode_CEE_LDC_I4>().has_value());
-    EXPECT_EQ(expectedConstant, variant.GetIf<OpCode_CEE_LDC_I4>()->Argument());
+    ASSERT_TRUE(variant.GetIf<OpCode::CEE_LDC_I4>().has_value());
+    EXPECT_EQ(expectedConstant, variant.GetIf<OpCode::CEE_LDC_I4>()->Argument());
 }

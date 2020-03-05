@@ -253,9 +253,9 @@ namespace Drill4dotNet
     // TOpCode : the specific instruction type.
     // TArgument : the type of the inline argument.
     template <typename TOpCode, typename TArgument>
-    class OpCode : public OpCodeBase<
+    class OpCodeArgument : public OpCodeBase<
         TOpCode,
-        OpCode<TOpCode, TArgument>,
+        OpCodeArgument<TOpCode, TArgument>,
         TArgument>
     {
     private:
@@ -265,7 +265,7 @@ namespace Drill4dotNet
         // Creates a new opcode value with the
         // given argument.
         // @param argument : the value to use.
-        OpCode(const TArgument argument) noexcept
+        OpCodeArgument(const TArgument argument) noexcept
             : OpCodeBase(),
             m_argument{ argument }
         {
@@ -287,21 +287,27 @@ namespace Drill4dotNet
 
     // Special case when there is no inline argument.
     template <typename TOpCode>
-    class OpCode<TOpCode, OpCodeArgumentType::InlineNone> : public OpCodeBase<
+    class OpCodeArgument<TOpCode, OpCodeArgumentType::InlineNone> : public OpCodeBase<
         TOpCode,
-        OpCode<TOpCode, OpCodeArgumentType::InlineNone>,
+        OpCodeArgument<TOpCode, OpCodeArgumentType::InlineNone>,
         OpCodeArgumentType::InlineNone>
     {
     public:
-        OpCode() noexcept
+        OpCodeArgument() noexcept
             : OpCodeBase()
         {
         }
     };
 
-    // Using the OPDEF_REAL_INSTRUCTION macro, the next invocation
-    // of <opcode.def> will generate a set of OpCode_* classes, each
-    // corresponding to a specific Intermediate Language instruction.
+    // Contains a set of CEE_* classes, each representing a
+    // specific Intermediate Language instruction.
+    class OpCode
+    {
+    public:
+
+        // Using the OPDEF_REAL_INSTRUCTION macro, the next invocation
+        // of <opcode.def> will generate a set of OpCode::CEE_* classes, each
+        // corresponding to a specific Intermediate Language instruction.
 
 #define OPDEF_REAL_INSTRUCTION( \
     canonicalName, \
@@ -314,18 +320,20 @@ namespace Drill4dotNet
     byte1, \
     byte2, \
     controlBehavior) \
-    class OpCode_ ## canonicalName : public OpCode<\
-        OpCode_ ## canonicalName , \
+    class canonicalName : public OpCodeArgument<\
+        canonicalName , \
         OpCodeArgumentType:: ## inlineArgumentType > \
     { \
     public: \
         inline static std::wstring_view CanonicalName { L ## stringName }; \
-        using OpCode::OpCode; \
+        using OpCodeArgument::OpCodeArgument; \
     };
 #include "DefineOpCodesGeneratorSpecializations.h"
 #include <opcode.def>
 #include "UnDefineOpCodesGeneratorSpecializations.h"
 #undef OPDEF_REAL_INSTRUCTION
+
+    }; // end of OpCode class
 
     // Provides compile-time operations on a set of types.
     template <typename ...>
@@ -471,7 +479,7 @@ namespace Drill4dotNet
     byte2, \
     controlBehavior) \
 template <> \
-class OpCodeInstruction<OpCode_ ## canonicalName> \
+class OpCodeInstruction<OpCode :: ## canonicalName> \
 { \
 public: \
     static constexpr InstructionCode Code { std::byte { byte1 }, std::byte { byte2 } }; \
@@ -510,7 +518,7 @@ public: \
         }
 
     public:
-        // Constructs a variant holding OpCode_CEE_NOP instruction,
+        // Constructs a variant holding OpCode::CEE_NOP instruction,
         // which means no operation.
         OpCodeVariant();
 
@@ -605,7 +613,7 @@ public: \
     controlBehavior) \
             case InstructionCode { std::byte { byte1 }, std::byte { byte2 } }.AsKey() : \
             { \
-                visitor(Get< OpCode_ ## canonicalName >()); \
+                visitor(Get< OpCode :: ## canonicalName >()); \
             } \
 \
             break;

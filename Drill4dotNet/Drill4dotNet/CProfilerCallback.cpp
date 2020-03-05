@@ -527,9 +527,9 @@ namespace Drill4dotNet
 
             const auto findSecondCall = [this, &body{ std::as_const(functionBody) }]()
             {
-                const auto result = FindInstruction<OpCode_CEE_CALL>(
+                const auto result = FindInstruction<OpCode::CEE_CALL>(
                     FindNextInstruction(
-                        FindInstruction<OpCode_CEE_CALL>(
+                        FindInstruction<OpCode::CEE_CALL>(
                             body.begin(),
                             body.end()),
                         body.end()),
@@ -545,21 +545,21 @@ namespace Drill4dotNet
 
             functionBody.Insert(
                 findSecondCall() + 1,
-                OpCode_CEE_LDLOC_0{});
+                OpCode::CEE_LDLOC_0{});
 
             functionBody.Insert(
                 findSecondCall() + 2,
-                OpCode_CEE_LDC_I4_1{});
+                OpCode::CEE_LDC_I4_1{});
 
             Label label = functionBody.CreateLabel();
 
             functionBody.Insert(
                 findSecondCall() + 3,
-                OpCode_CEE_BLT_S { ShortJump { label } });
+                OpCode::CEE_BLT_S { ShortJump { label } });
 
             functionBody.Insert(
                 findSecondCall() + 4,
-                OpCode_CEE_LDC_I4 { 42 });
+                OpCode::CEE_LDC_I4 { 42 });
 
             const auto callPosition = findSecondCall();
             functionBody.Insert(
@@ -570,14 +570,14 @@ namespace Drill4dotNet
             {
                 functionBody.Insert(
                     findSecondCall() + 6,
-                    OpCode_CEE_NOP{});
+                    OpCode::CEE_NOP{});
             }
 
             // Presense of stloc.3 instruction means that
             // MyInjectionTarget has been compiled in Debug.
             // This in turn means there is a string variable s,
             // and we can inject Console.WriteLine(s);
-            if (FindInstruction<OpCode_CEE_STLOC_3>(
+            if (FindInstruction<OpCode::CEE_STLOC_3>(
                 functionBody.begin(),
                 functionBody.end()) != functionBody.end())
             {
@@ -592,7 +592,7 @@ namespace Drill4dotNet
 
                         const auto& findEndFinally = [this, clause, &body{ std::as_const(functionBody) }]()
                         {
-                            return FindInstruction<OpCode_CEE_ENDFINALLY>(
+                            return FindInstruction<OpCode::CEE_ENDFINALLY>(
                                 FindLabel(
                                     body.Stream(),
                                     clause.HandlerOffset()),
@@ -606,7 +606,7 @@ namespace Drill4dotNet
                             const auto endTry = FindLabel(
                                 body.Stream(),
                                 clause.TryEndOffset());
-                            const auto result = FindInstruction<OpCode_CEE_CALL>(
+                            const auto result = FindInstruction<OpCode::CEE_CALL>(
                                 FindLabel(
                                     body.Stream(),
                                     clause.TryOffset()),
@@ -620,7 +620,7 @@ namespace Drill4dotNet
                             return result;
                         };
 
-                        functionBody.Insert(findEndFinally(), OpCode_CEE_LDLOC_3{});
+                        functionBody.Insert(findEndFinally(), OpCode::CEE_LDLOC_3{});
                         functionBody.Insert(
                             findEndFinally(),
                             std::get<OpCodeVariant>(*findCallInTry()));
@@ -629,7 +629,7 @@ namespace Drill4dotNet
             }
 
             functionBody.MarkLabel(
-                FindInstruction<OpCode_CEE_RET>(functionBody.begin(), functionBody.end()),
+                FindInstruction<OpCode::CEE_RET>(functionBody.begin(), functionBody.end()),
                 label);
 
             const std::vector<std::byte> afterInjection = functionBody.Compile();

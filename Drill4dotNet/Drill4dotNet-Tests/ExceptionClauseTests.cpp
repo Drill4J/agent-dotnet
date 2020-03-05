@@ -41,37 +41,37 @@ static RawExceptionClause<TRawClause> RawClause()
     // all instructions are 1 byte
     InstructionStream stream {
         // int x = 1;
-        OpCode_CEE_LDC_I4_1{},
-        OpCode_CEE_STLOC_0{},
+        OpCode::CEE_LDC_I4_1{},
+        OpCode::CEE_STLOC_0{},
 
         // int y = 2;
-        OpCode_CEE_LDC_I4_2{},
-        OpCode_CEE_STLOC_1{},
+        OpCode::CEE_LDC_I4_2{},
+        OpCode::CEE_STLOC_1{},
 
         // will have try { here
 
         // z = x + y;
-        OpCode_CEE_LDLOC_0{},
-        OpCode_CEE_LDLOC_1{},
-        OpCode_CEE_ADD{},
-        OpCode_CEE_STLOC_2{},
+        OpCode::CEE_LDLOC_0{},
+        OpCode::CEE_LDLOC_1{},
+        OpCode::CEE_ADD{},
+        OpCode::CEE_STLOC_2{},
 
-        OpCode_CEE_LEAVE{ exitLabel },
+        OpCode::CEE_LEAVE{ exitLabel },
         // will have
         // } // end of try
         // /* begin of handler */
         // {
 
         // z = 0;
-        OpCode_CEE_LDC_I4_0{},
-        OpCode_CEE_STLOC_2{},
-        OpCode_CEE_LEAVE_S{exitLabel},
+        OpCode::CEE_LDC_I4_0{},
+        OpCode::CEE_STLOC_2{},
+        OpCode::CEE_LEAVE_S{exitLabel},
         // here
         // Will have } here
 
         // return z;
         exitLabel,
-        OpCode_CEE_RET{}
+        OpCode::CEE_RET{}
     };
 
     TRawClause rawClause;
@@ -208,9 +208,9 @@ static RawExceptionClause<TRawClause> TryCatchWhen()
     auto result = RawClause<TRawClause>();
     result.Stream.insert(result.Stream.cbegin() + 9,
         {
-            OpCode_CEE_LDLOC_S{4},
-            OpCode_CEE_LDC_I4_3{},
-            OpCode_CEE_CEQ{}
+            OpCode::CEE_LDLOC_S{4},
+            OpCode::CEE_LDC_I4_3{},
+            OpCode::CEE_CEQ{}
         });
     result.RawClause.Flags = COR_ILEXCEPTION_CLAUSE_FILTER;
     result.RawClause.FilterOffset = result.RawClause.HandlerOffset;
@@ -504,7 +504,7 @@ static void CanPutToSmallHeaderFalse()
     stream.insert(
         stream.cbegin() + paddingPosition,
         paddingSize,
-        OpCode_CEE_NOP{});
+        OpCode::CEE_NOP{});
 
     // Assert
     EXPECT_FALSE(clause.CanPutToSmallHeader());
@@ -540,7 +540,7 @@ TEST(ExceptionClauseTests, CanPutToSmallHeaderFarCatch)
     stream.insert(
         stream.cbegin() + 13,
         padding,
-        OpCode_CEE_NOP{});
+        OpCode::CEE_NOP{});
 
     // Assert
     EXPECT_FALSE(clause.CanPutToSmallHeader());
@@ -576,9 +576,9 @@ TEST(ExceptionClauseTests, CanPutToSmallHeaderFarWhen)
         = RawClause<IMAGE_COR_ILMETHOD_SECT_EH_CLAUSE_SMALL>();
     stream.insert(stream.cend(),
         {
-            OpCode_CEE_LDLOC_S{4},
-            OpCode_CEE_LDC_I4_3{},
-            OpCode_CEE_CEQ{}
+            OpCode::CEE_LDLOC_S{4},
+            OpCode::CEE_LDC_I4_3{},
+            OpCode::CEE_CEQ{}
         });
     rawClause.Flags = COR_ILEXCEPTION_CLAUSE_FILTER;
     rawClause.FilterOffset = 18;
@@ -593,7 +593,7 @@ TEST(ExceptionClauseTests, CanPutToSmallHeaderFarWhen)
     stream.insert(
         stream.cbegin() + 18,
         paddingSize,
-        OpCode_CEE_NOP{});
+        OpCode::CEE_NOP{});
 
     // Assert
     EXPECT_TRUE(clause.CanPutToSmallHeader());

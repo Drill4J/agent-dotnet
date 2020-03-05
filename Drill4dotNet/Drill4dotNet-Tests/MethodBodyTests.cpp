@@ -90,21 +90,21 @@ TEST(MethodBodyTests, InsertSimpleFunction)
 
     // MethodBody should turn sourceBytes to this
     const InstructionStream expectedSourceStream{
-        OpCode_CEE_LDARG_0{},
-        OpCode_CEE_LDARG_1{},
-        OpCode_CEE_ADD{},
-        OpCode_CEE_RET{}
+        OpCode::CEE_LDARG_0{},
+        OpCode::CEE_LDARG_1{},
+        OpCode::CEE_ADD{},
+        OpCode::CEE_RET{}
     };
 
     // MethodBody should have this instructions
     // stream after injection.
     const InstructionStream expectedInjectionStream{
-        OpCode_CEE_LDARG_0{},
-        OpCode_CEE_LDARG_1{},
-        OpCode_CEE_ADD{},
-        OpCode_CEE_LDC_I4_2{}, // injection
-        OpCode_CEE_MUL{}, // injection
-        OpCode_CEE_RET{}
+        OpCode::CEE_LDARG_0{},
+        OpCode::CEE_LDARG_1{},
+        OpCode::CEE_ADD{},
+        OpCode::CEE_LDC_I4_2{}, // injection
+        OpCode::CEE_MUL{}, // injection
+        OpCode::CEE_RET{}
     };
 
     // Act
@@ -114,8 +114,8 @@ TEST(MethodBodyTests, InsertSimpleFunction)
     const std::vector<std::byte> actualRoundtripBytes(method.Compile());
     const std::vector<ExceptionsSection> actualExceptionSections(method.ExceptionSections());
 
-    method.Insert(method.begin() + 3, OpCode_CEE_LDC_I4_2{});
-    method.Insert(method.begin() + 4, OpCode_CEE_MUL{});
+    method.Insert(method.begin() + 3, OpCode::CEE_LDC_I4_2{});
+    method.Insert(method.begin() + 4, OpCode::CEE_MUL{});
 
     const InstructionStream actualInjectionStream(method.Stream());
     const std::vector<std::byte> actualInjectionBytes(method.Compile());
@@ -184,66 +184,66 @@ TEST(MethodBodyTests, InsertFunctionWithIf)
     // Got these values from MS IL decompiler.
     const InstructionStream expectedSourceStream{
         // if (a)
-        OpCode_CEE_NOP{},
-        OpCode_CEE_LDARG_0{},
-        OpCode_CEE_STLOC_0{},
-        OpCode_CEE_LDLOC_0{},
-        OpCode_CEE_BRFALSE_S{elseLabel},
+        OpCode::CEE_NOP{},
+        OpCode::CEE_LDARG_0{},
+        OpCode::CEE_STLOC_0{},
+        OpCode::CEE_LDLOC_0{},
+        OpCode::CEE_BRFALSE_S{elseLabel},
 
         // return x * y; // <- x * y
-        OpCode_CEE_NOP{},
-        OpCode_CEE_LDARG_1{},
-        OpCode_CEE_LDARG_2{},
-        OpCode_CEE_MUL{},
-        OpCode_CEE_STLOC_1{},
-        OpCode_CEE_BR_S{endLabel1},
+        OpCode::CEE_NOP{},
+        OpCode::CEE_LDARG_1{},
+        OpCode::CEE_LDARG_2{},
+        OpCode::CEE_MUL{},
+        OpCode::CEE_STLOC_1{},
+        OpCode::CEE_BR_S{endLabel1},
 
         // return 0; // <- 0;
         elseLabel,
-        OpCode_CEE_NOP{},
-        OpCode_CEE_LDC_I4_0{},
-        OpCode_CEE_STLOC_1{},
-        OpCode_CEE_BR_S{endLabel2},
+        OpCode::CEE_NOP{},
+        OpCode::CEE_LDC_I4_0{},
+        OpCode::CEE_STLOC_1{},
+        OpCode::CEE_BR_S{endLabel2},
 
         // return
         endLabel1,
         endLabel2,
-        OpCode_CEE_LDLOC_1{},
-        OpCode_CEE_RET{}
+        OpCode::CEE_LDLOC_1{},
+        OpCode::CEE_RET{}
     };
 
     const InstructionStream expectedInjectionStream{
         // if (a)
-        OpCode_CEE_NOP{},
-        OpCode_CEE_LDARG_0{},
-        OpCode_CEE_STLOC_0{},
-        OpCode_CEE_LDLOC_0{},
-        OpCode_CEE_BRFALSE_S{elseLabel},
+        OpCode::CEE_NOP{},
+        OpCode::CEE_LDARG_0{},
+        OpCode::CEE_STLOC_0{},
+        OpCode::CEE_LDLOC_0{},
+        OpCode::CEE_BRFALSE_S{elseLabel},
 
         // return x * y; // <- x * y
-        OpCode_CEE_NOP{},
-        OpCode_CEE_LDARG_1{},
-        OpCode_CEE_LDARG_2{},
-        OpCode_CEE_MUL{},
-        OpCode_CEE_STLOC_1{},
-        OpCode_CEE_BR_S{endLabel1},
+        OpCode::CEE_NOP{},
+        OpCode::CEE_LDARG_1{},
+        OpCode::CEE_LDARG_2{},
+        OpCode::CEE_MUL{},
+        OpCode::CEE_STLOC_1{},
+        OpCode::CEE_BR_S{endLabel1},
 
         // return 0 + x + y; // <- 0 + x + y;
         elseLabel,
-        OpCode_CEE_NOP{},
-        OpCode_CEE_LDC_I4_0{},
-        OpCode_CEE_LDARG_1{},
-        OpCode_CEE_ADD{},
-        OpCode_CEE_LDARG_2{},
-        OpCode_CEE_ADD{},
-        OpCode_CEE_STLOC_1{},
-        OpCode_CEE_BR_S{endLabel2},
+        OpCode::CEE_NOP{},
+        OpCode::CEE_LDC_I4_0{},
+        OpCode::CEE_LDARG_1{},
+        OpCode::CEE_ADD{},
+        OpCode::CEE_LDARG_2{},
+        OpCode::CEE_ADD{},
+        OpCode::CEE_STLOC_1{},
+        OpCode::CEE_BR_S{endLabel2},
 
         // return
         endLabel1,
         endLabel2,
-        OpCode_CEE_LDLOC_1{},
-        OpCode_CEE_RET{}
+        OpCode::CEE_LDLOC_1{},
+        OpCode::CEE_RET{}
     };
 
     // Act
@@ -253,10 +253,10 @@ TEST(MethodBodyTests, InsertFunctionWithIf)
     const std::vector<std::byte> actualRoundtripBytes(method.Compile());
     const std::vector<ExceptionsSection> actualExceptionSections(method.ExceptionSections());
 
-    method.Insert(method.begin() + 14, OpCode_CEE_LDARG_1{});
-    method.Insert(method.begin() + 15, OpCode_CEE_ADD{});
-    method.Insert(method.begin() + 16, OpCode_CEE_LDARG_2{});
-    method.Insert(method.begin() + 17, OpCode_CEE_ADD{});
+    method.Insert(method.begin() + 14, OpCode::CEE_LDARG_1{});
+    method.Insert(method.begin() + 15, OpCode::CEE_ADD{});
+    method.Insert(method.begin() + 16, OpCode::CEE_LDARG_2{});
+    method.Insert(method.begin() + 17, OpCode::CEE_ADD{});
 
     const InstructionStream actualInjectionStream(method.Stream());
     const std::vector<std::byte> actualInjectionBytes(method.Compile());
@@ -353,156 +353,156 @@ TEST(MethodBodyTests, InsertFunctionWithLoop)
     // Got these values from MS IL decompiler.
     const InstructionStream expectedSourceStream{
         // if (x < 2)
-        OpCode_CEE_NOP{},
-        OpCode_CEE_LDARG_0{},
-        OpCode_CEE_LDC_I4_2{},
-        OpCode_CEE_CLT{},
-        OpCode_CEE_STLOC_2{},
-        OpCode_CEE_LDLOC_2{},
-        OpCode_CEE_BRFALSE_S{elseLabel},
+        OpCode::CEE_NOP{},
+        OpCode::CEE_LDARG_0{},
+        OpCode::CEE_LDC_I4_2{},
+        OpCode::CEE_CLT{},
+        OpCode::CEE_STLOC_2{},
+        OpCode::CEE_LDLOC_2{},
+        OpCode::CEE_BRFALSE_S{elseLabel},
 
         // return x; // <- x
-        OpCode_CEE_NOP{},
-        OpCode_CEE_LDARG_0{},
-        OpCode_CEE_STLOC_3{},
-        OpCode_CEE_BR_S{endLabel1},
+        OpCode::CEE_NOP{},
+        OpCode::CEE_LDARG_0{},
+        OpCode::CEE_STLOC_3{},
+        OpCode::CEE_BR_S{endLabel1},
 
         // int previous = 0;
         elseLabel,
-        OpCode_CEE_LDC_I4_0{},
-        OpCode_CEE_STLOC_0{},
+        OpCode::CEE_LDC_I4_0{},
+        OpCode::CEE_STLOC_0{},
 
         // int current = 1;
-        OpCode_CEE_LDC_I4_1{},
-        OpCode_CEE_STLOC_1{},
+        OpCode::CEE_LDC_I4_1{},
+        OpCode::CEE_STLOC_1{},
 
         // for (int i = 2; i <= x; i++) // <- int i = 2
-        OpCode_CEE_LDC_I4_2{},
-        OpCode_CEE_STLOC_S{4},
-        OpCode_CEE_BR_S{loopConditionLabel},
+        OpCode::CEE_LDC_I4_2{},
+        OpCode::CEE_STLOC_S{4},
+        OpCode::CEE_BR_S{loopConditionLabel},
 
         // int newCurrent = current + previous;
         loopBodyLabel,
-        OpCode_CEE_NOP{},
-        OpCode_CEE_LDLOC_1{},
-        OpCode_CEE_LDLOC_0{},
-        OpCode_CEE_ADD{},
-        OpCode_CEE_STLOC_S{5},
+        OpCode::CEE_NOP{},
+        OpCode::CEE_LDLOC_1{},
+        OpCode::CEE_LDLOC_0{},
+        OpCode::CEE_ADD{},
+        OpCode::CEE_STLOC_S{5},
 
         // previous = current;
-        OpCode_CEE_LDLOC_1{},
-        OpCode_CEE_STLOC_0{},
+        OpCode::CEE_LDLOC_1{},
+        OpCode::CEE_STLOC_0{},
 
         // current = newCurrent;
-        OpCode_CEE_LDLOC_S{5},
-        OpCode_CEE_STLOC_1{},
+        OpCode::CEE_LDLOC_S{5},
+        OpCode::CEE_STLOC_1{},
 
         // for (int i = 2; i <= x; i++) // <- i++
-        OpCode_CEE_NOP{},
-        OpCode_CEE_LDLOC_S{4},
-        OpCode_CEE_LDC_I4_1{},
-        OpCode_CEE_ADD{},
-        OpCode_CEE_STLOC_S{4},
+        OpCode::CEE_NOP{},
+        OpCode::CEE_LDLOC_S{4},
+        OpCode::CEE_LDC_I4_1{},
+        OpCode::CEE_ADD{},
+        OpCode::CEE_STLOC_S{4},
 
         // for (int i = 2; i <= x; i++) // <- i <= x
         loopConditionLabel,
-        OpCode_CEE_LDLOC_S{4},
-        OpCode_CEE_LDARG_0{},
-        OpCode_CEE_CGT{},
-        OpCode_CEE_LDC_I4_0{},
-        OpCode_CEE_CEQ{},
-        OpCode_CEE_STLOC_S{6},
-        OpCode_CEE_LDLOC_S{6},
-        OpCode_CEE_BRTRUE_S{loopBodyLabel},
+        OpCode::CEE_LDLOC_S{4},
+        OpCode::CEE_LDARG_0{},
+        OpCode::CEE_CGT{},
+        OpCode::CEE_LDC_I4_0{},
+        OpCode::CEE_CEQ{},
+        OpCode::CEE_STLOC_S{6},
+        OpCode::CEE_LDLOC_S{6},
+        OpCode::CEE_BRTRUE_S{loopBodyLabel},
 
         // return current; // <- current
-        OpCode_CEE_LDLOC_1{},
-        OpCode_CEE_STLOC_3{},
-        OpCode_CEE_BR_S{endLabel2},
+        OpCode::CEE_LDLOC_1{},
+        OpCode::CEE_STLOC_3{},
+        OpCode::CEE_BR_S{endLabel2},
 
         // return
         endLabel1,
         endLabel2,
-        OpCode_CEE_LDLOC_3{},
-        OpCode_CEE_RET{}
+        OpCode::CEE_LDLOC_3{},
+        OpCode::CEE_RET{}
     };
 
     const InstructionStream expectedInjectionStream{
         // if (x < 2)
-        OpCode_CEE_NOP{},
-        OpCode_CEE_LDARG_0{},
-        OpCode_CEE_LDC_I4_2{},
-        OpCode_CEE_CLT{},
-        OpCode_CEE_STLOC_2{},
-        OpCode_CEE_LDLOC_2{},
-        OpCode_CEE_BRFALSE_S{elseLabel},
+        OpCode::CEE_NOP{},
+        OpCode::CEE_LDARG_0{},
+        OpCode::CEE_LDC_I4_2{},
+        OpCode::CEE_CLT{},
+        OpCode::CEE_STLOC_2{},
+        OpCode::CEE_LDLOC_2{},
+        OpCode::CEE_BRFALSE_S{elseLabel},
 
         // return x; // <- x
-        OpCode_CEE_NOP{},
-        OpCode_CEE_LDARG_0{},
-        OpCode_CEE_STLOC_3{},
-        OpCode_CEE_BR_S{endLabel1},
+        OpCode::CEE_NOP{},
+        OpCode::CEE_LDARG_0{},
+        OpCode::CEE_STLOC_3{},
+        OpCode::CEE_BR_S{endLabel1},
 
         // int previous = 0;
         elseLabel,
-        OpCode_CEE_LDC_I4_0{},
-        OpCode_CEE_STLOC_0{},
+        OpCode::CEE_LDC_I4_0{},
+        OpCode::CEE_STLOC_0{},
 
         // int current = 1;
-        OpCode_CEE_LDC_I4_1{},
-        OpCode_CEE_STLOC_1{},
+        OpCode::CEE_LDC_I4_1{},
+        OpCode::CEE_STLOC_1{},
 
         // for (int i = 2; i <= x; i++) // <- int i = 2
-        OpCode_CEE_LDC_I4_2{},
-        OpCode_CEE_STLOC_S{4},
-        OpCode_CEE_BR_S{loopConditionLabel},
+        OpCode::CEE_LDC_I4_2{},
+        OpCode::CEE_STLOC_S{4},
+        OpCode::CEE_BR_S{loopConditionLabel},
 
         // int newCurrent = current + previous;
         loopBodyLabel,
-        OpCode_CEE_NOP{},
-        OpCode_CEE_LDLOC_1{},
-        OpCode_CEE_LDLOC_0{},
-        OpCode_CEE_ADD{},
-        OpCode_CEE_STLOC_S{5},
+        OpCode::CEE_NOP{},
+        OpCode::CEE_LDLOC_1{},
+        OpCode::CEE_LDLOC_0{},
+        OpCode::CEE_ADD{},
+        OpCode::CEE_STLOC_S{5},
 
         // previous = current;
-        OpCode_CEE_LDLOC_1{},
-        OpCode_CEE_STLOC_0{},
+        OpCode::CEE_LDLOC_1{},
+        OpCode::CEE_STLOC_0{},
 
         // current = 2 * newCurrent;
-        OpCode_CEE_LDC_I4_2{},
-        OpCode_CEE_LDLOC_S{5},
-        OpCode_CEE_MUL{},
-        OpCode_CEE_STLOC_1{},
+        OpCode::CEE_LDC_I4_2{},
+        OpCode::CEE_LDLOC_S{5},
+        OpCode::CEE_MUL{},
+        OpCode::CEE_STLOC_1{},
 
         // for (int i = 2; i <= x; i++) // <- i++
-        OpCode_CEE_NOP{},
-        OpCode_CEE_LDLOC_S{4},
-        OpCode_CEE_LDC_I4_1{},
-        OpCode_CEE_ADD{},
-        OpCode_CEE_STLOC_S{4},
+        OpCode::CEE_NOP{},
+        OpCode::CEE_LDLOC_S{4},
+        OpCode::CEE_LDC_I4_1{},
+        OpCode::CEE_ADD{},
+        OpCode::CEE_STLOC_S{4},
 
         // for (int i = 2; i <= x; i++) // <- i <= x
         loopConditionLabel,
-        OpCode_CEE_LDLOC_S{4},
-        OpCode_CEE_LDARG_0{},
-        OpCode_CEE_CGT{},
-        OpCode_CEE_LDC_I4_0{},
-        OpCode_CEE_CEQ{},
-        OpCode_CEE_STLOC_S{6},
-        OpCode_CEE_LDLOC_S{6},
-        OpCode_CEE_BRTRUE_S{loopBodyLabel},
+        OpCode::CEE_LDLOC_S{4},
+        OpCode::CEE_LDARG_0{},
+        OpCode::CEE_CGT{},
+        OpCode::CEE_LDC_I4_0{},
+        OpCode::CEE_CEQ{},
+        OpCode::CEE_STLOC_S{6},
+        OpCode::CEE_LDLOC_S{6},
+        OpCode::CEE_BRTRUE_S{loopBodyLabel},
 
         // return current; // <- current
-        OpCode_CEE_LDLOC_1{},
-        OpCode_CEE_STLOC_3{},
-        OpCode_CEE_BR_S{endLabel2},
+        OpCode::CEE_LDLOC_1{},
+        OpCode::CEE_STLOC_3{},
+        OpCode::CEE_BR_S{endLabel2},
 
         // return
         endLabel1,
         endLabel2,
-        OpCode_CEE_LDLOC_3{},
-        OpCode_CEE_RET{}
+        OpCode::CEE_LDLOC_3{},
+        OpCode::CEE_RET{}
     };
 
     // Act
@@ -512,8 +512,8 @@ TEST(MethodBodyTests, InsertFunctionWithLoop)
     const std::vector<std::byte> actualRoundtripBytes(method.Compile());
     const std::vector<ExceptionsSection> actualExceptionSections(method.ExceptionSections());
 
-    method.Insert(method.begin() + 27, OpCode_CEE_LDC_I4_2{});
-    method.Insert(method.begin() + 29, OpCode_CEE_MUL{});
+    method.Insert(method.begin() + 27, OpCode::CEE_LDC_I4_2{});
+    method.Insert(method.begin() + 29, OpCode::CEE_MUL{});
 
     const InstructionStream actualInjectionStream(method.Stream());
     const std::vector<std::byte> actualInjectionBytes(method.Compile());
@@ -623,53 +623,53 @@ TEST(MethodBodyTests, InsertFunctionWithSwitch)
     // Got these values from MS IL decompiler.
     const InstructionStream expectedSourceStream{
         // switch (x)
-        OpCode_CEE_NOP{},
-        OpCode_CEE_LDARG_0{},
-        OpCode_CEE_STLOC_1{},
-        OpCode_CEE_LDLOC_1{},
-        OpCode_CEE_STLOC_0{},
-        OpCode_CEE_LDLOC_0{},
-        OpCode_CEE_SWITCH{{ case0Label, case1Label, case2Label, case3Label, defaultLabel }},
-        OpCode_CEE_BR_S{defaultLabel2},
+        OpCode::CEE_NOP{},
+        OpCode::CEE_LDARG_0{},
+        OpCode::CEE_STLOC_1{},
+        OpCode::CEE_LDLOC_1{},
+        OpCode::CEE_STLOC_0{},
+        OpCode::CEE_LDLOC_0{},
+        OpCode::CEE_SWITCH{{ case0Label, case1Label, case2Label, case3Label, defaultLabel }},
+        OpCode::CEE_BR_S{defaultLabel2},
 
         // case 0:
         case0Label,
         // return x + y; // <- x + y
-        OpCode_CEE_NOP{},
-        OpCode_CEE_LDARG_0{},
-        OpCode_CEE_LDARG_1{},
-        OpCode_CEE_ADD{},
-        OpCode_CEE_STLOC_2{},
+        OpCode::CEE_NOP{},
+        OpCode::CEE_LDARG_0{},
+        OpCode::CEE_LDARG_1{},
+        OpCode::CEE_ADD{},
+        OpCode::CEE_STLOC_2{},
 
         // break;
-        OpCode_CEE_BR_S{endLabel1},
+        OpCode::CEE_BR_S{endLabel1},
 
         // case 1:
         // case 2:
         case1Label,
         case2Label,
         // return x * y; // <- x * y
-        OpCode_CEE_NOP{},
-        OpCode_CEE_LDARG_0{},
-        OpCode_CEE_LDARG_1{},
-        OpCode_CEE_MUL{},
-        OpCode_CEE_STLOC_2{},
+        OpCode::CEE_NOP{},
+        OpCode::CEE_LDARG_0{},
+        OpCode::CEE_LDARG_1{},
+        OpCode::CEE_MUL{},
+        OpCode::CEE_STLOC_2{},
 
         // break;
-        OpCode_CEE_BR_S{endLabel2},
+        OpCode::CEE_BR_S{endLabel2},
 
         // case 3:
         case3Label,
 
         // return x - y; // <- x - y
-        OpCode_CEE_NOP{},
-        OpCode_CEE_LDARG_0{},
-        OpCode_CEE_LDARG_1{},
-        OpCode_CEE_SUB{},
-        OpCode_CEE_STLOC_2{},
+        OpCode::CEE_NOP{},
+        OpCode::CEE_LDARG_0{},
+        OpCode::CEE_LDARG_1{},
+        OpCode::CEE_SUB{},
+        OpCode::CEE_STLOC_2{},
 
         // break;
-        OpCode_CEE_BR_S{endLabel3},
+        OpCode::CEE_BR_S{endLabel3},
 
         // case 4:
         // default:
@@ -677,78 +677,78 @@ TEST(MethodBodyTests, InsertFunctionWithSwitch)
         defaultLabel2,
 
         // return x / y; // <- x / y
-        OpCode_CEE_NOP{},
-        OpCode_CEE_LDARG_0{},
-        OpCode_CEE_LDARG_1{},
-        OpCode_CEE_DIV{},
-        OpCode_CEE_STLOC_2{},
+        OpCode::CEE_NOP{},
+        OpCode::CEE_LDARG_0{},
+        OpCode::CEE_LDARG_1{},
+        OpCode::CEE_DIV{},
+        OpCode::CEE_STLOC_2{},
 
         // break;
-        OpCode_CEE_BR_S{endLabel4},
+        OpCode::CEE_BR_S{endLabel4},
 
         // return
         endLabel1,
         endLabel2,
         endLabel3,
         endLabel4,
-        OpCode_CEE_LDLOC_2{},
-        OpCode_CEE_RET{}
+        OpCode::CEE_LDLOC_2{},
+        OpCode::CEE_RET{}
     };
 
     const InstructionStream expectedInjectionStream{
         // switch (x)
-        OpCode_CEE_NOP{},
-        OpCode_CEE_LDARG_0{},
-        OpCode_CEE_STLOC_1{},
-        OpCode_CEE_LDLOC_1{},
-        OpCode_CEE_STLOC_0{},
-        OpCode_CEE_LDLOC_0{},
-        OpCode_CEE_SWITCH{{ case0Label, case1Label, case2Label, case3Label, defaultLabel }},
-        OpCode_CEE_BR_S{defaultLabel2},
+        OpCode::CEE_NOP{},
+        OpCode::CEE_LDARG_0{},
+        OpCode::CEE_STLOC_1{},
+        OpCode::CEE_LDLOC_1{},
+        OpCode::CEE_STLOC_0{},
+        OpCode::CEE_LDLOC_0{},
+        OpCode::CEE_SWITCH{{ case0Label, case1Label, case2Label, case3Label, defaultLabel }},
+        OpCode::CEE_BR_S{defaultLabel2},
 
         // case 0:
         case0Label,
         // return -(x + y); // <- -(x + y)
-        OpCode_CEE_NOP{},
-        OpCode_CEE_LDARG_0{},
-        OpCode_CEE_LDARG_1{},
-        OpCode_CEE_ADD{},
-        OpCode_CEE_NEG{},
-        OpCode_CEE_STLOC_2{},
+        OpCode::CEE_NOP{},
+        OpCode::CEE_LDARG_0{},
+        OpCode::CEE_LDARG_1{},
+        OpCode::CEE_ADD{},
+        OpCode::CEE_NEG{},
+        OpCode::CEE_STLOC_2{},
 
         // break;
-        OpCode_CEE_BR_S{endLabel1},
+        OpCode::CEE_BR_S{endLabel1},
 
         // case 1:
         // case 2:
         case1Label,
         case2Label,
         // return x * y * 3; // <- x * y * 3
-        OpCode_CEE_NOP{},
-        OpCode_CEE_LDARG_0{},
-        OpCode_CEE_LDARG_1{},
-        OpCode_CEE_MUL{},
-        OpCode_CEE_LDC_I4_3{},
-        OpCode_CEE_MUL{},
-        OpCode_CEE_STLOC_2{},
+        OpCode::CEE_NOP{},
+        OpCode::CEE_LDARG_0{},
+        OpCode::CEE_LDARG_1{},
+        OpCode::CEE_MUL{},
+        OpCode::CEE_LDC_I4_3{},
+        OpCode::CEE_MUL{},
+        OpCode::CEE_STLOC_2{},
 
         // break;
-        OpCode_CEE_BR_S{endLabel2},
+        OpCode::CEE_BR_S{endLabel2},
 
         // case 3:
         case3Label,
 
         // return x - y + 42; // <- x - y + 42
-        OpCode_CEE_NOP{},
-        OpCode_CEE_LDARG_0{},
-        OpCode_CEE_LDARG_1{},
-        OpCode_CEE_SUB{},
-        OpCode_CEE_LDC_I4{42},
-        OpCode_CEE_ADD{},
-        OpCode_CEE_STLOC_2{},
+        OpCode::CEE_NOP{},
+        OpCode::CEE_LDARG_0{},
+        OpCode::CEE_LDARG_1{},
+        OpCode::CEE_SUB{},
+        OpCode::CEE_LDC_I4{42},
+        OpCode::CEE_ADD{},
+        OpCode::CEE_STLOC_2{},
 
         // break;
-        OpCode_CEE_BR_S{endLabel3},
+        OpCode::CEE_BR_S{endLabel3},
 
         // case 4:
         // default:
@@ -756,24 +756,24 @@ TEST(MethodBodyTests, InsertFunctionWithSwitch)
         defaultLabel2,
 
         // return x / y / 5; // <- x / y / 5
-        OpCode_CEE_NOP{},
-        OpCode_CEE_LDARG_0{},
-        OpCode_CEE_LDARG_1{},
-        OpCode_CEE_DIV{},
-        OpCode_CEE_LDC_I4_5{},
-        OpCode_CEE_DIV{},
-        OpCode_CEE_STLOC_2{},
+        OpCode::CEE_NOP{},
+        OpCode::CEE_LDARG_0{},
+        OpCode::CEE_LDARG_1{},
+        OpCode::CEE_DIV{},
+        OpCode::CEE_LDC_I4_5{},
+        OpCode::CEE_DIV{},
+        OpCode::CEE_STLOC_2{},
 
         // break;
-        OpCode_CEE_BR_S{endLabel4},
+        OpCode::CEE_BR_S{endLabel4},
 
         // return
         endLabel1,
         endLabel2,
         endLabel3,
         endLabel4,
-        OpCode_CEE_LDLOC_2{},
-        OpCode_CEE_RET{}
+        OpCode::CEE_LDLOC_2{},
+        OpCode::CEE_RET{}
     };
 
     // Act
@@ -783,16 +783,16 @@ TEST(MethodBodyTests, InsertFunctionWithSwitch)
     const std::vector<std::byte> actualRoundtripBytes(method.Compile());
     const std::vector<ExceptionsSection> actualExceptionSections(method.ExceptionSections());
 
-    method.Insert(method.begin() + 13, OpCode_CEE_NEG{});
+    method.Insert(method.begin() + 13, OpCode::CEE_NEG{});
 
-    method.Insert(method.begin() + 22, OpCode_CEE_LDC_I4_3{});
-    method.Insert(method.begin() + 23, OpCode_CEE_MUL{});
+    method.Insert(method.begin() + 22, OpCode::CEE_LDC_I4_3{});
+    method.Insert(method.begin() + 23, OpCode::CEE_MUL{});
 
-    method.Insert(method.begin() + 31, OpCode_CEE_LDC_I4{42});
-    method.Insert(method.begin() + 32, OpCode_CEE_ADD{});
+    method.Insert(method.begin() + 31, OpCode::CEE_LDC_I4{42});
+    method.Insert(method.begin() + 32, OpCode::CEE_ADD{});
 
-    method.Insert(method.begin() + 41, OpCode_CEE_LDC_I4_5{});
-    method.Insert(method.begin() + 42, OpCode_CEE_DIV{});
+    method.Insert(method.begin() + 41, OpCode::CEE_LDC_I4_5{});
+    method.Insert(method.begin() + 42, OpCode::CEE_DIV{});
 
     const InstructionStream actualInjectionStream(method.Stream());
     const std::vector<std::byte> actualInjectionBytes(method.Compile());
@@ -866,81 +866,81 @@ TEST(MethodBodyTests, InsertFunctionWithTryCatch)
     const Label handlerEndLabel{ sourceStreamLabelCreator.CreateLabel() };
     // Got these values from MS IL decompiler.
     const InstructionStream expectedSourceStream{
-        OpCode_CEE_NOP{},
+        OpCode::CEE_NOP{},
 
         // try 
         // {
         tryLabel,
-        OpCode_CEE_NOP{},
+        OpCode::CEE_NOP{},
         // return x / y; // <- x / y
-        OpCode_CEE_LDARG_0{},
-        OpCode_CEE_LDARG_1{},
-        OpCode_CEE_DIV{},
-        OpCode_CEE_STLOC_0{},
+        OpCode::CEE_LDARG_0{},
+        OpCode::CEE_LDARG_1{},
+        OpCode::CEE_DIV{},
+        OpCode::CEE_STLOC_0{},
 
         // } // end of try {
-        OpCode_CEE_LEAVE_S{endLabel1},
+        OpCode::CEE_LEAVE_S{endLabel1},
         tryEndLabel,
 
         // catch (DivideByZeroException)
         // {
         handlerLabel,
-        OpCode_CEE_POP{},
-        OpCode_CEE_NOP{},
+        OpCode::CEE_POP{},
+        OpCode::CEE_NOP{},
 
         // return x; // <- x
-        OpCode_CEE_LDARG_0{},
-        OpCode_CEE_STLOC_0{},
+        OpCode::CEE_LDARG_0{},
+        OpCode::CEE_STLOC_0{},
 
         // }
-        OpCode_CEE_LEAVE_S{endLabel2},
+        OpCode::CEE_LEAVE_S{endLabel2},
         handlerEndLabel,
 
         // return
         endLabel1,
         endLabel2,
-        OpCode_CEE_LDLOC_0{},
-        OpCode_CEE_RET{}
+        OpCode::CEE_LDLOC_0{},
+        OpCode::CEE_RET{}
     };
 
     const InstructionStream expectedInjectionStream{
-        OpCode_CEE_NOP{},
+        OpCode::CEE_NOP{},
 
         // try 
         // {
         tryLabel,
-        OpCode_CEE_NOP{},
+        OpCode::CEE_NOP{},
         // return x / (y + 1); // <- x / y
-        OpCode_CEE_LDARG_0{},
-        OpCode_CEE_LDARG_1{},
-        OpCode_CEE_LDC_I4_1{},
-        OpCode_CEE_ADD{},
-        OpCode_CEE_DIV{},
-        OpCode_CEE_STLOC_0{},
+        OpCode::CEE_LDARG_0{},
+        OpCode::CEE_LDARG_1{},
+        OpCode::CEE_LDC_I4_1{},
+        OpCode::CEE_ADD{},
+        OpCode::CEE_DIV{},
+        OpCode::CEE_STLOC_0{},
 
         // } // end of try {
-        OpCode_CEE_LEAVE_S{endLabel1},
+        OpCode::CEE_LEAVE_S{endLabel1},
         tryEndLabel,
 
         // catch (DivideByZeroException)
         // {
         handlerLabel,
-        OpCode_CEE_POP{},
-        OpCode_CEE_NOP{},
+        OpCode::CEE_POP{},
+        OpCode::CEE_NOP{},
 
         // return x; // <- x
-        OpCode_CEE_LDARG_0{},
-        OpCode_CEE_STLOC_0{},
+        OpCode::CEE_LDARG_0{},
+        OpCode::CEE_STLOC_0{},
 
         // }
-        OpCode_CEE_LEAVE_S{endLabel2},
+        OpCode::CEE_LEAVE_S{endLabel2},
         handlerEndLabel,
 
         // return
         endLabel1,
         endLabel2,
-        OpCode_CEE_LDLOC_0{},
-        OpCode_CEE_RET{}
+        OpCode::CEE_LDLOC_0{},
+        OpCode::CEE_RET{}
     };
 
     // Act
@@ -950,8 +950,8 @@ TEST(MethodBodyTests, InsertFunctionWithTryCatch)
     const std::vector<std::byte> actualRoundtripBytes(method.Compile());
     const std::vector<ExceptionsSection> actualExceptionSections(method.ExceptionSections());
 
-    method.Insert(method.begin() + 5, OpCode_CEE_LDC_I4_1{});
-    method.Insert(method.begin() + 6, OpCode_CEE_ADD{});
+    method.Insert(method.begin() + 5, OpCode::CEE_LDC_I4_1{});
+    method.Insert(method.begin() + 6, OpCode::CEE_ADD{});
 
     const InstructionStream actualInjectionStream(method.Stream());
     const std::vector<std::byte> actualInjectionBytes(method.Compile());
@@ -1033,106 +1033,106 @@ TEST(MethodBodyTests, InsertFunctionWithTryFinally)
     // Got these values from MS IL decompiler.
     const InstructionStream expectedSourceStream{
         // int z = 0;
-        OpCode_CEE_NOP{},
-        OpCode_CEE_LDC_I4_0{},
-        OpCode_CEE_STLOC_0{},
+        OpCode::CEE_NOP{},
+        OpCode::CEE_LDC_I4_0{},
+        OpCode::CEE_STLOC_0{},
 
         // try
         // {
         tryLabel,
-        OpCode_CEE_NOP{},
+        OpCode::CEE_NOP{},
 
         // z = x / y;
-        OpCode_CEE_LDARG_0{},
-        OpCode_CEE_LDARG_1{},
-        OpCode_CEE_DIV{},
-        OpCode_CEE_STLOC_0{},
+        OpCode::CEE_LDARG_0{},
+        OpCode::CEE_LDARG_1{},
+        OpCode::CEE_DIV{},
+        OpCode::CEE_STLOC_0{},
 
         // } // end of try {
-        OpCode_CEE_NOP{},
-        OpCode_CEE_LEAVE_S{endLabel},
+        OpCode::CEE_NOP{},
+        OpCode::CEE_LEAVE_S{endLabel},
         tryEndLabel,
 
         // finally
         // {
         handlerLabel,
-        OpCode_CEE_NOP{},
+        OpCode::CEE_NOP{},
 
         // y = 42;
-        OpCode_CEE_LDC_I4_S{42},
-        OpCode_CEE_STARG_S{1},
+        OpCode::CEE_LDC_I4_S{42},
+        OpCode::CEE_STARG_S{1},
 
         // } // end of finally {
-        OpCode_CEE_NOP{},
-        OpCode_CEE_ENDFINALLY{},
+        OpCode::CEE_NOP{},
+        OpCode::CEE_ENDFINALLY{},
         handlerEndLabel,
 
         // return z + y; // <- z + y
         endLabel,
-        OpCode_CEE_LDLOC_0{},
-        OpCode_CEE_LDARG_1{},
-        OpCode_CEE_ADD{},
-        OpCode_CEE_STLOC_1{},
-        OpCode_CEE_BR_S{retLabel},
+        OpCode::CEE_LDLOC_0{},
+        OpCode::CEE_LDARG_1{},
+        OpCode::CEE_ADD{},
+        OpCode::CEE_STLOC_1{},
+        OpCode::CEE_BR_S{retLabel},
 
         // return z + y; // <- return
         retLabel,
-        OpCode_CEE_LDLOC_1{},
-        OpCode_CEE_RET{}
+        OpCode::CEE_LDLOC_1{},
+        OpCode::CEE_RET{}
     };
 
     const InstructionStream expectedInjectionStream{
         // int z = 0;
-        OpCode_CEE_NOP{},
-        OpCode_CEE_LDC_I4_0{},
-        OpCode_CEE_STLOC_0{},
+        OpCode::CEE_NOP{},
+        OpCode::CEE_LDC_I4_0{},
+        OpCode::CEE_STLOC_0{},
 
         // try
         // {
         tryLabel,
-        OpCode_CEE_NOP{},
+        OpCode::CEE_NOP{},
 
         // z = x / y;
-        OpCode_CEE_LDARG_0{},
-        OpCode_CEE_LDARG_1{},
-        OpCode_CEE_DIV{},
-        OpCode_CEE_STLOC_0{},
+        OpCode::CEE_LDARG_0{},
+        OpCode::CEE_LDARG_1{},
+        OpCode::CEE_DIV{},
+        OpCode::CEE_STLOC_0{},
 
         // } // end of try {
-        OpCode_CEE_NOP{},
-        OpCode_CEE_LEAVE_S{endLabel},
+        OpCode::CEE_NOP{},
+        OpCode::CEE_LEAVE_S{endLabel},
         tryEndLabel,
 
         // finally
         // {
         handlerLabel,
-        OpCode_CEE_NOP{},
+        OpCode::CEE_NOP{},
 
         // y = 42;
-        OpCode_CEE_LDC_I4_S{42},
-        OpCode_CEE_STARG_S{1},
+        OpCode::CEE_LDC_I4_S{42},
+        OpCode::CEE_STARG_S{1},
 
         // x = 0;
-        OpCode_CEE_LDC_I4_0{},
-        OpCode_CEE_STARG_S{0},
+        OpCode::CEE_LDC_I4_0{},
+        OpCode::CEE_STARG_S{0},
 
         // } // end of finally {
-        OpCode_CEE_NOP{},
-        OpCode_CEE_ENDFINALLY{},
+        OpCode::CEE_NOP{},
+        OpCode::CEE_ENDFINALLY{},
         handlerEndLabel,
 
         // return z + y; // <- z + y
         endLabel,
-        OpCode_CEE_LDLOC_0{},
-        OpCode_CEE_LDARG_1{},
-        OpCode_CEE_ADD{},
-        OpCode_CEE_STLOC_1{},
-        OpCode_CEE_BR_S{retLabel},
+        OpCode::CEE_LDLOC_0{},
+        OpCode::CEE_LDARG_1{},
+        OpCode::CEE_ADD{},
+        OpCode::CEE_STLOC_1{},
+        OpCode::CEE_BR_S{retLabel},
 
         // return z + y; // <- return
         retLabel,
-        OpCode_CEE_LDLOC_1{},
-        OpCode_CEE_RET{}
+        OpCode::CEE_LDLOC_1{},
+        OpCode::CEE_RET{}
     };
 
     // Act
@@ -1142,8 +1142,8 @@ TEST(MethodBodyTests, InsertFunctionWithTryFinally)
     const std::vector<std::byte> actualRoundtripBytes(method.Compile());
     const std::vector<ExceptionsSection> actualExceptionSections(method.ExceptionSections());
 
-    method.Insert(method.begin() + 16, OpCode_CEE_LDC_I4_0{});
-    method.Insert(method.begin() + 17, OpCode_CEE_STARG_S{0});
+    method.Insert(method.begin() + 16, OpCode::CEE_LDC_I4_0{});
+    method.Insert(method.begin() + 17, OpCode::CEE_STARG_S{0});
 
     const InstructionStream actualInjectionStream(method.Stream());
     const std::vector<std::byte> actualInjectionBytes(method.Compile());
@@ -1249,164 +1249,164 @@ TEST(MethodBodyTests, InsertFunctionWithTryCatchWhen)
     // Got these values from MS IL decompiler.
     const InstructionStream expectedSourceStream{
         // int z = 0;
-        OpCode_CEE_NOP{},
-        OpCode_CEE_LDC_I4_0{},
-        OpCode_CEE_STLOC_0{},
+        OpCode::CEE_NOP{},
+        OpCode::CEE_LDC_I4_0{},
+        OpCode::CEE_STLOC_0{},
 
         // try
         // {
         tryLabel,
-        OpCode_CEE_NOP{},
+        OpCode::CEE_NOP{},
 
         // z = x / y;
-        OpCode_CEE_LDARG_0{},
-        OpCode_CEE_LDARG_1{},
-        OpCode_CEE_DIV{},
-        OpCode_CEE_STLOC_0{},
+        OpCode::CEE_LDARG_0{},
+        OpCode::CEE_LDARG_1{},
+        OpCode::CEE_DIV{},
+        OpCode::CEE_STLOC_0{},
 
         // } // end of try {
-        OpCode_CEE_NOP{},
-        OpCode_CEE_LEAVE_S{endLabel},
+        OpCode::CEE_NOP{},
+        OpCode::CEE_LEAVE_S{endLabel},
         tryEndLabel,
 
         // catch (DivideByZeroException e) when(e.Message.Length % 2 == 0) // <- when
         filterLabel,
 
         // catch (DivideByZeroException e) when(e.Message.Length % 2 == 0) // <- DivideByZeroException e
-        OpCode_CEE_ISINST{ 0x0100000D },
-        OpCode_CEE_DUP{},
-        OpCode_CEE_BRTRUE_S{ isInstanceLabel },
-        OpCode_CEE_POP{},
-        OpCode_CEE_LDC_I4_0{},
-        OpCode_CEE_BR_S{endFilterLabel},
+        OpCode::CEE_ISINST{ 0x0100000D },
+        OpCode::CEE_DUP{},
+        OpCode::CEE_BRTRUE_S{ isInstanceLabel },
+        OpCode::CEE_POP{},
+        OpCode::CEE_LDC_I4_0{},
+        OpCode::CEE_BR_S{endFilterLabel},
 
         // catch (DivideByZeroException e) when(e.Message.Length % 2 == 0) // <- e.Message.Length % 2 == 0
         isInstanceLabel,
-        OpCode_CEE_STLOC_1{},
-        OpCode_CEE_LDLOC_1{},
-        OpCode_CEE_CALLVIRT{ 0x0A00000C },
-        OpCode_CEE_CALLVIRT{ 0x0A00000D },
-        OpCode_CEE_LDC_I4_2{},
-        OpCode_CEE_REM{},
-        OpCode_CEE_LDC_I4_0{},
-        OpCode_CEE_CEQ{},
-        OpCode_CEE_STLOC_2{},
-        OpCode_CEE_LDLOC_2{},
-        OpCode_CEE_LDC_I4_0{},
-        OpCode_CEE_CGT_UN{},
+        OpCode::CEE_STLOC_1{},
+        OpCode::CEE_LDLOC_1{},
+        OpCode::CEE_CALLVIRT{ 0x0A00000C },
+        OpCode::CEE_CALLVIRT{ 0x0A00000D },
+        OpCode::CEE_LDC_I4_2{},
+        OpCode::CEE_REM{},
+        OpCode::CEE_LDC_I4_0{},
+        OpCode::CEE_CEQ{},
+        OpCode::CEE_STLOC_2{},
+        OpCode::CEE_LDLOC_2{},
+        OpCode::CEE_LDC_I4_0{},
+        OpCode::CEE_CGT_UN{},
         endFilterLabel,
-        OpCode_CEE_ENDFILTER{},
+        OpCode::CEE_ENDFILTER{},
 
         // catch (DivideByZeroException e) when(e.Message.Length % 2 == 0) // <- catch
         // {
         handlerLabel,
-        OpCode_CEE_POP{},
-        OpCode_CEE_NOP{},
+        OpCode::CEE_POP{},
+        OpCode::CEE_NOP{},
 
         // y = 42;
-        OpCode_CEE_LDC_I4_S{42},
-        OpCode_CEE_STARG_S{1},
+        OpCode::CEE_LDC_I4_S{42},
+        OpCode::CEE_STARG_S{1},
 
         // } // end of catch {
-        OpCode_CEE_NOP{},
-        OpCode_CEE_LEAVE_S{endLabel2},
+        OpCode::CEE_NOP{},
+        OpCode::CEE_LEAVE_S{endLabel2},
         handlerEndLabel,
 
         // return z + y; // <- z + y
         endLabel,
         endLabel2,
-        OpCode_CEE_LDLOC_0{},
-        OpCode_CEE_LDARG_1{},
-        OpCode_CEE_ADD{},
-        OpCode_CEE_STLOC_3{},
-        OpCode_CEE_BR_S{retLabel},
+        OpCode::CEE_LDLOC_0{},
+        OpCode::CEE_LDARG_1{},
+        OpCode::CEE_ADD{},
+        OpCode::CEE_STLOC_3{},
+        OpCode::CEE_BR_S{retLabel},
 
         // return z + y; // <- return
         retLabel,
-        OpCode_CEE_LDLOC_3{},
-        OpCode_CEE_RET{}
+        OpCode::CEE_LDLOC_3{},
+        OpCode::CEE_RET{}
     };
 
     const InstructionStream expectedInjectionStream{
         // int z = 0;
-        OpCode_CEE_NOP{},
-        OpCode_CEE_LDC_I4_0{},
-        OpCode_CEE_STLOC_0{},
+        OpCode::CEE_NOP{},
+        OpCode::CEE_LDC_I4_0{},
+        OpCode::CEE_STLOC_0{},
 
         // try
         // {
         tryLabel,
-        OpCode_CEE_NOP{},
+        OpCode::CEE_NOP{},
 
         // z = x / y;
-        OpCode_CEE_LDARG_0{},
-        OpCode_CEE_LDARG_1{},
-        OpCode_CEE_DIV{},
-        OpCode_CEE_STLOC_0{},
+        OpCode::CEE_LDARG_0{},
+        OpCode::CEE_LDARG_1{},
+        OpCode::CEE_DIV{},
+        OpCode::CEE_STLOC_0{},
 
         // } // end of try {
-        OpCode_CEE_NOP{},
-        OpCode_CEE_LEAVE_S{endLabel},
+        OpCode::CEE_NOP{},
+        OpCode::CEE_LEAVE_S{endLabel},
         tryEndLabel,
 
         // catch (DivideByZeroException e) when(e.Message.Length % 2 == (0 + 1)) // <- when
         filterLabel,
 
         // catch (DivideByZeroException e) when(e.Message.Length % 2 == (0 + 1)) // <- DivideByZeroException e
-        OpCode_CEE_ISINST{ 0x0100000D },
-        OpCode_CEE_DUP{},
-        OpCode_CEE_BRTRUE_S{ isInstanceLabel },
-        OpCode_CEE_POP{},
-        OpCode_CEE_LDC_I4_0{},
-        OpCode_CEE_BR_S{endFilterLabel},
+        OpCode::CEE_ISINST{ 0x0100000D },
+        OpCode::CEE_DUP{},
+        OpCode::CEE_BRTRUE_S{ isInstanceLabel },
+        OpCode::CEE_POP{},
+        OpCode::CEE_LDC_I4_0{},
+        OpCode::CEE_BR_S{endFilterLabel},
 
         // catch (DivideByZeroException e) when(e.Message.Length % 2 == (0 + 1)) // <- e.Message.Length % 2 == (0 + 1)
         isInstanceLabel,
-        OpCode_CEE_STLOC_1{},
-        OpCode_CEE_LDLOC_1{},
-        OpCode_CEE_CALLVIRT{ 0x0A00000C },
-        OpCode_CEE_CALLVIRT{ 0x0A00000D },
-        OpCode_CEE_LDC_I4_2{},
-        OpCode_CEE_REM{},
-        OpCode_CEE_LDC_I4_0{},
-        OpCode_CEE_LDC_I4_1{},
-        OpCode_CEE_ADD{},
-        OpCode_CEE_CEQ{},
-        OpCode_CEE_STLOC_2{},
-        OpCode_CEE_LDLOC_2{},
-        OpCode_CEE_LDC_I4_0{},
-        OpCode_CEE_CGT_UN{},
+        OpCode::CEE_STLOC_1{},
+        OpCode::CEE_LDLOC_1{},
+        OpCode::CEE_CALLVIRT{ 0x0A00000C },
+        OpCode::CEE_CALLVIRT{ 0x0A00000D },
+        OpCode::CEE_LDC_I4_2{},
+        OpCode::CEE_REM{},
+        OpCode::CEE_LDC_I4_0{},
+        OpCode::CEE_LDC_I4_1{},
+        OpCode::CEE_ADD{},
+        OpCode::CEE_CEQ{},
+        OpCode::CEE_STLOC_2{},
+        OpCode::CEE_LDLOC_2{},
+        OpCode::CEE_LDC_I4_0{},
+        OpCode::CEE_CGT_UN{},
         endFilterLabel,
-        OpCode_CEE_ENDFILTER{},
+        OpCode::CEE_ENDFILTER{},
 
         // catch (DivideByZeroException e) when(e.Message.Length % 2 == (0 + 1)) // <- catch
         // {
         handlerLabel,
-        OpCode_CEE_POP{},
-        OpCode_CEE_NOP{},
+        OpCode::CEE_POP{},
+        OpCode::CEE_NOP{},
 
         // y = 42;
-        OpCode_CEE_LDC_I4_S{42},
-        OpCode_CEE_STARG_S{1},
+        OpCode::CEE_LDC_I4_S{42},
+        OpCode::CEE_STARG_S{1},
 
         // } // end of catch {
-        OpCode_CEE_NOP{},
-        OpCode_CEE_LEAVE_S{endLabel2},
+        OpCode::CEE_NOP{},
+        OpCode::CEE_LEAVE_S{endLabel2},
         handlerEndLabel,
 
         // return z + y; // <- z + y
         endLabel,
         endLabel2,
-        OpCode_CEE_LDLOC_0{},
-        OpCode_CEE_LDARG_1{},
-        OpCode_CEE_ADD{},
-        OpCode_CEE_STLOC_3{},
-        OpCode_CEE_BR_S{retLabel},
+        OpCode::CEE_LDLOC_0{},
+        OpCode::CEE_LDARG_1{},
+        OpCode::CEE_ADD{},
+        OpCode::CEE_STLOC_3{},
+        OpCode::CEE_BR_S{retLabel},
 
         // return z + y; // <- return
         retLabel,
-        OpCode_CEE_LDLOC_3{},
-        OpCode_CEE_RET{}
+        OpCode::CEE_LDLOC_3{},
+        OpCode::CEE_RET{}
     };
 
     // Act
@@ -1416,8 +1416,8 @@ TEST(MethodBodyTests, InsertFunctionWithTryCatchWhen)
     const std::vector<std::byte> actualRoundtripBytes(method.Compile());
     const std::vector<ExceptionsSection> actualExceptionSections(method.ExceptionSections());
 
-    method.Insert(method.begin() + 27, OpCode_CEE_LDC_I4_1{});
-    method.Insert(method.begin() + 28, OpCode_CEE_ADD{});
+    method.Insert(method.begin() + 27, OpCode::CEE_LDC_I4_1{});
+    method.Insert(method.begin() + 28, OpCode::CEE_ADD{});
 
     const InstructionStream actualInjectionStream(method.Stream());
     const std::vector<std::byte> actualInjectionBytes(method.Compile());
@@ -1512,43 +1512,43 @@ TEST(MethodBodyTests, TransformJumpToLongIfNeeded)
     const Label endLabel2{ sourceStreamLabelCreator.CreateLabel() };
     const InstructionStream expectedSourceStream{
         // if (x == 1) // <- x == 1
-        OpCode_CEE_NOP{},
-        OpCode_CEE_LDARG_0{},
-        OpCode_CEE_LDC_I4_1{},
-        OpCode_CEE_CEQ{},
-        OpCode_CEE_STLOC_0{},
-        OpCode_CEE_LDLOC_0{},
+        OpCode::CEE_NOP{},
+        OpCode::CEE_LDARG_0{},
+        OpCode::CEE_LDC_I4_1{},
+        OpCode::CEE_CEQ{},
+        OpCode::CEE_STLOC_0{},
+        OpCode::CEE_LDLOC_0{},
 
         // if (x == 1) // <- if
-        OpCode_CEE_BRFALSE_S{elseLabel},
+        OpCode::CEE_BRFALSE_S{elseLabel},
 
         // return 42; // <- 42
-        OpCode_CEE_NOP{},
-        OpCode_CEE_LDC_I4_S{42},
-        OpCode_CEE_STLOC_1{},
-        OpCode_CEE_BR_S{endLabel1},
+        OpCode::CEE_NOP{},
+        OpCode::CEE_LDC_I4_S{42},
+        OpCode::CEE_STLOC_1{},
+        OpCode::CEE_BR_S{endLabel1},
 
         // return 0; // <- 0
         elseLabel,
-        OpCode_CEE_LDC_I4_0{},
-        OpCode_CEE_STLOC_1{},
-        OpCode_CEE_BR_S{endLabel2},
+        OpCode::CEE_LDC_I4_0{},
+        OpCode::CEE_STLOC_1{},
+        OpCode::CEE_BR_S{endLabel2},
 
         // return
         endLabel1,
         endLabel2,
-        OpCode_CEE_LDLOC_1{},
-        OpCode_CEE_RET{}
+        OpCode::CEE_LDLOC_1{},
+        OpCode::CEE_RET{}
     };
 
     const size_t insertionLength{ 128 };
     const ptrdiff_t insertionPosition{ 10 };
     InstructionStream expectedInjectionStream(expectedSourceStream);
-    expectedInjectionStream[6] = OpCode_CEE_BRFALSE{ elseLabel };
+    expectedInjectionStream[6] = OpCode::CEE_BRFALSE{ elseLabel };
     expectedInjectionStream.insert(
         expectedInjectionStream.cbegin() + insertionPosition,
         insertionLength,
-        OpCode_CEE_NOP{});
+        OpCode::CEE_NOP{});
 
     // Act
     MethodBody method(sourceBytes);
@@ -1559,7 +1559,7 @@ TEST(MethodBodyTests, TransformJumpToLongIfNeeded)
 
     for (size_t i{ 0 }; i != insertionLength; ++i)
     {
-        method.Insert(method.begin() + insertionPosition, OpCode_CEE_NOP{});
+        method.Insert(method.begin() + insertionPosition, OpCode::CEE_NOP{});
     }
 
     const InstructionStream actualInjectionStream(method.Stream());
@@ -1652,17 +1652,17 @@ TEST(MethodBodyTests, InsertTransformJumpToLongIfNeeded)
     const Label endLabel{ sourceStreamLabelCreator.CreateLabel() };
     const InstructionStream expectedSourceStream{
         // return x + 1; // <- x + 1
-        OpCode_CEE_NOP{},
-        OpCode_CEE_LDARG_0{},
-        OpCode_CEE_LDC_I4_1{},
-        OpCode_CEE_ADD{},
-        OpCode_CEE_STLOC_0{},
-        OpCode_CEE_BR_S{endLabel},
+        OpCode::CEE_NOP{},
+        OpCode::CEE_LDARG_0{},
+        OpCode::CEE_LDC_I4_1{},
+        OpCode::CEE_ADD{},
+        OpCode::CEE_STLOC_0{},
+        OpCode::CEE_BR_S{endLabel},
 
         // return x + 1; // <- return
         endLabel,
-        OpCode_CEE_LDLOC_0{},
-        OpCode_CEE_RET{}
+        OpCode::CEE_LDLOC_0{},
+        OpCode::CEE_RET{}
     };
 
     const Label elseLabel{ sourceStreamLabelCreator.CreateLabel() };
@@ -1670,41 +1670,41 @@ TEST(MethodBodyTests, InsertTransformJumpToLongIfNeeded)
     const ptrdiff_t insertionPosition{ 10 };
     InstructionStream expectedInjectionStream{
         // if (x == 1) // <- x == 1
-        OpCode_CEE_NOP{},
-        OpCode_CEE_LDARG_0{},
-        OpCode_CEE_LDC_I4_1{},
-        OpCode_CEE_CEQ{},
-        OpCode_CEE_STLOC_1{},
-        OpCode_CEE_LDLOC_1{},
+        OpCode::CEE_NOP{},
+        OpCode::CEE_LDARG_0{},
+        OpCode::CEE_LDC_I4_1{},
+        OpCode::CEE_CEQ{},
+        OpCode::CEE_STLOC_1{},
+        OpCode::CEE_LDLOC_1{},
 
         // if (x == 1) // <- if
-        OpCode_CEE_BRFALSE{elseLabel},
+        OpCode::CEE_BRFALSE{elseLabel},
 
         // return 42; // <- 42
-        OpCode_CEE_NOP{},
-        OpCode_CEE_LDC_I4_S{42},
-        OpCode_CEE_STLOC_0{},
+        OpCode::CEE_NOP{},
+        OpCode::CEE_LDC_I4_S{42},
+        OpCode::CEE_STLOC_0{},
         // 128 No Operation instruction will go here
-        OpCode_CEE_BR_S{endLabel},
+        OpCode::CEE_BR_S{endLabel},
 
         // return x + 1; // <- x + 1
         elseLabel,
-        OpCode_CEE_LDARG_0{},
-        OpCode_CEE_LDC_I4_1{},
-        OpCode_CEE_ADD{},
-        OpCode_CEE_STLOC_0{},
-        OpCode_CEE_BR_S{endLabel},
+        OpCode::CEE_LDARG_0{},
+        OpCode::CEE_LDC_I4_1{},
+        OpCode::CEE_ADD{},
+        OpCode::CEE_STLOC_0{},
+        OpCode::CEE_BR_S{endLabel},
 
         // return
         endLabel,
-        OpCode_CEE_LDLOC_0{},
-        OpCode_CEE_RET{}
+        OpCode::CEE_LDLOC_0{},
+        OpCode::CEE_RET{}
     };
 
     expectedInjectionStream.insert(
         expectedInjectionStream.cbegin() + insertionPosition,
         insertionLength,
-        OpCode_CEE_NOP{});
+        OpCode::CEE_NOP{});
 
     // Act
     MethodBody method(sourceBytes);
@@ -1714,28 +1714,28 @@ TEST(MethodBodyTests, InsertTransformJumpToLongIfNeeded)
     const std::vector<ExceptionsSection> actualExceptionSections(method.ExceptionSections());
 
     // if (x == 1) // <- x == 1
-    method.Insert(method.begin() + 1, OpCode_CEE_LDARG_0{});
-    method.Insert(method.begin() + 2, OpCode_CEE_LDC_I4_1{});
-    method.Insert(method.begin() + 3, OpCode_CEE_CEQ{});
-    method.Insert(method.begin() + 4, OpCode_CEE_STLOC_1{});
-    method.Insert(method.begin() + 5, OpCode_CEE_LDLOC_1{});
+    method.Insert(method.begin() + 1, OpCode::CEE_LDARG_0{});
+    method.Insert(method.begin() + 2, OpCode::CEE_LDC_I4_1{});
+    method.Insert(method.begin() + 3, OpCode::CEE_CEQ{});
+    method.Insert(method.begin() + 4, OpCode::CEE_STLOC_1{});
+    method.Insert(method.begin() + 5, OpCode::CEE_LDLOC_1{});
 
     // if (x == 1) // <- if
     const Label actualElseLabel{ method.CreateLabel() };
-    method.Insert(method.begin() + 6, OpCode_CEE_BRFALSE_S{ actualElseLabel });
+    method.Insert(method.begin() + 6, OpCode::CEE_BRFALSE_S{ actualElseLabel });
 
     // return 42; // <- 42
-    method.Insert(method.begin() + 7, OpCode_CEE_NOP{});
-    method.Insert(method.begin() + 8, OpCode_CEE_LDC_I4_S{42});
-    method.Insert(method.begin() + 9, OpCode_CEE_STLOC_0{});
+    method.Insert(method.begin() + 7, OpCode::CEE_NOP{});
+    method.Insert(method.begin() + 8, OpCode::CEE_LDC_I4_S{42});
+    method.Insert(method.begin() + 9, OpCode::CEE_STLOC_0{});
 
     // 128 No Operation instructions
     for (size_t i{ 0 }; i != insertionLength; ++i)
     {
-        method.Insert(method.begin() + insertionPosition, OpCode_CEE_NOP{});
+        method.Insert(method.begin() + insertionPosition, OpCode::CEE_NOP{});
     }
 
-    method.Insert(method.begin() + 138, OpCode_CEE_BR_S{ endLabel });
+    method.Insert(method.begin() + 138, OpCode::CEE_BR_S{ endLabel });
     method.MarkLabel(method.begin() + 139, actualElseLabel);
 
     const InstructionStream actualInjectionStream(method.Stream());
@@ -1793,50 +1793,50 @@ TEST(MethodBodyTests, ÑreateAndMarkLabel)
     const Label endLabel{ sourceStreamLabelCreator.CreateLabel() };
     const InstructionStream expectedSourceStream{
         // return x + 1; // <- x + 1
-        OpCode_CEE_NOP{},
-        OpCode_CEE_LDARG_0{},
-        OpCode_CEE_LDC_I4_1{},
-        OpCode_CEE_ADD{},
-        OpCode_CEE_STLOC_0{},
-        OpCode_CEE_BR_S{endLabel},
+        OpCode::CEE_NOP{},
+        OpCode::CEE_LDARG_0{},
+        OpCode::CEE_LDC_I4_1{},
+        OpCode::CEE_ADD{},
+        OpCode::CEE_STLOC_0{},
+        OpCode::CEE_BR_S{endLabel},
 
         // return x + 1; // <- return
         endLabel,
-        OpCode_CEE_LDLOC_0{},
-        OpCode_CEE_RET{}
+        OpCode::CEE_LDLOC_0{},
+        OpCode::CEE_RET{}
     };
 
     const Label elseLabel{ sourceStreamLabelCreator.CreateLabel() };
     InstructionStream expectedInjectionStream{
         // if (x == 1) // <- x == 1
-        OpCode_CEE_NOP{},
-        OpCode_CEE_LDARG_0{},
-        OpCode_CEE_LDC_I4_1{},
-        OpCode_CEE_CEQ{},
-        OpCode_CEE_STLOC_1{},
-        OpCode_CEE_LDLOC_1{},
+        OpCode::CEE_NOP{},
+        OpCode::CEE_LDARG_0{},
+        OpCode::CEE_LDC_I4_1{},
+        OpCode::CEE_CEQ{},
+        OpCode::CEE_STLOC_1{},
+        OpCode::CEE_LDLOC_1{},
 
         // if (x == 1) // <- if
-        OpCode_CEE_BRFALSE_S{elseLabel},
+        OpCode::CEE_BRFALSE_S{elseLabel},
 
         // return 42; // <- 42
-        OpCode_CEE_NOP{},
-        OpCode_CEE_LDC_I4_S{42},
-        OpCode_CEE_STLOC_0{},
-        OpCode_CEE_BR_S{endLabel},
+        OpCode::CEE_NOP{},
+        OpCode::CEE_LDC_I4_S{42},
+        OpCode::CEE_STLOC_0{},
+        OpCode::CEE_BR_S{endLabel},
 
         // return x + 1; // <- x + 1
         elseLabel,
-        OpCode_CEE_LDARG_0{},
-        OpCode_CEE_LDC_I4_1{},
-        OpCode_CEE_ADD{},
-        OpCode_CEE_STLOC_0{},
-        OpCode_CEE_BR_S{endLabel},
+        OpCode::CEE_LDARG_0{},
+        OpCode::CEE_LDC_I4_1{},
+        OpCode::CEE_ADD{},
+        OpCode::CEE_STLOC_0{},
+        OpCode::CEE_BR_S{endLabel},
 
         // return
         endLabel,
-        OpCode_CEE_LDLOC_0{},
-        OpCode_CEE_RET{}
+        OpCode::CEE_LDLOC_0{},
+        OpCode::CEE_RET{}
     };
 
     // Act
@@ -1847,22 +1847,22 @@ TEST(MethodBodyTests, ÑreateAndMarkLabel)
     const std::vector<ExceptionsSection> actualExceptionSections(method.ExceptionSections());
 
     // if (x == 1) // <- x == 1
-    method.Insert(method.begin() + 1, OpCode_CEE_LDARG_0{});
-    method.Insert(method.begin() + 2, OpCode_CEE_LDC_I4_1{});
-    method.Insert(method.begin() + 3, OpCode_CEE_CEQ{});
-    method.Insert(method.begin() + 4, OpCode_CEE_STLOC_1{});
-    method.Insert(method.begin() + 5, OpCode_CEE_LDLOC_1{});
+    method.Insert(method.begin() + 1, OpCode::CEE_LDARG_0{});
+    method.Insert(method.begin() + 2, OpCode::CEE_LDC_I4_1{});
+    method.Insert(method.begin() + 3, OpCode::CEE_CEQ{});
+    method.Insert(method.begin() + 4, OpCode::CEE_STLOC_1{});
+    method.Insert(method.begin() + 5, OpCode::CEE_LDLOC_1{});
 
     // if (x == 1) // <- if
     const Label actualElseLabel{ method.CreateLabel() };
-    method.Insert(method.begin() + 6, OpCode_CEE_BRFALSE_S{ actualElseLabel });
+    method.Insert(method.begin() + 6, OpCode::CEE_BRFALSE_S{ actualElseLabel });
 
     // return 42; // <- 42
-    method.Insert(method.begin() + 7, OpCode_CEE_NOP{});
-    method.Insert(method.begin() + 8, OpCode_CEE_LDC_I4_S{ 42 });
-    method.Insert(method.begin() + 9, OpCode_CEE_STLOC_0{});
+    method.Insert(method.begin() + 7, OpCode::CEE_NOP{});
+    method.Insert(method.begin() + 8, OpCode::CEE_LDC_I4_S{ 42 });
+    method.Insert(method.begin() + 9, OpCode::CEE_STLOC_0{});
 
-    method.Insert(method.begin() + 10, OpCode_CEE_BR_S{ endLabel });
+    method.Insert(method.begin() + 10, OpCode::CEE_BR_S{ endLabel });
     method.MarkLabel(method.begin() + 11, actualElseLabel);
 
     const InstructionStream actualInjectionStream(method.Stream());
@@ -1891,7 +1891,7 @@ TEST(MethodBodyTests, CompileThrowsOnUnresolvedLabel)
     const Label label { method.CreateLabel() };
     method.Insert(
         method.begin() + 2,
-        OpCode_CEE_BR_S{ label });
+        OpCode::CEE_BR_S{ label });
 
     // Assert
     EXPECT_THROW(method.Compile(), std::logic_error);
