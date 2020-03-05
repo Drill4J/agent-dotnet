@@ -287,6 +287,150 @@ namespace Drill4dotNet
             }
         };
 
+        // opcode.def will use these variables to define
+        // push stack behavior.
+        // 0 will mean nothing pushed to the method stack.
+        // 1 will mean 1 item is pushed to the method stack.
+        // Values can be combined, for example PushRef+PushI4
+        // will give 2, which means 2 items are pushed.
+        // nullptr will mean that the instruction pushes
+        // varying amount of items, determined by the usage context,
+        // for example the signature of the function being called.
+        // nullptr cannot be combined with other values.
+        // The value from opcode.def is then used with
+        // the StackPush base class. Different type for VarPush
+        // allows specialization for the VarPush case.
+        inline static constexpr int Push0{ 0 };
+        inline static constexpr int Push1{ 1 };
+        inline static constexpr int PushI{ 1 };
+        inline static constexpr int PushI4{ 1 };
+        inline static constexpr int PushR4{ 1 };
+        inline static constexpr int PushI8{ 1 };
+        inline static constexpr int PushR8{ 1 };
+        inline static constexpr int PushRef{ 1 };
+        inline static constexpr nullptr_t VarPush{ nullptr };
+
+        // As a base class, provides static values describing push
+        // stack behavior to the CEE_* classes.
+        // If the instruction always pushes the same amount of items,
+        // it will have static member constants IsStackPushBehaviorKnown,
+        // equal to true, and ItemsPushedToStack, equal to the amount
+        // of items. If the amount of items the instruction pushes
+        // is different for each usage, only static member constant
+        // IsStackPushBehaviorKnown, equal to false, is provided.
+        // stackPush : Combination of Push0, Push1, etc variables 
+        //     from opcode.def, or VarPush.
+        // T : type of stackPush.
+        template <typename T, T stackPush>
+        class StackPush;
+
+        // Specialization of StackPush for the VarPush case.
+        // In this case, T = nullptr_t, stackPush = VarPush.
+        // Only IsStackPushBehaviorKnown, equal to false, is provided.
+        template <>
+        class StackPush <nullptr_t, VarPush>
+        {
+        public:
+            // Value indicating the amount of items the instruction
+            // pushes onto the stack is different in each usage.
+            // The amount is then determined by the usage context,
+            // for example the signature of the function being called.
+            inline static constexpr bool IsStackPushBehaviorKnown { false };
+        };
+
+        // Specialization of StackPush for case when
+        // the count of items for specific instruction
+        // is always the same and known.
+        // In this case, T = int, and stackPush is a combination of
+        // Push0, Push1, etc variables from opcode.def.
+        // In this case, provides static member constants
+        // IsStackPushBehaviorKnown, equal to true, and
+        // ItemsPushedToStack, equal to the amount of items.
+        template <int stackPush>
+        class StackPush<int, stackPush>
+        {
+        public:
+            // The value indicating that the instruction
+            // always pushes the same amount of items onto the stack.
+            inline static constexpr bool IsStackPushBehaviorKnown { true };
+
+            // The amount of parameters the instruction
+            // pushes onto the stack.
+            inline static constexpr int ItemsPushedToStack { stackPush };
+        };
+
+        // opcode.def will use these variables to define
+        // pop stack behavior.
+        // 0 will mean nothing popped from the method stack.
+        // 1 will mean 1 item is popped from the method stack.
+        // Values can be combined, for example PopRef+PopI4
+        // will give 2, which means 2 items are popped.
+        // nullptr will mean that the instruction pops
+        // varying amount of items, determined by the usage context,
+        // for example the signature of the function being called.
+        // nullptr cannot be combined with other values.
+        // The value from opcode.def is then used with
+        // the StackPop base class. Different type for VarPop
+        // allows specialization for the VarPop case.
+        inline static constexpr int Pop0{ 0 };
+        inline static constexpr int Pop1{ 1 };
+        inline static constexpr int PopI{ 1 };
+        inline static constexpr int PopI4{ 1 };
+        inline static constexpr int PopR4{ 1 };
+        inline static constexpr int PopI8{ 1 };
+        inline static constexpr int PopR8{ 1 };
+        inline static constexpr int PopRef{ 1 };
+        inline static constexpr nullptr_t VarPop{ nullptr };
+
+        // As a base class, provides static values describing pop
+        // stack behavior to the CEE_* classes.
+        // If the instruction always pops the same amount of items,
+        // it will have static member constants IsStackPopBehaviorKnown,
+        // equal to true, and ItemsPoppedFromStack, equal to the amount
+        // of items. If the amount of items the instruction pops is
+        // different for each usage, only static member constant
+        // IsStackPopBehaviorKnown, equal to false, is provided.
+        // stackPop : Combination of Pop0, Pop1, etc variables 
+        //     from opcode.def, or VarPop.
+        // T : type of stackPop.
+        template <typename T, T stackPop>
+        class StackPop;
+
+        // Specialization of StackPop for the VarPop case.
+        // In this case, T = nullptr_t, stackPop = VarPop.
+        // Only IsStackPopBehaviorKnown, equal to false, is provided.
+        template <>
+        class StackPop <nullptr_t, VarPop>
+        {
+        public:
+            // Value indicating the amount of items the instruction
+            // pops from the stack is different in each usage.
+            // The amount is then determined by the usage context,
+            // for example the signature of the function being called.
+            inline static constexpr bool IsStackPopBehaviorKnown { false };
+        };
+
+        // Specialization of StackPop for case when
+        // the count of items for specific instruction
+        // is always the same and known.
+        // In this case, T = int, and stackPop is a combination of
+        // Pop0, Pop1, etc variables from opcode.def.
+        // In this case, provides static member constants
+        // IsStackPopBehaviorKnown, equal to true, and
+        // ItemsPoppedFromStack, equal to the amount of items.
+        template <int stackPop>
+        class StackPop<int, stackPop>
+        {
+        public:
+            // The value indicating that the instruction
+            // always pops the same amount of items from the stack.
+            inline static constexpr bool IsStackPopBehaviorKnown { true };
+
+            // The amount of parameters the instruction
+            // pops from the stack.
+            inline static constexpr int ItemsPoppedFromStack { stackPop };
+        };
+
     public:
 
         // Using the OPDEF_REAL_INSTRUCTION macro, the next invocation
@@ -308,7 +452,9 @@ namespace Drill4dotNet
         public OpCodeBase<\
             canonicalName , \
             OpCodeArgumentType:: ## inlineArgumentType >, \
-        public OpCodeArgument<OpCodeArgumentType:: ## inlineArgumentType > \
+        public OpCodeArgument<OpCodeArgumentType:: ## inlineArgumentType >, \
+        public StackPush<std::decay_t<decltype(stackPush)>, stackPush>, \
+        public StackPop<std::decay_t<decltype(stackPop)>, stackPop> \
     { \
     public: \
         inline static constexpr std::wstring_view CanonicalName { L ## stringName }; \
