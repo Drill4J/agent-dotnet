@@ -12,7 +12,7 @@ namespace Drill4dotNet
     }
 
     OpCodeVariant::OpCodeVariant()
-        : m_code(OpCodeInstruction<OpCode_CEE_NOP>::Code),
+        : m_code(OpCodeInstruction<OpCode::CEE_NOP>::Code),
         m_argument {}
     {
     }

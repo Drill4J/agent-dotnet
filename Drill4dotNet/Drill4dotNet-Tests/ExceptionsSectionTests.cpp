@@ -8,7 +8,7 @@ using namespace Drill4dotNet;
 // four No Operation instructions.
 InstructionStream CreateStream()
 {
-    return InstructionStream(4, OpCode_CEE_NOP{});
+    return InstructionStream(4, OpCode::CEE_NOP{});
 }
 
 // Creates a small exception clause header,
@@ -333,7 +333,7 @@ TEST(ExceptionsSectionTests, ExtendSectionOfSmallClauses)
         secondClause
     ) };
 
-    InstructionStream stream(8, OpCode_CEE_NOP{});
+    InstructionStream stream(8, OpCode::CEE_NOP{});
     LabelCreator labelCreator{};
     std::vector<std::byte>::const_iterator iterator{ sectionData.cbegin() };
     ExceptionsSection section(
@@ -429,7 +429,7 @@ TEST(ExceptionsSectionTests, ExtendSectionOfSmallClauses)
     stream.insert(
         stream.cbegin() + 8,
         0x00010000,
-        OpCode_CEE_NOP{});
+        OpCode::CEE_NOP{});
 
     std::vector<std::byte> serialized{};
     section.AppendToBytes(serialized);

@@ -7,12 +7,12 @@ using namespace Drill4dotNet;
 TEST(InstructionStreamTests, FindInstruction)
 {
     // Arrange
-    const InstructionStream stream { OpCode_CEE_BREAK{}, OpCode_CEE_ADD{} };
+    const InstructionStream stream { OpCode::CEE_BREAK{}, OpCode::CEE_ADD{} };
 
     // Act
-    const ConstStreamPosition first { FindInstruction<OpCode_CEE_BREAK>(stream.cbegin(), stream.cend()) };
-    const ConstStreamPosition second { FindInstruction<OpCode_CEE_ADD>(stream.cbegin(), stream.cend()) };
-    const ConstStreamPosition notFound { FindInstruction<OpCode_CEE_NOP>(stream.cbegin(), stream.cend()) };
+    const ConstStreamPosition first { FindInstruction<OpCode::CEE_BREAK>(stream.cbegin(), stream.cend()) };
+    const ConstStreamPosition second { FindInstruction<OpCode::CEE_ADD>(stream.cbegin(), stream.cend()) };
+    const ConstStreamPosition notFound { FindInstruction<OpCode::CEE_NOP>(stream.cbegin(), stream.cend()) };
 
     // Assert
     EXPECT_EQ(stream.cbegin(), first);
@@ -23,7 +23,7 @@ TEST(InstructionStreamTests, FindInstruction)
 TEST(InstructionStreamTests, ResolveJumpOffsetZero)
 {
     // Arrange
-    const InstructionStream stream(10, OpCode_CEE_NOP { });
+    const InstructionStream stream(10, OpCode::CEE_NOP { });
     const ConstStreamPosition firstPosition { stream.cbegin() };
     const ConstStreamPosition secondPosition { stream.cbegin() + 5 };
     const ConstStreamPosition thirdPosition { stream.cend() - 1 };
@@ -43,7 +43,7 @@ TEST(InstructionStreamTests, ResolveJumpOffsetZero)
 TEST(InstructionStreamTests, ResolveJumpOffsetPositive)
 {
     // Arrange
-    const InstructionStream stream(10, OpCode_CEE_NOP { });
+    const InstructionStream stream(10, OpCode::CEE_NOP { });
     const ConstStreamPosition firstPosition { stream.cbegin() };
     const ConstStreamPosition secondPosition { stream.cbegin() + 5 };
     const ConstStreamPosition thirdPosition { stream.cend() - 1 };
@@ -63,7 +63,7 @@ TEST(InstructionStreamTests, ResolveJumpOffsetPositive)
 TEST(InstructionStreamTests, ResolveJumpOffsetNegative)
 {
     // Arrange
-    const InstructionStream stream(10, OpCode_CEE_NOP { });
+    const InstructionStream stream(10, OpCode::CEE_NOP { });
     const ConstStreamPosition firstPosition { stream.cbegin() };
     const ConstStreamPosition secondPosition { stream.cbegin() + 5 };
     const ConstStreamPosition thirdPosition { stream.cend() - 1 };
@@ -82,7 +82,7 @@ TEST(InstructionStreamTests, ResolveJumpOffsetNegative)
 TEST(InstructionStreamTests, ResolveJumpOffsetOutOfStream)
 {
     // Arrange
-    const InstructionStream stream { OpCode_CEE_NOP { } };
+    const InstructionStream stream { OpCode::CEE_NOP { } };
     const ConstStreamPosition position { stream.cbegin() };
 
     // Act
@@ -117,11 +117,11 @@ TEST(InstructionStreamTests, ResolveJumpOffsetSkipsLabels)
     LabelCreator creator{};
     const InstructionStream stream {
         creator.CreateLabel(),
-        OpCode_CEE_NOP{},
+        OpCode::CEE_NOP{},
         creator.CreateLabel(),
-        OpCode_CEE_NOP{},
+        OpCode::CEE_NOP{},
         creator.CreateLabel(),
-        OpCode_CEE_NOP{}
+        OpCode::CEE_NOP{}
     };
 
     const ConstStreamPosition position { stream.cbegin() + 2 };
@@ -148,10 +148,10 @@ TEST(InstructionStreamTests, ResolveJumpOffsetIgnoresMiddleOfInstruction)
 {
     // Arrange
     const InstructionStream stream{
-        OpCode_CEE_LDARG{0},
-        OpCode_CEE_CEQ{},
-        OpCode_CEE_LDC_I4{42}, 
-        OpCode_CEE_BREAK{}
+        OpCode::CEE_LDARG{0},
+        OpCode::CEE_CEQ{},
+        OpCode::CEE_LDC_I4{42}, 
+        OpCode::CEE_BREAK{}
     };
     const ConstStreamPosition position { stream.cbegin() + 1 };
 
@@ -185,7 +185,7 @@ TEST(InstructionStreamTests, ResolveAbsoluteOffsetEmptyStream)
 TEST(InstructionStreamTests, ResolveAbsoluteOffsetOutOfStream)
 {
     // Arrange
-    const InstructionStream stream(10, OpCode_CEE_NOP { });
+    const InstructionStream stream(10, OpCode::CEE_NOP { });
 
     // Act
     const ConstStreamPosition position { ResolveAbsoluteOffset(stream, 100) };
@@ -197,7 +197,7 @@ TEST(InstructionStreamTests, ResolveAbsoluteOffsetOutOfStream)
 TEST(InstructionStreamTests, ResolveAbsoluteOffset)
 {
     // Arrange
-    const InstructionStream stream(10, OpCode_CEE_NOP { });
+    const InstructionStream stream(10, OpCode::CEE_NOP { });
     AbsoluteOffset firstPosition { 0 };
     AbsoluteOffset secondPosition { 4 };
     AbsoluteOffset thirdPosition { 9 };
@@ -228,9 +228,9 @@ TEST(InstructionStreamTests, ResolveAbsoluteOffsetVariousInstructions)
 {
     // Arrange
     const InstructionStream stream{
-        OpCode_CEE_CEQ{},
-        OpCode_CEE_LDC_I4{ 42 },
-        OpCode_CEE_ADD{}
+        OpCode::CEE_CEQ{},
+        OpCode::CEE_LDC_I4{ 42 },
+        OpCode::CEE_ADD{}
     };
     AbsoluteOffset firstPosition { 0 };
     AbsoluteOffset secondPosition { 2 };
@@ -242,9 +242,9 @@ TEST(InstructionStreamTests, ResolveAbsoluteOffsetVariousInstructions)
     const ConstStreamPosition third{ ResolveAbsoluteOffset(stream, thirdPosition) };
 
     // Assert
-    AssertHolds<OpCode_CEE_CEQ>(first, stream);
-    AssertHolds<OpCode_CEE_LDC_I4>(second, stream);
-    AssertHolds<OpCode_CEE_ADD>(third, stream);
+    AssertHolds<OpCode::CEE_CEQ>(first, stream);
+    AssertHolds<OpCode::CEE_LDC_I4>(second, stream);
+    AssertHolds<OpCode::CEE_ADD>(third, stream);
 }
 
 // In .net, an offset from the method beginning should point exactly to
@@ -256,10 +256,10 @@ TEST(InstructionStreamTests, ResolveAbsoluteOffsetIgnoresMiddleOfInstruction)
 {
     // Arrange
     const InstructionStream stream{
-        OpCode_CEE_LDARG{0},
-        OpCode_CEE_CEQ{},
-        OpCode_CEE_LDC_I4{42},
-        OpCode_CEE_BREAK{}
+        OpCode::CEE_LDARG{0},
+        OpCode::CEE_CEQ{},
+        OpCode::CEE_LDC_I4{42},
+        OpCode::CEE_BREAK{}
     };
 
     // Act
@@ -279,14 +279,14 @@ TEST(InstructionStreamTests, GetNthInstruction)
     LabelCreator creator{};
     const InstructionStream stream {
         creator.CreateLabel(),
-        OpCode_CEE_LDARG{0},
+        OpCode::CEE_LDARG{0},
         creator.CreateLabel(),
         creator.CreateLabel(),
-        OpCode_CEE_CEQ{},
+        OpCode::CEE_CEQ{},
         creator.CreateLabel(),
-        OpCode_CEE_LDC_I4{42},
+        OpCode::CEE_LDC_I4{42},
         creator.CreateLabel(),
-        OpCode_CEE_BREAK{} };
+        OpCode::CEE_BREAK{} };
 
     // Act
     const ConstStreamPosition first{ GetNthInstruction(stream, 0) };
@@ -295,16 +295,16 @@ TEST(InstructionStreamTests, GetNthInstruction)
     const ConstStreamPosition forth{ GetNthInstruction(stream, 3) };
 
     // Assert
-    AssertHolds<OpCode_CEE_LDARG>(first, stream);
-    AssertHolds<OpCode_CEE_CEQ>(second, stream);
-    AssertHolds<OpCode_CEE_LDC_I4>(third, stream);
-    AssertHolds<OpCode_CEE_BREAK>(forth, stream);
+    AssertHolds<OpCode::CEE_LDARG>(first, stream);
+    AssertHolds<OpCode::CEE_CEQ>(second, stream);
+    AssertHolds<OpCode::CEE_LDC_I4>(third, stream);
+    AssertHolds<OpCode::CEE_BREAK>(forth, stream);
 }
 
 TEST(InstructionStreamTests, CalculateJumpOffsetPositive)
 {
     // Arrange
-    const InstructionStream stream(10, OpCode_CEE_NOP{ });
+    const InstructionStream stream(10, OpCode::CEE_NOP{ });
     const ConstStreamPosition firstPosition{ stream.cbegin() };
     const ConstStreamPosition secondPosition{ stream.cbegin() + 5 };
     const ConstStreamPosition thirdPosition{ stream.cend() - 1 };
@@ -323,7 +323,7 @@ TEST(InstructionStreamTests, CalculateJumpOffsetPositive)
 TEST(InstructionStreamTests, CalculateJumpOffsetAtSameInstruction)
 {
     // Arrange
-    const InstructionStream stream(10, OpCode_CEE_NOP{ });
+    const InstructionStream stream(10, OpCode::CEE_NOP{ });
     const ConstStreamPosition firstPosition{ stream.cbegin() };
     const ConstStreamPosition secondPosition{ stream.cbegin() + 5 };
     const ConstStreamPosition thirdPosition{ stream.cend() - 1 };
@@ -342,7 +342,7 @@ TEST(InstructionStreamTests, CalculateJumpOffsetAtSameInstruction)
 TEST(InstructionStreamTests, CalculateJumpOffsetAtNextInstruction)
 {
     // Arrange
-    const InstructionStream stream(10, OpCode_CEE_NOP{ });
+    const InstructionStream stream(10, OpCode::CEE_NOP{ });
     const ConstStreamPosition firstPosition{ stream.cbegin() };
     const ConstStreamPosition secondPosition{ stream.cbegin() + 5 };
     const ConstStreamPosition thirdPosition{ stream.cend() - 1 };
@@ -361,7 +361,7 @@ TEST(InstructionStreamTests, CalculateJumpOffsetAtNextInstruction)
 TEST(InstructionStreamTests, CalculateJumpOffsetNegative)
 {
     // Arrange
-    const InstructionStream stream(10, OpCode_CEE_NOP{ });
+    const InstructionStream stream(10, OpCode::CEE_NOP{ });
     const ConstStreamPosition firstPosition{ stream.cbegin() };
     const ConstStreamPosition secondPosition{ stream.cbegin() + 5 };
     const ConstStreamPosition thirdPosition{ stream.cend() - 1 };
@@ -383,11 +383,11 @@ TEST(InstructionStreamTests, CalculateJumpOffsetSkipsLabels)
     LabelCreator creator{};
     const InstructionStream stream {
         creator.CreateLabel(),
-        OpCode_CEE_NOP{},
+        OpCode::CEE_NOP{},
         creator.CreateLabel(),
-        OpCode_CEE_NOP{},
+        OpCode::CEE_NOP{},
         creator.CreateLabel(),
-        OpCode_CEE_NOP{}
+        OpCode::CEE_NOP{}
     };
 
     const ConstStreamPosition first { stream.cbegin() };
@@ -409,10 +409,10 @@ TEST(InstructionStreamTests, CalculateJumpOffsetCalculatesSizesProperly)
 {
     // Arrange
     const InstructionStream stream{
-        OpCode_CEE_LDARG{0},
-        OpCode_CEE_CEQ{},
-        OpCode_CEE_LDC_I4{42},
-        OpCode_CEE_BREAK{} };
+        OpCode::CEE_LDARG{0},
+        OpCode::CEE_CEQ{},
+        OpCode::CEE_LDC_I4{42},
+        OpCode::CEE_BREAK{} };
 
     const ConstStreamPosition first { stream.cbegin() };
     const ConstStreamPosition second { stream.cbegin() + 1 };
@@ -433,7 +433,7 @@ TEST(InstructionStreamTests, CalculateJumpOffsetCalculatesSizesProperly)
 TEST(InstructionStreamTests, CalculateAbsoluteOffset)
 {
     // Arrange
-    const InstructionStream stream(10, OpCode_CEE_NOP{ });
+    const InstructionStream stream(10, OpCode::CEE_NOP{ });
     const ConstStreamPosition firstPosition{ stream.cbegin() };
     const ConstStreamPosition secondPosition{ stream.cbegin() + 5 };
     const ConstStreamPosition thirdPosition{ stream.cend() - 1 };
@@ -455,11 +455,11 @@ TEST(InstructionStreamTests, CalculateAbsoluteOffsetSkipsLabels)
     LabelCreator creator{};
     const InstructionStream stream {
         creator.CreateLabel(),
-        OpCode_CEE_NOP{},
+        OpCode::CEE_NOP{},
         creator.CreateLabel(),
-        OpCode_CEE_NOP{},
+        OpCode::CEE_NOP{},
         creator.CreateLabel(),
-        OpCode_CEE_NOP{}
+        OpCode::CEE_NOP{}
     };
 
     const ConstStreamPosition firstPosition{ stream.cbegin() };
@@ -481,10 +481,10 @@ TEST(InstructionStreamTests, CalculateAbsoluteOffsetCalculatesSizesProperly)
 {
     // Arrange
     const InstructionStream stream{
-        OpCode_CEE_LDARG{0},
-        OpCode_CEE_CEQ{},
-        OpCode_CEE_LDC_I4{42},
-        OpCode_CEE_BREAK{} };
+        OpCode::CEE_LDARG{0},
+        OpCode::CEE_CEQ{},
+        OpCode::CEE_LDC_I4{42},
+        OpCode::CEE_BREAK{} };
 
     const ConstStreamPosition firstPosition{ stream.cbegin() };
     const ConstStreamPosition secondPosition{ stream.cbegin() + 1 };
@@ -590,7 +590,7 @@ TEST(InstructionStreamTests, SkipLabelsInStreamWithOneLabel)
 TEST(InstructionStreamTests, SkipLabelsInStreamWithOneInstruction)
 {
     // Arrange
-    const InstructionStream stream{ OpCode_CEE_NOP{} };
+    const InstructionStream stream{ OpCode::CEE_NOP{} };
 
     // Act
     const ConstStreamPosition nearestInstruction { SkipLabels(stream.cbegin(), stream.cend()) };
@@ -603,7 +603,7 @@ TEST(InstructionStreamTests, SkipLabelsInStreamWithLabelAndInstruction)
 {
     // Arrange
     LabelCreator creator;
-    const InstructionStream stream{ creator.CreateLabel(), OpCode_CEE_NOP{} };
+    const InstructionStream stream{ creator.CreateLabel(), OpCode::CEE_NOP{} };
 
     // Act
     const ConstStreamPosition nearestInstruction { SkipLabels(stream.cbegin(), stream.cend()) };
@@ -616,7 +616,7 @@ TEST(InstructionStreamTests, SkipLabelsInStreamWithTwoLabelsAndInstruction)
 {
     // Arrange
     LabelCreator creator;
-    const InstructionStream stream{ creator.CreateLabel(), creator.CreateLabel(), OpCode_CEE_NOP{} };
+    const InstructionStream stream{ creator.CreateLabel(), creator.CreateLabel(), OpCode::CEE_NOP{} };
 
     // Act
     const ConstStreamPosition nearestInstruction { SkipLabels(stream.cbegin(), stream.cend()) };
@@ -640,7 +640,7 @@ TEST(InstructionStreamTests, FindNextInstructionInEmptyStream)
 TEST(InstructionStreamTests, FindNextInstructionInStreamWithOneInstruction)
 {
     // Arrange
-    const InstructionStream stream{ OpCode_CEE_NOP {} };
+    const InstructionStream stream{ OpCode::CEE_NOP {} };
 
     // Act
     const ConstStreamPosition nextInstruction { FindNextInstruction(stream.cbegin(), stream.cend()) };
@@ -653,7 +653,7 @@ TEST(InstructionStreamTests, FindNextInstructionInStreamWithOneInstructionAndOne
 {
     // Arrange
     LabelCreator creator;
-    const InstructionStream stream{ OpCode_CEE_NOP{}, creator.CreateLabel() };
+    const InstructionStream stream{ OpCode::CEE_NOP{}, creator.CreateLabel() };
 
     // Act
     const ConstStreamPosition nextInstruction{ FindNextInstruction(stream.cbegin(), stream.cend()) };
@@ -667,9 +667,9 @@ TEST(InstructionStreamTests, FindNextInstructionInStreamWithTwoInstructionsAndOn
     // Arrange
     LabelCreator creator;
     const InstructionStream stream{
-        OpCode_CEE_NOP{},
+        OpCode::CEE_NOP{},
         creator.CreateLabel(),
-        OpCode_CEE_NOP{}
+        OpCode::CEE_NOP{}
     };
 
     // Act
@@ -682,7 +682,7 @@ TEST(InstructionStreamTests, FindNextInstructionInStreamWithTwoInstructionsAndOn
 TEST(InstructionStreamTests, FindNextInstructionInStreamWithTwoInstructions)
 {
     // Arrange
-    const InstructionStream stream{ OpCode_CEE_NOP{}, OpCode_CEE_NOP{} };
+    const InstructionStream stream{ OpCode::CEE_NOP{}, OpCode::CEE_NOP{} };
 
     // Act
     const ConstStreamPosition nextInstruction{ FindNextInstruction(stream.cbegin(), stream.cend()) };
@@ -696,10 +696,10 @@ TEST(InstructionStreamTests, FindNextInstructionInStreamWithTwoLabelsAndTwoInstr
     // Arrange
     LabelCreator creator;
     const InstructionStream stream{
-        OpCode_CEE_NOP{},
+        OpCode::CEE_NOP{},
         creator.CreateLabel(),
         creator.CreateLabel(),
-        OpCode_CEE_NOP{} };
+        OpCode::CEE_NOP{} };
 
     // Act
     const ConstStreamPosition nextInstruction{ FindNextInstruction(stream.cbegin(), stream.cend()) };

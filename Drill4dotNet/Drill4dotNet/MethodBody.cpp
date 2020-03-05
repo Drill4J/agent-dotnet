@@ -381,18 +381,18 @@ namespace Drill4dotNet
 
 #define DECLARE_TO_LONG_BRANCH_INSTRUCTION_SPECIALIZATION(longName) \
     template <> \
-    class ToLongBranchInstruction< OpCode_CEE_ ## longName ## _S> \
+    class ToLongBranchInstruction< OpCode::CEE_ ## longName ## _S> \
     { \
     static_assert(std::is_same_v< \
-        OpCode_CEE_ ## longName ## _S :: ArgumentType, \
+        OpCode::CEE_ ## longName ## _S :: ArgumentType, \
         OpCodeArgumentType::ShortInlineBrTarget>); \
 \
     static_assert(std::is_same_v< \
-        OpCode_CEE_ ## longName ## :: ArgumentType, \
+        OpCode::CEE_ ## longName ## :: ArgumentType, \
         OpCodeArgumentType::InlineBrTarget>); \
  \
    public: \
-        using LongInstruction = OpCode_CEE_ ## longName; \
+        using LongInstruction = OpCode::CEE_ ## longName; \
     };
 
     DECLARE_TO_LONG_BRANCH_INSTRUCTION_SPECIALIZATION(BR)
@@ -427,10 +427,10 @@ namespace Drill4dotNet
     controlBehavior) \
     static_assert( \
         !std::is_same_v< \
-            OpCode_ ## canonicalName ## ::ArgumentType, \
+            OpCode :: ## canonicalName ## ::ArgumentType, \
             OpCodeArgumentType::ShortInlineBrTarget> \
         || !std::is_same_v< \
-            ToLongBranchInstruction<OpCode_ ## canonicalName >::LongInstruction, \
+            ToLongBranchInstruction<OpCode :: ## canonicalName >::LongInstruction, \
             InstructionCannotMadeLong>);
 #include "DefineOpCodesGeneratorSpecializations.h"
 #include <opcode.def>
