@@ -1,6 +1,7 @@
 #pragma once
 
 #include "OpCodes.h"
+#include <unordered_map>
 
 namespace Drill4dotNet
 {
@@ -141,5 +142,15 @@ namespace Drill4dotNet
         // Emits a new label.
         Label CreateLabel() noexcept;
     };
+
+    struct MethodCallInfo
+    {
+        int ParametersCount;
+        bool HasReturnValue;
+    };
+
+    int CalculateMaxStack(
+        const InstructionStream& stream,
+        std::unordered_map<OpCodeArgumentType::InlineMethod, MethodCallInfo> methodCalls);
 }
 
