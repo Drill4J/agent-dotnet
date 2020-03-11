@@ -62,6 +62,12 @@
     <ClCompile Include="..\Drill4dotNet\CProfilerCallbackBase.cpp">
       <Filter>Tested Source</Filter>
     </ClCompile>
+    <ClCompile Include="..\Drill4dotNet\Signature.cpp">
+      <Filter>Tested Source</Filter>
+    </ClCompile>
+    <ClCompile Include="SignatureTests.cpp">
+      <Filter>Unit Tests</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
