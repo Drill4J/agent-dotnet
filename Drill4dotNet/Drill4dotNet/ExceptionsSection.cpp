@@ -131,7 +131,12 @@ namespace Drill4dotNet
         {
             IMAGE_COR_ILMETHOD_SECT_SMALL header;
             header.Kind = flags;
-            header.DataSize = headerSize + sizeof(IMAGE_COR_ILMETHOD_SECT_EH_CLAUSE_SMALL) * m_clauses.size();
+            const auto dataSize = headerSize + sizeof(IMAGE_COR_ILMETHOD_SECT_EH_CLAUSE_SMALL) * m_clauses.size();
+            if (Overflows<BYTE>(dataSize))
+            {
+                throw std::runtime_error("IMAGE_COR_ILMETHOD_SECT_SMALL::DataSize overflows.");
+            }
+            header.DataSize = static_cast<BYTE>(dataSize);
             AppendAsBytes(target, header);
             AppendAsBytes(target, decltype(std::declval<IMAGE_COR_ILMETHOD_SECT_EH_SMALL>().Reserved) { 0 });
             for (size_t i = 0; i != m_clauses.size(); ++i)
