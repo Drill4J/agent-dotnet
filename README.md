@@ -78,6 +78,7 @@ The current version just outputs information to the console window.
 - Start cmd. 
 - Configure cmd window to keep a large amount of lines: System menu / Properties / Layout / Screen Buffer Size / Height = 9999 (maximum).
 - Run `./setruntimeenv.cmd` in the top repository folder to configure the environment for profiling. It can be run without elevation. The environment settings affect both .NET Core runtime and .NET Framework CLR, whichever is installed and will be running in this console.
+  Optional parameter can be used to choose between Debug and Release variants of the builds.
 - Run a .NET application in the same console session, for example:
     ```
     dotnet.exe .\bin\x64\Release\HelloWorld\netcoreapp3.1\HelloWorld.dll
