@@ -67,7 +67,7 @@ TEST(MethodHeaderTests, SetCodeSizeAffectsSmallHeader)
 TEST(MethodHeaderTests, CreateFromFatHeader)
 {
     // Arrange
-    const const int codeSize { 0x5D18D4D7 };
+    const int codeSize { 0x5D18D4D7 };
     const std::vector<std::byte> headerBytes
     {
         std::byte { 0x1B },
