@@ -11,9 +11,9 @@ using namespace Drill4dotNet;
 // }
 static std::vector<std::byte> CreateSimpleFunction()
 {
-    // created manually
+    // Captured from compiled assembly
     return {
-        std::byte { 0x16 },
+        std::byte { 0x12 },
         std::byte { 0x02 },
         std::byte { 0x03 },
         std::byte { 0x58 },
@@ -41,7 +41,7 @@ TEST(MethodBodyTests, InsertSimpleFunction)
 
     // based on source bytes
     const std::vector<std::byte> expectedInjectionBytes{
-        std::byte { 0x1E }, // size updated
+        std::byte { 0x1A }, // size updated
         std::byte { 0x02 },
         std::byte { 0x03 },
         std::byte { 0x58 },
