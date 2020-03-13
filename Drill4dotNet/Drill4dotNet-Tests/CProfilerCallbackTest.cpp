@@ -80,6 +80,12 @@ TEST_F(CProfilerCallbackTest, Initialize_Shutdown)
     EXPECT_HRESULT_SUCCEEDED(profilerCallback->Initialize(p));
     EXPECT_EQ(typeid(CoreInteractMock), typeid(profilerCallback->GetCorProfilerInfo()) );
 
+    const InjectionMetaData emptyInjection;
+    const InjectionMetaData actualInjection = profilerCallback->GetInfoHandler().GetInjectionMetaData();
+    EXPECT_NE(emptyInjection.Assembly, actualInjection.Assembly);
+    EXPECT_NE(emptyInjection.Class, actualInjection.Class);
+    EXPECT_NE(emptyInjection.Function, actualInjection.Function);
+
     EXPECT_HRESULT_SUCCEEDED(profilerCallback->Shutdown());
     EXPECT_EQ(nullptr, &profilerCallback->GetCorProfilerInfo());
 }

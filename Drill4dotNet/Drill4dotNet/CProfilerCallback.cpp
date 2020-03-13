@@ -172,13 +172,7 @@ namespace Drill4dotNet
         {
             m_corProfilerInfo = CreateCorProfilerInfo(pICorProfilerInfoUnk, LogToProClient(m_pImplClient));
 
-            struct InjectionMetaData
-            {
-                mdAssembly  Assembly = 0;
-                mdTypeDef   Class = 0;
-                mdMethodDef Function = 0;
-            } injection;
-
+            InjectionMetaData injection;
             HRESULT hr;
             ATL::CComQIPtr<IMetaDataDispenser, &IID_IMetaDataDispenser> metaDataDispenser;
             #pragma message("TODO: replace library function `MetaDataGetDispenser` with own implementation")
@@ -300,6 +294,7 @@ namespace Drill4dotNet
                 << L" Flags: " << HexOutput(dwImplFlags);
 
             metaDataImport->CloseEnum(hEnum2);
+            GetInfoHandler().SetInjectionMetaData(injection);
 
             if (auto runtimeInformation = m_corProfilerInfo->TryGetRuntimeInformation();
                 runtimeInformation)

@@ -17,6 +17,13 @@ namespace Drill4dotNet
         unsigned long callCount = 0UL;
     };
 
+    struct InjectionMetaData
+    {
+        mdAssembly  Assembly = 0;
+        mdTypeDef   Class = 0;
+        mdMethodDef Function = 0;
+    };
+
     using TAppDomainInfoMap = std::unordered_map<AppDomainID, AppDomainInfo>;
     using TAssemblyInfoMap = std::unordered_map<AssemblyID, AssemblyInfo>;
     using TModuleInfoMap = std::unordered_map<ModuleID, ModuleInfo>;
@@ -45,6 +52,8 @@ namespace Drill4dotNet
         void MapClassInfo(const ClassID id, const ClassInfo& info) noexcept;
         std::optional<ClassInfo> TryGetClassInfo(const ClassID id) const noexcept;
         void OutputClassInfo(const ClassID id) const;
+        InjectionMetaData GetInjectionMetaData() const noexcept;
+        void SetInjectionMetaData(const InjectionMetaData& injection) noexcept;
     protected:
         using Logger = LogBuffer<std::wostream>;
         Logger Log() const;
@@ -55,5 +64,6 @@ namespace Drill4dotNet
         TAssemblyInfoMap m_assemblyInfos;
         TModuleInfoMap m_moduleInfos;
         TClassInfoMap m_classInfos;
+        InjectionMetaData m_injectionMetaData;
     };
 }
