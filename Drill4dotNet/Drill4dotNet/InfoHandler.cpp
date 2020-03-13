@@ -275,4 +275,14 @@ namespace Drill4dotNet
                 ;
         }
     }
+
+    InjectionMetaData InfoHandler::GetInjectionMetaData() const noexcept
+    {
+        return m_injectionMetaData;
+    }
+
+    void InfoHandler::SetInjectionMetaData(const InjectionMetaData& injection) noexcept
+    {
+        m_injectionMetaData = injection;
+    }
 }
