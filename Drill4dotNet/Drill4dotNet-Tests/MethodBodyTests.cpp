@@ -4,6 +4,44 @@
 
 using namespace Drill4dotNet;
 
+// Checks that an std::runtime_error is thrown if
+// the method bytes end unexpectedly in the middle of
+// the instructions stream.
+TEST(MethodBodyTests, CreateThrowsOnUnexpectedEnd)
+{
+    // Arrange
+    const std::vector methodBytes {
+        std::byte { 0x12 },
+        std::byte { 0x02 },
+        std::byte { 0x03 }
+        // In a valid method body, there should be 2 more bytes
+    };
+
+    // Assert
+    EXPECT_THROW(
+        MethodBody { methodBytes },
+        std::runtime_error);
+}
+
+// Checks that an std::runtime_error is thrown if the
+// method body bytes contain an unknown instruction code.
+TEST(MethodBodyTests, CreateThrowsOnInvalidOpCode)
+{
+    // Arrange
+    const std::vector methodBytes {
+        std::byte { 0x12 },
+        std::byte { 0x02 },
+        std::byte { 0x03 },
+        std::byte { 0xFE }, // There is no OpCode these
+        std::byte { 0xFD }  // two bytes represent
+    };
+
+    // Assert
+    EXPECT_THROW(
+        MethodBody { methodBytes },
+        std::runtime_error);
+}
+
 // Creates method body representing
 // public static int Sum(int x, int y)
 // {

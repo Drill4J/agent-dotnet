@@ -159,6 +159,11 @@ namespace Drill4dotNet
     {
         // Uses
         // const BYTE* OpInfo::fetch(const BYTE * instrPtr, OpArgsVal * args)
+        if (bodyBytes.size() < size_t { m_header.CodeSize() } + m_header.Size())
+        {
+            throw std::runtime_error("Unexpected end of method body bytes.");
+        }
+
         OpInfo parser{};
         const auto begin = reinterpret_cast<const BYTE*>(bodyBytes.data() + m_header.Size());
         const auto end = begin + m_header.CodeSize();
@@ -196,6 +201,9 @@ namespace Drill4dotNet
 #include <opcode.def>
 #include "UnDefineOpCodesGeneratorSpecializations.h"
 #undef OPDEF_REAL_INSTRUCTION
+
+            default:
+                throw std::runtime_error("Unknown Intermediate Language instruction");
             }
         }
 
