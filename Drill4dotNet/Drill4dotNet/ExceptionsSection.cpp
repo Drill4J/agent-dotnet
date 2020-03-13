@@ -119,7 +119,14 @@ namespace Drill4dotNet
         {
             IMAGE_COR_ILMETHOD_SECT_FAT header;
             header.Kind = flags;
-            header.DataSize = headerSize + sizeof(IMAGE_COR_ILMETHOD_SECT_EH_CLAUSE_FAT) * m_clauses.size();
+            const auto dataSize = headerSize + sizeof(IMAGE_COR_ILMETHOD_SECT_EH_CLAUSE_FAT) * m_clauses.size();
+            // typedef struct IMAGE_COR_ILMETHOD_SECT_FAT
+            //     unsigned DataSize : 24;
+            if (dataSize > static_cast<size_t>(0x00'FF'FF'FF))
+            {
+                throw std::runtime_error("IMAGE_COR_ILMETHOD_SECT_FAT::DataSize overflows.");
+            }
+            header.DataSize = static_cast<unsigned>(dataSize);
             AppendAsBytes(target, header);
             for (size_t i = 0; i != m_clauses.size(); ++i)
             {
@@ -132,6 +139,8 @@ namespace Drill4dotNet
             IMAGE_COR_ILMETHOD_SECT_SMALL header;
             header.Kind = flags;
             const auto dataSize = headerSize + sizeof(IMAGE_COR_ILMETHOD_SECT_EH_CLAUSE_SMALL) * m_clauses.size();
+            // typedef struct IMAGE_COR_ILMETHOD_SECT_SMALL
+            //     BYTE DataSize;
             if (Overflows<BYTE>(dataSize))
             {
                 throw std::runtime_error("IMAGE_COR_ILMETHOD_SECT_SMALL::DataSize overflows.");
