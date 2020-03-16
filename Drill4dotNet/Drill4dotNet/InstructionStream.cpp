@@ -273,9 +273,9 @@ namespace Drill4dotNet
                 {
                     using T = std::decay_t<decltype(opcode)>;
                     int currentStackCount = stackCounts[current - stream.cbegin()];
-                    if constexpr (T::StackPopBehaviorKnown())
+                    if constexpr (T::IsStackPopBehaviorKnown)
                     {
-                        currentStackCount -= T::ItemsPoppedFromStack();
+                        currentStackCount -= T::ItemsPoppedFromStack;
                     }
                     else if constexpr (std::is_same_v<T, OpCode::CEE_RET>)
                     {
@@ -291,9 +291,9 @@ namespace Drill4dotNet
                         currentStackCount -= callInfo.ParametersCount;
                     }
 
-                    if constexpr (T::StackPushBehaviorKnown())
+                    if constexpr (T::IsStackPushBehaviorKnown)
                     {
-                        currentStackCount += T::ItemsPushedToStack();
+                        currentStackCount += T::ItemsPushedToStack;
                     }
                     else
                     {
