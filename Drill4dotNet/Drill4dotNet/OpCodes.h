@@ -193,6 +193,45 @@ namespace Drill4dotNet
         using ShortInlineBrTarget = ShortJump;
     };
 
+    // How the instruction affect flow control.
+    enum class OpCodeFlowBehavior
+    {
+        // Usual instruction. After the instruction is executed,
+        // transfers the control to the next instruction.
+        Next,
+
+        // Debugger instruction. After the instruction is executed,
+        // and the debugger allowed to continue,
+        // transfers the control to the next instruction.
+        Break,
+
+        // Method or constructor call. Transfers the control
+        // to the target method or constructor, and continues
+        // to the next instruction after the called method or
+        // constructor is exited.
+        Call,
+
+        // Transfers the control to the method calling the
+        // current method.
+        Return,
+
+        // Unconditionally transfers the control to the
+        // given target instruction.
+        Branch,
+
+        // If the condition is met, transfers to control to
+        // the given target instruction. Otherwise, transfers
+        // the control to the next instruction.
+        ConditionalBranch,
+
+        // Transfes to control to the nearest catch or finally.
+        Throw,
+
+        // Value used for prefixes which does not have any
+        // control flow effect.
+        Meta
+    };
+
     // Common base class for all opcodes.
     // Intentionally left empty.
     // Should only be used for type compatibility checking.
@@ -212,9 +251,12 @@ namespace Drill4dotNet
         // Parameters:
         // TOpCode - the opcode to produce values for.
         // TArgument - the type of the OpCode inline argument.
+        // flowBehavior - the value describing control flow
+        //     behavior of the instruction.
         template <
             typename TOpCode,
-            typename TArgument>
+            typename TArgument,
+            OpCodeFlowBehavior flowBehavior>
         class OpCodeBase : public OpCodeTag
         {
         public:
@@ -243,6 +285,10 @@ namespace Drill4dotNet
             {
                 return TOpCode::CanonicalName;
             }
+
+            // The value describing control flow
+            // behavior of the instruction.
+            constexpr inline static OpCodeFlowBehavior FlowBehavior { flowBehavior };
         };
 
         // Provides methods for inline argument handling.
@@ -431,6 +477,17 @@ namespace Drill4dotNet
             inline static constexpr int ItemsPoppedFromStack { stackPop };
         };
 
+        // Define values with exactly the same names as
+        // opcode.def uses to describe control flow behavior.
+        inline static constexpr OpCodeFlowBehavior NEXT { OpCodeFlowBehavior::Next };
+        inline static constexpr OpCodeFlowBehavior BREAK { OpCodeFlowBehavior::Break };
+        inline static constexpr OpCodeFlowBehavior CALL { OpCodeFlowBehavior::Call };
+        inline static constexpr OpCodeFlowBehavior RETURN { OpCodeFlowBehavior::Return };
+        inline static constexpr OpCodeFlowBehavior BRANCH { OpCodeFlowBehavior::Branch };
+        inline static constexpr OpCodeFlowBehavior COND_BRANCH { OpCodeFlowBehavior::ConditionalBranch };
+        inline static constexpr OpCodeFlowBehavior THROW { OpCodeFlowBehavior::Throw };
+        inline static constexpr OpCodeFlowBehavior META { OpCodeFlowBehavior::Meta };
+
     public:
 
         // Using the OPDEF_REAL_INSTRUCTION macro, the next invocation
@@ -451,7 +508,8 @@ namespace Drill4dotNet
     class canonicalName : \
         public OpCodeBase<\
             canonicalName , \
-            OpCodeArgumentType:: ## inlineArgumentType >, \
+            OpCodeArgumentType:: ## inlineArgumentType , \
+            controlBehavior >, \
         public OpCodeArgument<OpCodeArgumentType:: ## inlineArgumentType >, \
         public StackPush<std::decay_t<decltype(stackPush)>, stackPush>, \
         public StackPop<std::decay_t<decltype(stackPop)>, stackPop> \

@@ -72,25 +72,29 @@ TEST(OpCodeVariantTests, CreateWithArgument)
     EXPECT_EQ(expectedConstant, variant.GetIf<OpCode::CEE_LDC_I4>()->Argument());
 }
 
-// Checks the aspects describing stack
+// Checks the aspects describing control flow and stack
 // behavior are properly added to OpCode::CEE_* classes.
 
+static_assert(OpCode::CEE_ADD::FlowBehavior == OpCodeFlowBehavior::Next);
 static_assert(OpCode::CEE_ADD::IsStackPushBehaviorKnown);
 static_assert(OpCode::CEE_ADD::ItemsPushedToStack == 1);
 static_assert(OpCode::CEE_ADD::IsStackPopBehaviorKnown);
 static_assert(OpCode::CEE_ADD::ItemsPoppedFromStack == 2);
 
+static_assert(OpCode::CEE_BRFALSE::FlowBehavior == OpCodeFlowBehavior::ConditionalBranch);
 static_assert(OpCode::CEE_BRFALSE::IsStackPushBehaviorKnown);
 static_assert(OpCode::CEE_BRFALSE::ItemsPushedToStack == 0);
 static_assert(OpCode::CEE_BRFALSE::IsStackPopBehaviorKnown);
 static_assert(OpCode::CEE_BRFALSE::ItemsPoppedFromStack == 1);
 
+static_assert(OpCode::CEE_CALL::FlowBehavior == OpCodeFlowBehavior::Call);
 static_assert(!OpCode::CEE_CALL::IsStackPushBehaviorKnown);
 static_assert(!OpCode::CEE_CALL::IsStackPopBehaviorKnown);
 // These will not even compile:
 // static_assert(OpCode::CEE_CALL::ItemsPushedToStack == 1);
 // static_assert(OpCode::CEE_CALL::ItemsPoppedFromStack == 2);
 
+static_assert(OpCode::CEE_RET::FlowBehavior == OpCodeFlowBehavior::Return);
 static_assert(OpCode::CEE_RET::IsStackPushBehaviorKnown);
 static_assert(OpCode::CEE_RET::ItemsPushedToStack == 0);
 static_assert(!OpCode::CEE_RET::IsStackPopBehaviorKnown);
