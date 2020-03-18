@@ -1,0 +1,15 @@
+{
+  "profiles": {
+    "Calculator": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "CORECLR_ENABLE_PROFILING": "1",
+        "COMPlus_EnableDiagnostics": "1",
+        "CORECLR_PROFILER": "{BE4D1E40-1A9F-45E4-BCE4-68DE191CC8D6}",
+        "CORECLR_PROFILER_PATH": "$(OutDir)..\\..\\Drill4DotNet\\Drill4dotNet.dll",
+        "COMPlus_ProfAPI_ProfilerCompatibilitySetting": "EnableV2Profiler"
+      },
+      "nativeDebugging": true
+    }
+  }
+}
