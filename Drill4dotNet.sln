@@ -35,6 +35,11 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Drill4dotNet-Tests", "Drill
 		{2AB82CE8-683B-4984-A566-9FFC579E3B47} = {2AB82CE8-683B-4984-A566-9FFC579E3B47}
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Calculator", "HelloWorld\Calculator\Calculator.csproj", "{FF353E74-9149-4160-82B2-2E6223743DA5}"
+	ProjectSection(ProjectDependencies) = postProject
+		{2AB82CE8-683B-4984-A566-9FFC579E3B47} = {2AB82CE8-683B-4984-A566-9FFC579E3B47}
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -59,6 +64,10 @@ Global
 		{CAB5EE21-B337-459B-998E-C6588620F35D}.Debug|x64.Build.0 = Debug|x64
 		{CAB5EE21-B337-459B-998E-C6588620F35D}.Release|x64.ActiveCfg = Release|x64
 		{CAB5EE21-B337-459B-998E-C6588620F35D}.Release|x64.Build.0 = Release|x64
+		{FF353E74-9149-4160-82B2-2E6223743DA5}.Debug|x64.ActiveCfg = Debug|x64
+		{FF353E74-9149-4160-82B2-2E6223743DA5}.Debug|x64.Build.0 = Debug|x64
+		{FF353E74-9149-4160-82B2-2E6223743DA5}.Release|x64.ActiveCfg = Release|x64
+		{FF353E74-9149-4160-82B2-2E6223743DA5}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -69,6 +78,7 @@ Global
 		{2AB82CE8-683B-4984-A566-9FFC579E3B47} = {165F5CAF-C1CD-433E-9313-566EC89C8A2A}
 		{5A2A665D-549C-4698-95BC-E5BCF70473D4} = {165F5CAF-C1CD-433E-9313-566EC89C8A2A}
 		{CAB5EE21-B337-459B-998E-C6588620F35D} = {165F5CAF-C1CD-433E-9313-566EC89C8A2A}
+		{FF353E74-9149-4160-82B2-2E6223743DA5} = {E621FC48-1856-4CE5-AF7C-1D6A902B0861}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {21899A74-A1ED-440D-8A6E-7136113832DA}
