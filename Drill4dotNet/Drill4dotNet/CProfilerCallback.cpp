@@ -24,17 +24,17 @@ namespace Drill4dotNet
     {
     }
 
-    inline ProClient& CProfilerCallback::GetClient()
+    ProClient& CProfilerCallback::GetClient()
     {
         return  m_pImplClient;
     }
 
-    inline InfoHandler& CProfilerCallback::GetInfoHandler()
+    InfoHandler& CProfilerCallback::GetInfoHandler()
     {
         return m_pImplClient.GetInfoHandler();
     }
 
-    inline ICoreInteract& CProfilerCallback::GetCorProfilerInfo()
+    ICoreInteract& CProfilerCallback::GetCorProfilerInfo()
     {
         return *(m_corProfilerInfo.get());
     }
