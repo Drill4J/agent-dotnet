@@ -120,7 +120,7 @@ namespace Drill4dotNet
                 << std::hex
                 << std::uppercase
                 << std::setw(width)
-                << std::setfill(L'0')
+                << std::setfill(TChar { '0' })
                 << value.m_value;
 
             return target;
