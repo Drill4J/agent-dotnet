@@ -4,11 +4,13 @@
 
 namespace Drill4dotNet
 {
-    ProClient::ProClient()
+    ProClient::ProClient(const std::shared_ptr<IConnector>& connector)
         : m_ostream(std::wcout)
         , m_istream(std::wcin)
         , m_infoHandler(m_ostream)
+        , m_connector(connector)
     {
+        m_connector->InitializeAgent();
     }
 
     ProClient::~ProClient()

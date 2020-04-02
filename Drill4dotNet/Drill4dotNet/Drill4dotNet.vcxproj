@@ -64,6 +64,7 @@
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <SDLCheck>true</SDLCheck>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <AdditionalIncludeDirectories>../Connector</AdditionalIncludeDirectories>
     </ClCompile>
     <Midl>
       <MkTypLibCompatible>false</MkTypLibCompatible>
@@ -90,8 +91,8 @@
     </Link>
     <PostBuildEvent>
       <Command>copy "$(SolutionDir)bin\AnyCPU\$(Configuration)\Injection\netcoreapp3.1\Injection.dll" "$(OutDir)"
-</Command>
-      <Message>Copy injection.dll</Message>
+copy "$(SolutionDir)dependencies\native-agent-connector\mingwX64Debug-0.1.0\agent_connector.dll" "$(OutDir)"</Command>
+      <Message>Copy dependency dlls</Message>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -103,6 +104,7 @@
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <SDLCheck>true</SDLCheck>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <AdditionalIncludeDirectories>../Connector</AdditionalIncludeDirectories>
     </ClCompile>
     <Midl>
       <MkTypLibCompatible>false</MkTypLibCompatible>
@@ -131,12 +133,13 @@
     </Link>
     <PostBuildEvent>
       <Command>copy "$(SolutionDir)bin\AnyCPU\$(Configuration)\Injection\netcoreapp3.1\Injection.dll" "$(OutDir)"
-</Command>
-      <Message>Copy injection.dll</Message>
+copy "$(SolutionDir)dependencies\native-agent-connector\mingwX64Release-0.1.0\agent_connector.dll" "$(OutDir)"</Command>
+      <Message>Copy dependency dlls</Message>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="ByteUtils.h" />
+    <ClInclude Include="..\Connector\Connector.h" />
     <ClInclude Include="CoreInteract.h" />
     <ClInclude Include="InstructionStream.h" />
     <ClInclude Include="ExceptionClause.h" />
@@ -166,6 +169,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CDrillProfiler.cpp" />
+    <ClCompile Include="..\Connector\Connector.cpp" />
     <ClCompile Include="CorGUIDs.cpp" />
     <ClCompile Include="CorProfilerInfo.cpp" />
     <ClCompile Include="CProfilerCallback.cpp" />

@@ -71,6 +71,9 @@
     <ClInclude Include="CoreInteractMock.h">
       <Filter>Unit Tests</Filter>
     </ClInclude>
+    <ClInclude Include="ConnectorMock.h">
+      <Filter>Unit Tests</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config">
