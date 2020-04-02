@@ -46,6 +46,7 @@ Visual Studio 2019 solution `Drill4dotNet.sln` in the top repository folder cons
 
 - `Drill4dotNet.sln`:
   - `Drill4dotNet` folder with a couple of C++ projects:
+    - `Connector.vcxproj` to build `Connector.exe`, a test application for communication with admin;
     - `Drill4dotNet.vcxproj` to build the COM DLL `Drill4dotNet.dll`;
     - `Drill4dotNetPS.vcxproj` proxy/stub DLL (not used);
     - `Drill4dotNet-Tests.vcxproj` unit tests for `Drill4dotNet.vcxproj`;
