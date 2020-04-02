@@ -168,6 +168,9 @@ namespace Drill4dotNet
     HRESULT __stdcall CProfilerCallback::Initialize(IUnknown* pICorProfilerInfoUnk)
     {
         m_pImplClient.Log() << L"CProfilerCallback::Initialize";
+
+        GetClient().GetConnector().SendMessage1("ready");
+
         try
         {
             m_corProfilerInfo = CreateCorProfilerInfo(pICorProfilerInfoUnk, LogToProClient(m_pImplClient));

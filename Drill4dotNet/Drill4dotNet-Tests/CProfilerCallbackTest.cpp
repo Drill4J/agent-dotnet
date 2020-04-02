@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "CoreInteractMock.h"
+#include "ConnectorMock.h"
 #include "ProClient.h"
 #include <CProfilerCallback.h>
 
@@ -12,8 +13,10 @@ public:
 
     void SetUp()
     {
+        connectorMock = std::make_shared<ConnectorMock>();
+        EXPECT_CALL(*connectorMock, InitializeAgent).WillOnce(Return());
         coreInteractMock = std::make_unique<CoreInteractMock>();
-        proClient = std::make_unique<ProClient>();
+        proClient = std::make_unique<ProClient>(connectorMock);
         profilerCallback = std::make_unique<CProfilerCallback>(*proClient.get());
         WCHAR injectionFileName[_MAX_PATH];
         ::GetModuleFileName(NULL, injectionFileName, _MAX_PATH);
@@ -25,9 +28,14 @@ public:
         profilerCallback.release();
         proClient.release();
         coreInteractMock.release();
+        // Dirty hack to workaround leaked mock objects GTest bug when using shared_ptr
+        // Refer to https://github.com/google/googletest/issues/1310
+        connectorMock.~shared_ptr();
+        connectorMock.reset();
     }
 
     std::unique_ptr<CoreInteractMock> coreInteractMock;
+    std::shared_ptr<ConnectorMock> connectorMock;
     std::unique_ptr<ProClient> proClient;
     std::unique_ptr<CProfilerCallback> profilerCallback;
 };
@@ -57,13 +65,21 @@ namespace Drill4dotNet
         std::unique_ptr<ICoreInteract> TryCreateCorProfilerInfo<IUnknown*, LogToProClient>(
             IUnknown* pICorProfilerInfoUnk,
             const LogToProClient logger);
+
+    std::shared_ptr<IConnector> IConnector::CreateInstance()
+    {
+        return std::make_shared<ConnectorMock>();
+    }
 }
 
 TEST_F(CProfilerCallbackTest, GetClient)
 {
-    ProClient _proClient;
-    CProfilerCallback _obj(_proClient);
-    EXPECT_EQ(&_proClient, &(_obj.GetClient()));
+    EXPECT_EQ(proClient.get(), &(profilerCallback->GetClient()));
+}
+
+TEST_F(CProfilerCallbackTest, Client_GetConnector)
+{
+    EXPECT_EQ(connectorMock.get(), &(proClient->GetConnector()));
 }
 
 TEST_F(CProfilerCallbackTest, Initialize_Shutdown)
@@ -75,6 +91,8 @@ TEST_F(CProfilerCallbackTest, Initialize_Shutdown)
     EXPECT_CALL(*coreInteractMock, SetEventMask(_)).WillOnce(Return());
     EXPECT_CALL(*coreInteractMock, SetEnterLeaveFunctionHooks(_,_,_)).WillOnce(Return());
     EXPECT_CALL(*coreInteractMock, SetFunctionIDMapper(_)).WillOnce(Return());
+
+    EXPECT_CALL(*connectorMock, SendMessage1("ready")).WillOnce(Return());
 
     IUnknown* p = reinterpret_cast<IUnknown*>(this);
     EXPECT_HRESULT_SUCCEEDED(profilerCallback->Initialize(p));
