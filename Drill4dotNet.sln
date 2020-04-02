@@ -29,6 +29,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Drill4dotNetPS", "Drill4dot
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{C6BD18A4-467B-49F0-B6AA-988FCA44F946}"
 	ProjectSection(SolutionItems) = preProject
+		download_nac.bat = download_nac.bat
 		README.md = README.md
 		setruntimeenv.cmd = setruntimeenv.cmd
 	EndProjectSection

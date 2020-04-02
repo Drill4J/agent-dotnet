@@ -33,6 +33,12 @@ Visual Studio 2019 installation configuration (required):
   - .NET Core 3.1 SDK
   - .NET Framework 4.7.2 SDK or .NET Framework 4.8 SDK
 
+# Other pre-requisites
+
+To deploy required components, install the following software and include them in path variable:
+
+- curl.exe (http://curl.haxx.se)
+- unzip.exe from Info-ZIP (http://infozip.sourceforge.net/)
 
 # Solution and projects
 
