@@ -113,5 +113,13 @@ namespace Drill4dotNet
         DWORD Attributes;
         ULONG CodeRelativeVirtualAddress;
         DWORD ImplementationFlags;
+        std::vector<std::byte> SignatureBlob;
+    };
+
+    struct MemberReferenceProps
+    {
+        mdToken EnclosingClass;
+        std::wstring Name;
+        std::vector<std::byte> SignatureBlob;
     };
 }

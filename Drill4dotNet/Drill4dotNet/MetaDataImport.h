@@ -107,6 +107,97 @@ namespace Drill4dotNet
             };
         };
 
+        // Gets the call to IMetaDataImport2::GetMemberRefProps,
+        // which gets the properties and the length of the name.
+        // @param memberToken : the token of the reference to
+        //     the method or field to retrieve the properties of.
+        // @param enclosingClass : will be set to reference the
+        //     class containing the member.
+        // @param nameActualLength : will be set to the size of
+        //     the member name.
+        // @param signatureBytes : will be set to point to the
+        //     member's signature.
+        // @param signatureSize : will be set to the size of
+        //     the signature, in bytes.
+        auto GetMemberReferenceSignatureFirstStepCallable(
+            const mdMemberRef memberToken,
+            mdToken& enclosingClass,
+            ULONG& nameActualLength,
+            const BYTE*& signatureBytes,
+            ULONG& signatureSize) const
+        {
+            return [this, memberToken, &enclosingClass, &nameActualLength, &signatureBytes, &signatureSize]()
+            {
+                return m_metaDataImport->GetMemberRefProps(
+                    memberToken,
+                    &enclosingClass,
+                    nullptr,
+                    0,
+                    &nameActualLength,
+                    &signatureBytes,
+                    &signatureSize);
+            };
+        }
+
+        // Gets the call to IMetaDataImport2::GetMemberRefProps,
+        // which gets the actual name of the member.
+        // @param memberToken : the token of the reference to
+        //     the method or field to retrieve the name of.
+        // @param name : the name will be written to this buffer.
+        // @param length : the length of the buffer.
+        auto GetMemberReferenceSignatureSecondStepCallable(
+            const mdMemberRef memberToken,
+            LPWSTR name,
+            const ULONG length) const
+        {
+            return [this, memberToken, &name, length]()
+            {
+                return m_metaDataImport->GetMemberRefProps(
+                    memberToken,
+                    nullptr,
+                    name,
+                    length,
+                    nullptr,
+                    nullptr,
+                    nullptr);
+            };
+        }
+
+        // Gets the call to IMetaDataImport2::GetSigFromToken,
+        // which sets pointers to the signature blob.
+        // @param signatureToken : the token of the signature to retrieve.
+        // @param signatureBytes : will be set to point to the
+        //     signature blob.
+        // @param signatureSize : will be set to the size of
+        //     the signature, in bytes.
+        auto GetSignatureBlobCallable(
+            const mdSignature signatureToken,
+            const BYTE*& signatureBytes,
+            ULONG& signatureSize) const
+        {
+            return [this, signatureToken, &signatureBytes, &signatureSize]()
+            {
+                return m_metaDataImport->GetSigFromToken(
+                    signatureToken,
+                    &signatureBytes,
+                    &signatureSize);
+            };
+        }
+
+        // Returns copy of a function's signature.
+        // @param signatureBytes : must point to the
+        //     function's signature.
+        // @param signatureSize : the size of
+        //     the signature, in bytes.
+        static std::vector<std::byte> CopySignature(
+            const BYTE* signatureBytes,
+            ULONG signatureSize)
+        {
+            return std::vector<std::byte>(
+                reinterpret_cast<const std::byte*>(signatureBytes),
+                reinterpret_cast<const std::byte*>(signatureBytes + signatureSize));
+        }
+
     public:
         // Captures IID_IMetaDataImport2 object allowing safe access to its methods.
         // metaDataImport: the IID_IMetaDataImport2 object, which allows accessing
@@ -129,7 +220,9 @@ namespace Drill4dotNet
             {
                 MethodProps result;
                 ULONG actualLength;
-                CallComOrThrow([this, methodMetadataToken, &result, &actualLength]()
+                const BYTE* signatureBytes { nullptr };
+                ULONG signatureSize { 0 };
+                CallComOrThrow([this, methodMetadataToken, &result, &actualLength, &signatureBytes, &signatureSize]()
                 {
                     return m_metaDataImport->GetMethodProps(
                         methodMetadataToken,
@@ -138,11 +231,13 @@ namespace Drill4dotNet
                         0,
                         &actualLength,
                         &result.Attributes,
-                        nullptr,
-                        nullptr,
+                        &signatureBytes,
+                        &signatureSize,
                         &result.CodeRelativeVirtualAddress,
                         &result.ImplementationFlags);
-                }, L"IMetadataImport2::GetMethodName, 1-st call: Failed to retrieve the length of the method name");
+                }, L"IMetadataImport2::GetMethodProps, 1-st call: Failed to retrieve the length of the method name");
+
+                result.SignatureBlob = CopySignature(signatureBytes, signatureSize);
 
                 if (actualLength == 0)
                 {
@@ -164,14 +259,14 @@ namespace Drill4dotNet
                         nullptr,
                         nullptr,
                         nullptr);
-                }, L"IMetadataImport2::GetMethodName, 2-nd call: Failed to retrieve the characters of the method name");
+                }, L"IMetadataImport2::GetMethodProps, 2-nd call: Failed to retrieve the characters of the method name");
 
                 TrimTrailingNull(result.Name);
                 return result;
             }
             catch (const _com_error&)
             {
-                m_logger.Log() << L"MetadataImport::GetMethodName failed";
+                m_logger.Log() << L"MetadataImport::GetMethodProps failed";
                 throw;
             }
         }
@@ -182,9 +277,11 @@ namespace Drill4dotNet
         std::optional<MethodProps> TryGetMethodProps(const mdMethodDef methodMetadataToken) const
         {
             ULONG actualLength;
+            const BYTE* signatureBytes { nullptr };
+            ULONG signatureSize { 0 };
             if (MethodProps result
                 ; TryCallCom(
-                [this, methodMetadataToken, &result, &actualLength]()
+                [this, methodMetadataToken, &result, &actualLength, &signatureBytes, &signatureSize]()
                 {
                     return m_metaDataImport->GetMethodProps(
                         methodMetadataToken,
@@ -193,13 +290,14 @@ namespace Drill4dotNet
                         0,
                         &actualLength,
                         &result.Attributes,
-                        nullptr,
-                        nullptr,
+                        &signatureBytes,
+                        &signatureSize,
                         &result.CodeRelativeVirtualAddress,
                         &result.ImplementationFlags);
                 },
-                L"IMetadataImport2::GetMethodName, 1-st call: Failed to retrieve the length of the method name"))
+                L"IMetadataImport2::GetMethodProps, 1-st call: Failed to retrieve the length of the method name"))
             {
+                result.SignatureBlob = CopySignature(signatureBytes, signatureSize);
 
                 if (actualLength == 0)
                 {
@@ -223,7 +321,7 @@ namespace Drill4dotNet
                             nullptr,
                             nullptr);
                     },
-                    L"IMetadataImport2::GetMethodName, 2-nd call: Failed to retrieve the characters of the method name"))
+                    L"IMetadataImport2::GetMethodProps, 2-nd call: Failed to retrieve the characters of the method name"))
                 {
 
                     TrimTrailingNull(result.Name);
@@ -231,7 +329,7 @@ namespace Drill4dotNet
                 }
             }
 
-            m_logger.Log() << L"MetadataImport::TryGetMethodName failed";
+            m_logger.Log() << L"MetadataImport::TryGetMethodProps failed";
             return std::nullopt;
         }
 
@@ -454,6 +552,133 @@ namespace Drill4dotNet
             }
 
             return result;
+        }
+
+        // Gets the properties of the referenced member.
+        // Throws _com_error on errors.
+        // @param memberToken : the token of the reference to
+        //     the method or field to retrieve the properties for.
+        MemberReferenceProps GetMemberReferenceProps(const mdMemberRef memberToken) const
+        {
+            try
+            {
+                MemberReferenceProps result;
+
+                ULONG nameActualLength { 0 };
+                const BYTE* signatureBytes { nullptr };
+                ULONG signatureSize { 0 };
+
+                CallComOrThrow(
+                    GetMemberReferenceSignatureFirstStepCallable(
+                        memberToken,
+                        result.EnclosingClass,
+                        nameActualLength,
+                        signatureBytes,
+                        signatureSize),
+                    L"MetadataImport::GetMemberReferenceProps: first call to IMetadataImport2::GetMemberRefProps failed");
+
+                result.SignatureBlob = CopySignature(signatureBytes, signatureSize);
+
+                if (nameActualLength == 0)
+                {
+                    return result;
+                }
+
+                result.Name = std::wstring(nameActualLength, L'\0');
+                CallComOrThrow(
+                    GetMemberReferenceSignatureSecondStepCallable(
+                        memberToken,
+                        result.Name.data(),
+                        nameActualLength),
+                    L"MetadataImport::GetMemberReferenceProps: second call to IMetadataImport2::GetMemberRefProps failed");
+
+                TrimTrailingNull(result.Name);
+                return result;
+            }
+            catch (const _com_error&)
+            {
+                m_logger.Log() << L"MetadataImport::GetMemberReferenceProps failed";
+                throw;
+            }
+        }
+
+        // Gets the properties of the referenced member.
+        // Returns std::nullopt in case of errors.
+        // @param memberToken : the token of the reference to
+        //     the method or field to retrieve the properties for.
+        std::optional<MemberReferenceProps> TryGetMemberReferenceProps(const mdMemberRef memberToken) const
+        {
+            ULONG nameActualLength { 0 };
+            const BYTE* signatureBytes { nullptr };
+            ULONG signatureSize { 0 };
+
+            if (MemberReferenceProps result
+                ; this->TryCallCom(
+                    GetMemberReferenceSignatureFirstStepCallable(
+                        memberToken,
+                        result.EnclosingClass,
+                        nameActualLength,
+                        signatureBytes,
+                        signatureSize),
+                    L"MetadataImport::TryGetMemberReferenceProps: first call to IMetadataImport2::GetMemberRefProps failed"))
+            {
+                result.SignatureBlob = CopySignature(signatureBytes, signatureSize);
+
+                if (nameActualLength == 0)
+                {
+                    return result;
+                }
+
+                result.Name = std::wstring(nameActualLength, L'\0');
+                if (this->TryCallCom(
+                        GetMemberReferenceSignatureSecondStepCallable(
+                            memberToken,
+                            result.Name.data(),
+                            nameActualLength),
+                        L"MetadataImport::TryGetMemberReferenceProps: second call to IMetadataImport2::GetMemberRefProps failed"))
+                {
+                    TrimTrailingNull(result.Name);
+                    return result;
+                }
+            }
+
+            m_logger.Log() << L"MetadataImport::TryGetMemberReferenceProps failed";
+            return std::nullopt;
+        }
+
+        // Gets the raw bytes of the signature.
+        // Throws _com_error on errors.
+        // @param signatureToken : the token of the signature to retrieve.
+        std::vector<std::byte> GetSignatureBlob(const mdSignature signatureToken) const
+        {
+            const BYTE* signatureBytes { nullptr };
+            ULONG signatureSize { 0 };
+            CallComOrThrow(
+                GetSignatureBlobCallable(
+                    signatureToken,
+                    signatureBytes,
+                    signatureSize),
+                L"MetadataImport::GetSignatureBlob: call to IMetadataImport2::GetSigFromToken failed.");
+            return CopySignature(signatureBytes, signatureSize);
+        }
+
+        // Gets the raw bytes of the signature of the referenced member.
+        // Returns std::nullopt in case of errors.
+        // @param signatureToken : the token of the signature to retrieve.
+        std::optional<std::vector<std::byte>> TryGetSignatureBlob(const mdSignature signatureToken) const
+        {
+            const BYTE* signatureBytes { nullptr };
+            ULONG signatureSize { 0 };
+            if (!this->TryCallCom(GetSignatureBlobCallable(
+                    signatureToken,
+                    signatureBytes,
+                    signatureSize),
+                L"MetadataImport::TryGetSignatureBlob: call to IMetadataImport2::GetSigFromToken failed."))
+            {
+                return std::nullopt;
+            }
+
+            return CopySignature(signatureBytes, signatureSize);
         }
     };
 
