@@ -57,5 +57,21 @@ namespace Drill4dotNet
         { x.TryFindTypeDefByName(
             std::declval<const std::wstring&>(),
             std::declval<const mdToken>()) } -> std::same_as<std::optional<mdTypeDef>>;
+
+        // Gets the properties of the referenced member.
+        // Throws _com_error on errors.
+        { x.GetMemberReferenceProps(std::declval<const mdMemberRef>()) } -> std::same_as<MemberReferenceProps>;
+
+        // Gets the properties of the referenced member.
+        // Returns std::nullopt on errors.
+        { x.TryGetMemberReferenceProps(std::declval<const mdMemberRef>()) } -> std::same_as<std::optional<MemberReferenceProps>>;
+
+        // Gets the raw bytes of the signature.
+        // Throws _com_error on errors.
+        { x.GetSignatureBlob(std::declval<const mdSignature>()) } -> std::same_as<std::vector<std::byte>>;
+
+        // Gets the raw bytes of the signature.
+        // Returns std::nullopt in case of errors.
+        { x.TryGetSignatureBlob(std::declval<const mdSignature>()) } -> std::same_as<std::optional<std::vector<std::byte>>>;
     };
 }
