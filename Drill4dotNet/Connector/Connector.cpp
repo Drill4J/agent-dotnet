@@ -112,14 +112,61 @@ namespace Drill4dotNet
         }
     };
 
+    class Event
+    {
+    private:
+        class Deleter
+        {
+        public:
+            void operator()(const HANDLE event) const noexcept
+            {
+                if (event != NULL)
+                {
+                    if (::CloseHandle(event) == FALSE)
+                    {
+                        std::wcout
+                            << L"Failed to close event handle"
+                            << std::endl;
+                    }
+                }
+            }
+        };
+
+        using UniquePtr = std::unique_ptr<std::remove_pointer_t<HANDLE>, Deleter>;
+        UniquePtr m_handle;
+
+    public:
+        Event(
+            LPSECURITY_ATTRIBUTES securityAttributes,
+            BOOL manualReset,
+            BOOL initialState,
+            LPCWSTR const name)
+            : m_handle { ::CreateEventW(
+                    securityAttributes,
+                    manualReset,
+                    initialState,
+                    name) }
+        {
+            if (m_handle == nullptr)
+            {
+                throw std::runtime_error("Cannot create an event in Connector");
+            }
+        }
+
+        HANDLE Handle() const noexcept
+        {
+            return m_handle.get();
+        }
+    };
+
     class Connector : public IConnector
     {
     protected:
         inline static const AgentConnectorDllLoader m_agentConnector{};
 
-        static std::queue<std::string> m_messages;
-        static std::mutex m_mutex;
-        static HANDLE m_event;
+        inline static std::queue<std::string> m_messages;
+        inline static std::mutex m_mutex;
+        inline static Event m_event { NULL, TRUE, FALSE, NULL };
 
     protected:
         // is called by Kotlin native connector to transfer a message.
@@ -131,24 +178,18 @@ namespace Drill4dotNet
             std::wcout << "ReceiveMessage: "
                 << "destination: " << destination
                 << "message: " << message << std::endl;
-            ::SetEvent(m_event);
+            ::SetEvent(m_event.Handle());
         }
 
     public:
         Connector()
         {
-            if (m_event = ::CreateEventW(NULL, TRUE, FALSE, NULL);
-                !m_event)
-            {
-                throw std::runtime_error("Cannot create an event in Connector.");
-            }
         }
 
         ~Connector() override
         {
-            ::SetEvent(m_event); // to finish all waits
-            ::WaitForSingleObject(m_event, 0);
-            ::CloseHandle(m_event);
+            ::SetEvent(m_event.Handle()); // to finish all waits
+            ::WaitForSingleObject(m_event.Handle(), 0);
         }
 
         void InitializeAgent() override
@@ -188,7 +229,7 @@ namespace Drill4dotNet
 
         void WaitForNextMessage(DWORD timeout) override
         {
-            DWORD waitResult = ::WaitForSingleObject(m_event, timeout);
+            DWORD waitResult = ::WaitForSingleObject(m_event.Handle(), timeout);
             switch (waitResult)
             {
                 case WAIT_OBJECT_0:
@@ -201,10 +242,6 @@ namespace Drill4dotNet
             }
         }
     };
-
-    std::queue<std::string> Connector::m_messages;
-    std::mutex Connector::m_mutex;
-    HANDLE Connector::m_event{ nullptr };
 
     std::shared_ptr<IConnector> IConnector::CreateInstance()
     {
