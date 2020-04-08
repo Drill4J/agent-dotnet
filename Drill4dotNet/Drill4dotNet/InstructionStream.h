@@ -151,6 +151,7 @@ namespace Drill4dotNet
 
     int CalculateMaxStack(
         const InstructionStream& stream,
-        std::unordered_map<OpCodeArgumentType::InlineMethod, MethodCallInfo> methodCalls);
+        const bool hasReturnValue,
+        const std::unordered_map<OpCodeArgumentType::InlineMethod, MethodCallInfo>& methodCalls);
 }
 
