@@ -162,7 +162,7 @@ namespace Drill4dotNet
     class Connector : public IConnector
     {
     protected:
-        inline static const AgentConnectorDllLoader m_agentConnector{};
+        inline static const AgentConnectorDllLoader m_agentLibrary{};
 
         inline static std::queue<std::string> m_messages;
         inline static std::mutex m_mutex;
@@ -195,10 +195,10 @@ namespace Drill4dotNet
         void InitializeAgent() override
         {
             std::wcout << "Connector::InitializeAgent start." << std::endl;
-            agent_connector_ExportedSymbols* ptr = m_agentConnector.agent_connector_symbols();
+            agent_connector_ExportedSymbols* ptr = m_agentLibrary.agent_connector_symbols();
             void (*fun)(const char*, const char*) = ReceiveMessage;
             void* function = (void*)(fun);
-            m_agentConnector.initialize_agent(
+            m_agentLibrary.initialize_agent(
                 "mysuperAgent",
                 "localhost:8090",
                 "1.0.0",
@@ -211,7 +211,7 @@ namespace Drill4dotNet
         void SendMessage1(const std::string& content) override
         {
             std::wcout << "Connector::SendMessage1: '" << content.c_str() << "'" << std::endl;
-            m_agentConnector.sendMessage("10", content.c_str());
+            m_agentLibrary.sendMessage("10", content.c_str());
         }
 
         std::optional<std::string> GetNextMessage() override
