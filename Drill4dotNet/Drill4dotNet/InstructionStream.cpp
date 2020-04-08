@@ -267,14 +267,8 @@ namespace Drill4dotNet
         std::unordered_map<ptrdiff_t, int> stackCounts{ { current - stream.cbegin(), 0 } };
         while (current != stream.cend())
         {
-            const OpCodeVariant* const instruction { std::get_if<OpCodeVariant>(&*current) };
-            if (instruction == nullptr)
-            {
-                ++current;
-                continue;
-            }
-
-            instruction->Visit(
+            const OpCodeVariant& instruction { std::get<OpCodeVariant>(*current) };
+            instruction.Visit(
                 [&methodCalls, &stream, &stackCounts, &current](const auto& opcode)
                 {
                     using T = std::decay_t<decltype(opcode)>;
