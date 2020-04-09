@@ -186,7 +186,7 @@ namespace Drill4dotNet
             using TokenType = uint32_t;
 
             TokenType MetadataToken;
-            uint32_t ParametersCount;
+            size_t ParametersCount;
             bool HasReturnValue;
         };
 
