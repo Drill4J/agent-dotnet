@@ -44,6 +44,10 @@ namespace Drill4dotNet
         // Returns true if the instruction has been replaced.
         bool ConvertJumpInstructionToLongIfNeeded(const StreamPosition instructionPosition);
 
+        int CalculateMaxStack() const;
+
+        void UpdateMaxStack();
+
         // Creates the object representation of the method body.
         // Fills InlineMethod arguments of opcodes with placeholder data.
         // @param bodyBytes : the bytes of method body.
@@ -134,6 +138,13 @@ namespace Drill4dotNet
         {
             return std::move(m_exceptionSections);
         }
+
+        std::variant<
+            std::array<ConstStreamPosition, 0>,
+            std::array<ConstStreamPosition, 1>,
+            std::array<ConstStreamPosition, 2>,
+            std::vector<ConstStreamPosition>>
+        GetInstructionFlowDestinations(const ConstStreamPosition position) const;
     };
 
     // Allows printing the instructions to standard streams.

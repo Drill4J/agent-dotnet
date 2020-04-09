@@ -1,6 +1,8 @@
 #include "pch.h"
 #include "MethodBody.h"
 
+#include <unordered_map>
+
 // The TARGET_* defines are only needed for <opinfo.cpp>
 #ifdef _M_AMD64
 #define TARGET_AMD64
@@ -532,6 +534,101 @@ namespace Drill4dotNet
 
         m_stream.insert(target, label);
         TurnJumpsToLongIfNeeded();
+    }
+
+    int MethodBody::CalculateMaxStack() const
+    {
+        ConstStreamPosition current{ SkipLabels(m_stream.cbegin(), m_stream.cend()) };
+        std::unordered_map<ptrdiff_t, int> stackCounts{ { current - m_stream.cbegin(), 0 } };
+        while (current != m_stream.cend())
+        {
+            const OpCodeVariant& instruction{ std::get<OpCodeVariant>(*current) };
+            instruction.Visit(
+                [this, &stackCounts, &current](const auto& opcode)
+            {
+                using T = std::decay_t<decltype(opcode)>;
+                int currentStackCount = stackCounts[current - m_stream.cbegin()];
+                if constexpr (T::IsStackPopBehaviorKnown)
+                {
+                    currentStackCount -= T::ItemsPoppedFromStack;
+                }
+                else if constexpr (std::is_same_v<T, OpCode::CEE_RET>)
+                {
+                    if (hasReturnValue)
+                    {
+                        --currentStackCount;
+                    }
+
+                    if (currentStackCount != 0)
+                    {
+                        throw std::runtime_error("Invalid Intermediate Language: evaluation stack is not empty after return");
+                    }
+                }
+                else if constexpr (std::is_same_v<T::ArgumentType, OpCodeArgumentType::InlineMethod>)
+                {
+                    currentStackCount -= opcode.Argument().ParametersCount;
+                }
+
+                if constexpr (T::IsStackPushBehaviorKnown)
+                {
+                    currentStackCount += T::ItemsPushedToStack;
+                }
+                else
+                {
+                    if (opcode.Argument().HasReturnValue)
+                    {
+                        ++currentStackCount;
+                    }
+                }
+
+                static_assert(false, L"Move to GetInstructionFlowDestinations and use");
+                if constexpr (std::is_same_v<T::ArgumentType, OpCodeArgumentType::InlineSwitch>)
+                {
+
+                }
+                else if constexpr (std::is_same_v<T::ArgumentType, OpCodeArgumentType::ShortInlineBrTarget>
+                    || std::is_same_v<T::ArgumentType, OpCodeArgumentType::InlineBrTarget>)
+                {
+                    static_assert(false, L"Take FLOW into account");
+                    current = SkipLabels(
+                        FindLabel(stream, opcode.Argument().Label()),
+                        stream.cend());
+                }
+                else
+                {
+                    current = FindNextInstruction(current, stream.cend());
+                }
+
+                stackCounts[current - stream.cbegin()] = currentStackCount;
+            });
+        }
+
+        return std::max_element(
+            stackCounts.cbegin(),
+            stackCounts.cend(),
+            [](
+                const std::pair<const ptrdiff_t, int>& x,
+                const std::pair<const ptrdiff_t, int>& y)
+        {
+            return x.second < y.second;
+        })->second;
+    }
+
+    void MethodBody::UpdateMaxStack()
+    {
+        static_assert(false, L"Must implement");
+    }
+
+
+    std::variant<
+        std::array<ConstStreamPosition, 0>,
+        std::array<ConstStreamPosition, 1>,
+        std::array<ConstStreamPosition, 2>,
+        std::vector<ConstStreamPosition>>
+    MethodBody::GetInstructionFlowDestinations(const ConstStreamPosition position) const
+    {
+        static_assert(false, L"Must implement");
+        return {};
     }
 }
 
