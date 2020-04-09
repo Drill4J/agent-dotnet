@@ -179,7 +179,17 @@ namespace Drill4dotNet
         using InlineR = double;
         using InlineBrTarget = LongJump;
         using InlineI8 = int64_t;
-        using InlineMethod = uint32_t;
+
+        class InlineMethod
+        {
+        public:
+            using TokenType = uint32_t;
+
+            TokenType MetadataToken;
+            uint32_t ParametersCount;
+            bool HasReturnValue;
+        };
+
         using InlineField = uint32_t;
         using InlineType = uint32_t;
         using InlineString = uint32_t;
@@ -193,6 +203,22 @@ namespace Drill4dotNet
         using ShortInlineR = float;
         using ShortInlineBrTarget = ShortJump;
     };
+
+    constexpr bool operator==(
+        const OpCodeArgumentType::InlineMethod left,
+        const OpCodeArgumentType::InlineMethod right)
+    {
+        return left.MetadataToken == right.MetadataToken
+            && left.ParametersCount == right.ParametersCount
+            && left.HasReturnValue == right.HasReturnValue;
+    }
+
+    constexpr bool operator!=(
+        const OpCodeArgumentType::InlineMethod left,
+        const OpCodeArgumentType::InlineMethod right)
+    {
+        return !(left == right);
+    }
 
     // How the instruction affect flow control.
     enum class OpCodeFlowBehavior
@@ -834,6 +860,10 @@ public: \
                     {
                         const auto& argument = opcode.Argument();
                         target << InSquareBrackets(argument.size()) << InCurlyBrackets(Delimitered(argument, L", "));
+                    }
+                    else if constexpr (std::is_same_v<T::ArgumentType, OpCodeArgumentType::InlineMethod>)
+                    {
+                        target << opcode.Argument().MetadataToken;
                     }
                     else
                     {

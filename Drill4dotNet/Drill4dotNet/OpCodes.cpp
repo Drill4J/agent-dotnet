@@ -45,6 +45,10 @@ namespace Drill4dotNet
                 {
                     return static_cast<AbsoluteOffset>(sizeof(T::Offset));
                 }
+                else if constexpr (std::is_same_v<T, OpCodeArgumentType::InlineMethod>)
+                {
+                    return static_cast<AbsoluteOffset>(sizeof(OpCodeArgumentType::InlineMethod::TokenType));
+                }
                 else
                 {
                     return static_cast<AbsoluteOffset>(sizeof(argument));

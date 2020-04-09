@@ -145,6 +145,14 @@ namespace Drill4dotNet
             {
                 argument = CreateJump<TArgument>(rawArgument.i);
             }
+            else if constexpr (
+                std::is_same_v<TArgument, OpCodeArgumentType::InlineMethod>)
+            {
+                argument = OpCodeArgumentType::InlineMethod {
+                    static_cast<OpCodeArgumentType::InlineMethod::TokenType>(rawArgument.i),
+                    0,
+                    false };
+            }
             else
             {
                 argument = static_cast<TArgument>(rawArgument.i);
@@ -317,6 +325,10 @@ namespace Drill4dotNet
                             AppendAsBytes(
                                 result,
                                 offset);
+                        }
+                        else if constexpr (std::is_same_v<T, OpCodeArgumentType::InlineMethod>)
+                        {
+                            AppendAsBytes(result, argument.MetadataToken);
                         }
                         else
                         {

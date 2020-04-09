@@ -44,10 +44,37 @@ namespace Drill4dotNet
         // Returns true if the instruction has been replaced.
         bool ConvertJumpInstructionToLongIfNeeded(const StreamPosition instructionPosition);
 
+        // Creates the object representation of the method body.
+        // Fills InlineMethod arguments of opcodes with placeholder data.
+        // @param bodyBytes : the bytes of method body.
+        MethodBody(const std::vector<std::byte>& bodyBytes);
+
     public:
         // Creates the object representation of the method body.
         // @param bodyBytes : the bytes of method body.
-        explicit MethodBody(const std::vector<std::byte>& bodyBytes);
+        // @param resolver : lambda, converting a metadata token
+        //     of type OpCodeArgumentType::InlineMethod::TokenType
+        //     to OpCodeArgumentType::InlineMethod.
+        template <typename TInlineMethodResolver>
+        explicit MethodBody(
+            const std::vector<std::byte>& bodyBytes,
+            const TInlineMethodResolver& resolver) : MethodBody(bodyBytes)
+        {
+            for (auto& instructionOrLabel : m_stream)
+            {
+                if (OpCodeVariant* const instruction { std::get_if<OpCodeVariant>(&instructionOrLabel) }
+                    ; instruction != nullptr)
+                {
+                    if (OpCodeArgumentType::InlineMethod* const argument { std::get_if<OpCodeArgumentType::InlineMethod>(&instruction->m_argument) }
+                        ; argument != nullptr)
+                    {
+                        const OpCodeArgumentType::InlineMethod resolved { resolver(argument->MetadataToken) };
+                        argument->ParametersCount = resolved.ParametersCount;
+                        argument->HasReturnValue = resolved.HasReturnValue;
+                    }
+                }
+            }
+        }
 
         // Makes a binary representation of the method body.
         std::vector<std::byte> Compile() const;

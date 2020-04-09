@@ -4,6 +4,14 @@
 
 using namespace Drill4dotNet;
 
+inline static const auto methodResolver { [](const OpCodeArgumentType::InlineMethod::TokenType token)
+{
+    return OpCodeArgumentType::InlineMethod {
+        token,
+        1,
+        false };
+} };
+
 // Checks that an std::runtime_error is thrown if
 // the method bytes end unexpectedly in the middle of
 // the instructions stream.
@@ -19,7 +27,7 @@ TEST(MethodBodyTests, CreateThrowsOnUnexpectedEnd)
 
     // Assert
     EXPECT_THROW(
-        MethodBody { methodBytes },
+        MethodBody(methodBytes , methodResolver),
         std::runtime_error);
 }
 
@@ -38,7 +46,7 @@ TEST(MethodBodyTests, CreateThrowsOnInvalidOpCode)
 
     // Assert
     EXPECT_THROW(
-        MethodBody { methodBytes },
+        MethodBody(methodBytes, methodResolver),
         std::runtime_error);
 }
 
@@ -108,7 +116,7 @@ TEST(MethodBodyTests, InsertSimpleFunction)
     };
 
     // Act
-    MethodBody method(sourceBytes);
+    MethodBody method(sourceBytes, methodResolver);
 
     const InstructionStream actualSourceStream(method.Stream());
     const std::vector<std::byte> actualRoundtripBytes(method.Compile());
@@ -247,7 +255,7 @@ TEST(MethodBodyTests, InsertFunctionWithIf)
     };
 
     // Act
-    MethodBody method(sourceBytes);
+    MethodBody method(sourceBytes, methodResolver);
 
     const InstructionStream actualSourceStream(method.Stream());
     const std::vector<std::byte> actualRoundtripBytes(method.Compile());
@@ -506,7 +514,7 @@ TEST(MethodBodyTests, InsertFunctionWithLoop)
     };
 
     // Act
-    MethodBody method(sourceBytes);
+    MethodBody method(sourceBytes, methodResolver);
 
     const InstructionStream actualSourceStream(method.Stream());
     const std::vector<std::byte> actualRoundtripBytes(method.Compile());
@@ -777,7 +785,7 @@ TEST(MethodBodyTests, InsertFunctionWithSwitch)
     };
 
     // Act
-    MethodBody method(sourceBytes);
+    MethodBody method(sourceBytes, methodResolver);
 
     const InstructionStream actualSourceStream(method.Stream());
     const std::vector<std::byte> actualRoundtripBytes(method.Compile());
@@ -944,7 +952,7 @@ TEST(MethodBodyTests, InsertFunctionWithTryCatch)
     };
 
     // Act
-    MethodBody method(sourceBytes);
+    MethodBody method(sourceBytes, methodResolver);
 
     const InstructionStream actualSourceStream(method.Stream());
     const std::vector<std::byte> actualRoundtripBytes(method.Compile());
@@ -1136,7 +1144,7 @@ TEST(MethodBodyTests, InsertFunctionWithTryFinally)
     };
 
     // Act
-    MethodBody method(sourceBytes);
+    MethodBody method(sourceBytes, methodResolver);
 
     const InstructionStream actualSourceStream(method.Stream());
     const std::vector<std::byte> actualRoundtripBytes(method.Compile());
@@ -1284,8 +1292,8 @@ TEST(MethodBodyTests, InsertFunctionWithTryCatchWhen)
         isInstanceLabel,
         OpCode::CEE_STLOC_1{},
         OpCode::CEE_LDLOC_1{},
-        OpCode::CEE_CALLVIRT{ 0x0A00000C },
-        OpCode::CEE_CALLVIRT{ 0x0A00000D },
+        OpCode::CEE_CALLVIRT{ OpCodeArgumentType::InlineMethod { 0x0A00000C, 0, true } },
+        OpCode::CEE_CALLVIRT{ OpCodeArgumentType::InlineMethod { 0x0A00000D, 0, true } },
         OpCode::CEE_LDC_I4_2{},
         OpCode::CEE_REM{},
         OpCode::CEE_LDC_I4_0{},
@@ -1364,8 +1372,8 @@ TEST(MethodBodyTests, InsertFunctionWithTryCatchWhen)
         isInstanceLabel,
         OpCode::CEE_STLOC_1{},
         OpCode::CEE_LDLOC_1{},
-        OpCode::CEE_CALLVIRT{ 0x0A00000C },
-        OpCode::CEE_CALLVIRT{ 0x0A00000D },
+        OpCode::CEE_CALLVIRT{ OpCodeArgumentType::InlineMethod { 0x0A00000C, 0, true } },
+        OpCode::CEE_CALLVIRT{ OpCodeArgumentType::InlineMethod { 0x0A00000D, 0, true } },
         OpCode::CEE_LDC_I4_2{},
         OpCode::CEE_REM{},
         OpCode::CEE_LDC_I4_0{},
@@ -1410,7 +1418,15 @@ TEST(MethodBodyTests, InsertFunctionWithTryCatchWhen)
     };
 
     // Act
-    MethodBody method(sourceBytes);
+    MethodBody method(
+        sourceBytes,
+        [](const OpCodeArgumentType::InlineMethod::TokenType token)
+        {
+            return OpCodeArgumentType::InlineMethod{
+                token,
+                0,
+                true };
+        });
 
     const InstructionStream actualSourceStream(method.Stream());
     const std::vector<std::byte> actualRoundtripBytes(method.Compile());
@@ -1551,7 +1567,7 @@ TEST(MethodBodyTests, TransformJumpToLongIfNeeded)
         OpCode::CEE_NOP{});
 
     // Act
-    MethodBody method(sourceBytes);
+    MethodBody method(sourceBytes, methodResolver);
 
     const InstructionStream actualSourceStream(method.Stream());
     const std::vector<std::byte> actualRoundtripBytes(method.Compile());
@@ -1707,7 +1723,7 @@ TEST(MethodBodyTests, InsertTransformJumpToLongIfNeeded)
         OpCode::CEE_NOP{});
 
     // Act
-    MethodBody method(sourceBytes);
+    MethodBody method(sourceBytes, methodResolver);
 
     const InstructionStream actualSourceStream(method.Stream());
     const std::vector<std::byte> actualRoundtripBytes(method.Compile());
@@ -1840,7 +1856,7 @@ TEST(MethodBodyTests, ÑreateAndMarkLabel)
     };
 
     // Act
-    MethodBody method(sourceBytes);
+    MethodBody method(sourceBytes, methodResolver);
 
     const InstructionStream actualSourceStream(method.Stream());
     const std::vector<std::byte> actualRoundtripBytes(method.Compile());
@@ -1885,7 +1901,7 @@ TEST(MethodBodyTests, CompileThrowsOnUnresolvedLabel)
 {
     // Arrange
     std::vector<std::byte> rawBytes(CreateSimpleFunction());
-    MethodBody method(rawBytes);
+    MethodBody method(rawBytes, methodResolver);
 
     // Act
     const Label label { method.CreateLabel() };
@@ -1904,7 +1920,7 @@ TEST(MethodBodyTests, MarkLabelThrowsOnLabelMarkedTwice)
 {
     // Arrange
     std::vector<std::byte> rawBytes(CreateSimpleFunction());
-    MethodBody method(rawBytes);
+    MethodBody method(rawBytes, methodResolver);
 
     // Act
     const Label label { method.CreateLabel() };
