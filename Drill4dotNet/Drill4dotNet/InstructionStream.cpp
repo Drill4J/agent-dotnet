@@ -261,8 +261,7 @@ namespace Drill4dotNet
 
     int CalculateMaxStack(
         const InstructionStream& stream,
-        const bool hasReturnValue,
-        const std::unordered_map<OpCodeArgumentType::InlineMethod, MethodCallInfo>& methodCalls)
+        std::unordered_map<OpCodeArgumentType::InlineMethod, MethodCallInfo> methodCalls)
     {
         ConstStreamPosition current { SkipLabels(stream.cbegin(), stream.cend()) };
         std::unordered_map<ptrdiff_t, int> stackCounts{ { current - stream.cbegin(), 0 } };
@@ -280,14 +279,10 @@ namespace Drill4dotNet
                     }
                     else if constexpr (std::is_same_v<T, OpCode::CEE_RET>)
                     {
-                        if (hasReturnValue)
+                        // !
+                        if (currentStackCount == 1)
                         {
-                            --currentStackCount;
-                        }
-
-                        if (currentStackCount != 0)
-                        {
-                            throw std::runtime_error("Invalid Intermediate Language: evaluation stack is not empty after return");
+                            currentStackCount = 0;
                         }
                     }
                     else if constexpr (std::is_same_v<T::ArgumentType, OpCodeArgumentType::InlineMethod>)
