@@ -13,6 +13,9 @@
 #include <filesystem>
 #include <queue>
 #include <mutex>
+#include "../Drill4dotNet/OutputUtils.h"
+
+EXTERN_C IMAGE_DOS_HEADER __ImageBase;
 
 namespace Drill4dotNet
 {
@@ -82,7 +85,28 @@ namespace Drill4dotNet
     private:
         inline static const std::filesystem::path CONNECTOR_DLL_FILE { L"agent_connector.dll" };
 
-        const DllLoader m_library { CONNECTOR_DLL_FILE };
+        static const std::filesystem::path ResolveAbsolutePath(const std::filesystem::path& name)
+        {
+            const HMODULE hCurrentModule = reinterpret_cast<HMODULE>(&__ImageBase);
+            DWORD rSize = _MAX_PATH;
+            std::wstring currentModuleFileName(_MAX_PATH, L'\0');
+            do
+            {
+                currentModuleFileName.resize(rSize, L'\0');
+                rSize = ::GetModuleFileName(hCurrentModule, currentModuleFileName.data(), static_cast<unsigned long>(currentModuleFileName.size()));
+                rSize *= 2;
+            } while (::GetLastError() == ERROR_INSUFFICIENT_BUFFER);
+            TrimTrailingNulls(currentModuleFileName);
+
+            const std::filesystem::path absolutePath = std::filesystem::path(currentModuleFileName).parent_path() / name;
+            std::wcout
+                << "ResolveAbsolutePath: "
+                << absolutePath
+                << std::endl;
+            return absolutePath;
+        }
+
+        const DllLoader m_library { ResolveAbsolutePath(CONNECTOR_DLL_FILE) };
 
         template <typename T>
         T ImportFunction(LPCSTR const name)
