@@ -6,6 +6,7 @@
 #include <optional>
 #include <variant>
 #include <type_traits>
+#include <concepts>
 
 #include "ByteUtils.h"
 
@@ -238,6 +239,10 @@ namespace Drill4dotNet
     class OpCodeTag
     {
     };
+
+    // Determines whether the given class represents an opcode.
+    template <typename T>
+    concept IsOpCode = std::derived_from<T, OpCodeTag>;
 
     // Contains a set of CEE_* classes, each representing a
     // specific Intermediate Language instruction.
@@ -712,13 +717,9 @@ public: \
         // which means no operation.
         OpCodeVariant();
 
-        // Value indicating whether the given class is a valid OpCode class.
-        template <typename TOpCode>
-        static constexpr bool IsOpCodeClass = std::is_assignable_v<OpCodeTag&, TOpCode>;
-
         // Constructs the variant holding the given opcode.
         // @param opCode : instruction to store.
-        template <typename TOpCode, std::enable_if_t<IsOpCodeClass<TOpCode>, int> = 0>
+        template <IsOpCode TOpCode>
         OpCodeVariant(const TOpCode opCode)
             : m_code (OpCodeInstruction<TOpCode>::Code),
             m_argument{}
@@ -731,7 +732,7 @@ public: \
 
         // Puts the given opcode into this variant.
         // @param opCode : the instruction to store.
-        template <typename TOpCode, std::enable_if_t<IsOpCodeClass<TOpCode>, int> = 0>
+        template <IsOpCode TOpCode>
         OpCodeVariant& operator=(const TOpCode opCode)
         {
             m_code = OpCodeInstruction<TOpCode>::Code;
@@ -750,7 +751,7 @@ public: \
         // Gets the value indicating whether the
         // variant contains an opcode of the given type.
         // TOpCode : the opcode type to check for.
-        template <typename TOpCode, std::enable_if_t<IsOpCodeClass<TOpCode>, int> = 0>
+        template <IsOpCode TOpCode>
         bool HoldsAlternative() const
         {
             return m_code == OpCodeInstruction<TOpCode>::Code;
@@ -759,7 +760,7 @@ public: \
         // If the variant contains an opcode of the given type,
         // gets it. std::nullopt otherwise.
         // TOpCode : the opcode type to check for.
-        template <typename TOpCode, std::enable_if_t<IsOpCodeClass<TOpCode>, int> = 0>
+        template <IsOpCode TOpCode>
         std::optional<TOpCode> GetIf() const
         {
             if (HoldsAlternative<TOpCode>())

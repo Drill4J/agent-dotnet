@@ -27,12 +27,10 @@ namespace Drill4dotNet
     //     the search range.
     // @param end : points to the position immediately
     //     after the last element of the search range.
-    template<
-        typename TOpCode,
-        std::enable_if_t<OpCodeVariant::IsOpCodeClass<TOpCode>, int> = 0>
-        ConstStreamPosition FindInstruction(
-            const ConstStreamPosition start,
-            const ConstStreamPosition end)
+    template<IsOpCode TOpCode>
+    ConstStreamPosition FindInstruction(
+        const ConstStreamPosition start,
+        const ConstStreamPosition end)
     {
         return std::find_if(
             start,

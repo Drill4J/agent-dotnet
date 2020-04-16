@@ -1,4 +1,4 @@
-#include "pch.h"
+#pragma once
 
 #include "Connector.h"
 
@@ -183,7 +183,7 @@ namespace Drill4dotNet
         }
     };
 
-    class Connector : public IConnector
+    class Connector
     {
     protected:
         const AgentConnectorDllLoader m_agentLibrary{};
@@ -193,9 +193,7 @@ namespace Drill4dotNet
         Event m_event { NULL, TRUE, FALSE, NULL };
 
         // a hack for static callback; it should be replaced by context parameter of callback
-        friend std::shared_ptr<IConnector> IConnector::CreateInstance();
-        using SharedPtr = std::shared_ptr<Connector>;
-        inline static SharedPtr s_connector;
+        inline static Connector* s_connector;
     protected:
         // is called by Kotlin native connector to transfer a message.
         // It pushes a message to the queue and signals the event.
@@ -216,15 +214,16 @@ namespace Drill4dotNet
     public:
         Connector()
         {
+            s_connector = this;
         }
 
-        ~Connector() override
+        ~Connector()
         {
             ::SetEvent(m_event.Handle()); // to finish all waits
             ::WaitForSingleObject(m_event.Handle(), 0);
         }
 
-        void InitializeAgent() override
+        void InitializeAgent()
         {
             std::wcout << "Connector::InitializeAgent start." << std::endl;
             agent_connector_ExportedSymbols* ptr = m_agentLibrary.agent_connector_symbols();
@@ -240,13 +239,13 @@ namespace Drill4dotNet
             std::wcout << "Connector::InitializeAgent end." << std::endl;
         }
 
-        void SendMessage1(const std::string& content) override
+        void SendMessage1(const std::string& content)
         {
             std::wcout << "Connector::SendMessage1: '" << content.c_str() << "'" << std::endl;
             m_agentLibrary.sendMessage("10", content.c_str());
         }
 
-        std::optional<std::string> GetNextMessage() override
+        std::optional<std::string> GetNextMessage()
         {
             std::string result;
             std::lock_guard<std::mutex> locker(m_mutex);
@@ -259,28 +258,21 @@ namespace Drill4dotNet
             return std::nullopt;
         }
 
-        void WaitForNextMessage(DWORD timeout) override
+        void WaitForNextMessage(DWORD timeout = INFINITE)
         {
             DWORD waitResult = ::WaitForSingleObject(m_event.Handle(), timeout);
             switch (waitResult)
             {
-                case WAIT_OBJECT_0:
-                case WAIT_TIMEOUT:
-                    return;
-                case WAIT_ABANDONED:
-                case WAIT_FAILED:
-                default:
-                    throw std::runtime_error("WaitForSingleObject failed.");
+            case WAIT_OBJECT_0:
+            case WAIT_TIMEOUT:
+                return;
+            case WAIT_ABANDONED:
+            case WAIT_FAILED:
+            default:
+                throw std::runtime_error("WaitForSingleObject failed.");
             }
         }
     };
 
-    std::shared_ptr<IConnector> IConnector::CreateInstance()
-    {
-        if (!Connector::s_connector)
-        {
-            Connector::s_connector = std::make_shared<Connector>();
-        }
-        return Connector::s_connector;
-    }
+    static_assert(IsConnector<Connector>);
 }

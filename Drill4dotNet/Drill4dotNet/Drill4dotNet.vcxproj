@@ -63,7 +63,7 @@
       <PreprocessorDefinitions>_WINDOWS;_DEBUG;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <SDLCheck>true</SDLCheck>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
       <AdditionalIncludeDirectories>../Connector</AdditionalIncludeDirectories>
     </ClCompile>
     <Midl>
@@ -103,7 +103,7 @@ copy "$(SolutionDir)dependencies\native-agent-connector\mingwX64Debug-0.1.0\agen
       <PreprocessorDefinitions>_WINDOWS;NDEBUG;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <SDLCheck>true</SDLCheck>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
       <AdditionalIncludeDirectories>../Connector</AdditionalIncludeDirectories>
     </ClCompile>
     <Midl>
@@ -140,10 +140,16 @@ copy "$(SolutionDir)dependencies\native-agent-connector\mingwX64Release-0.1.0\ag
   <ItemGroup>
     <ClInclude Include="ByteUtils.h" />
     <ClInclude Include="..\Connector\Connector.h" />
-    <ClInclude Include="CoreInteract.h" />
+    <ClInclude Include="CProfilerCallbackBase.h" />
+    <ClInclude Include="ICorProfilerInfo.h" />
+    <ClInclude Include="IMetaDataAssemblyImport.h" />
+    <ClInclude Include="IMetadataDispenser.h" />
+    <ClInclude Include="IMetadataImport.h" />
     <ClInclude Include="InstructionStream.h" />
     <ClInclude Include="ExceptionClause.h" />
     <ClInclude Include="ExceptionsSection.h" />
+    <ClInclude Include="MetaDataAssemblyImport.h" />
+    <ClInclude Include="MetaDataDispenser.h" />
     <ClInclude Include="MethodBody.h" />
     <ClInclude Include="MethodHeader.h" />
     <ClInclude Include="MethodMalloc.h" />
@@ -169,10 +175,8 @@ copy "$(SolutionDir)dependencies\native-agent-connector\mingwX64Release-0.1.0\ag
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CDrillProfiler.cpp" />
-    <ClCompile Include="..\Connector\Connector.cpp" />
     <ClCompile Include="CorGUIDs.cpp" />
-    <ClCompile Include="CorProfilerInfo.cpp" />
-    <ClCompile Include="CProfilerCallback.cpp" />
+    <ClCompile Include="CProfilerCallbackBase.cpp" />
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="Drill4dotNet.cpp" />
     <ClCompile Include="Drill4dotNet_i.c">
@@ -190,7 +194,6 @@ copy "$(SolutionDir)dependencies\native-agent-connector\mingwX64Release-0.1.0\ag
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="ProClient.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Drill4dotNet.rc" />

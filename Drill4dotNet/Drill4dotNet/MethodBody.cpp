@@ -447,7 +447,7 @@ namespace Drill4dotNet
             instruction->Visit(
                 [this, instructionPosition, instruction, &result](const auto& opcode)
                 {
-                    using TLong = ToLongBranchInstruction<std::decay_t<decltype(opcode)>>::LongInstruction;
+                    using TLong = typename ToLongBranchInstruction<std::decay_t<decltype(opcode)>>::LongInstruction;
                     if constexpr (std::is_same_v<TLong, InstructionCannotMadeLong>)
                     {
                         return;

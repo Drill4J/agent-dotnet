@@ -10,41 +10,55 @@ namespace Drill4dotNet
         std::wstring ownName;
         std::wstring className;
     };
-    struct FunctionInfo
+
+    struct FunctionInfoWithoutName
     {
         ClassID classId;
         ModuleID moduleId;
         mdToken token;
+    };
+
+    struct FunctionInfo : public FunctionInfoWithoutName
+    {
         FunctionName name;
         std::wstring fullName() const
         {
             return name.className + L"." + name.ownName;
         }
     };
+
     struct AppDomainInfo
     {
         std::wstring name;
         ProcessID processId;
     };
+
     struct AssemblyInfo
     {
         std::wstring name;
         AppDomainID appDomainId;
         ModuleID moduleId;
     };
+
     struct ModuleInfo
     {
         std::wstring name;
         LPCBYTE baseLoadAddress;
         AssemblyID assemblyId;
     };
-    struct ClassInfo
+
+    struct ClassInfoWithoutName
     {
-        std::wstring name;
         ModuleID moduleId;
         mdTypeDef typeDefToken;
         CorTypeAttr corTypeAttributes;
     };
+
+    struct ClassInfo : public ClassInfoWithoutName
+    {
+        std::wstring name;
+    };
+
     struct RuntimeInformation
     {
         USHORT clrInstanceId;
@@ -53,6 +67,7 @@ namespace Drill4dotNet
         USHORT minorVersion;
         USHORT buildNumber;
         USHORT qfeVersion;
+
         std::wstring RuntimeType() const
         {
             switch (runtimeType)
@@ -62,17 +77,41 @@ namespace Drill4dotNet
                 default: return L"Unknown CLR";
             }
         }
+
         std::wstring Version() const
         {
             std::wostringstream s;
             s << majorVersion << L"." << minorVersion << L"." << buildNumber;
             return s.str();
         }
+
         std::wstring QFEVersion() const
         {
             std::wostringstream s;
             s << qfeVersion;
             return s.str();
         }
+    };
+
+    struct AssemblyProps
+    {
+        std::wstring Name;
+        DWORD Flags;
+    };
+
+    struct TypeDefProps
+    {
+        std::wstring Name;
+        DWORD Flags;
+        mdToken Extends;
+    };
+
+    struct MethodProps
+    {
+        mdTypeDef EnclosingClass;
+        std::wstring Name;
+        DWORD Attributes;
+        ULONG CodeRelativeVirtualAddress;
+        DWORD ImplementationFlags;
     };
 }
