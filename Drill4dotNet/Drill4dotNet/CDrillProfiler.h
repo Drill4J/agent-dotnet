@@ -3,14 +3,23 @@
 #include "Drill4dotNet_i.h"
 #include "CProfilerCallback.h"
 #include "ProClient.h"
+#include "CorProfilerInfo.h"
+#include "MetaDataDispenser.h"
+#include "ConnectorImplementation.h"
 
 namespace Drill4dotNet
 {
     class ATL_NO_VTABLE CDrillProfiler
         : public ATL::CComObjectRootEx<ATL::CComSingleThreadModel>
         , public ATL::CComCoClass<CDrillProfiler, &CLSID_DrillProfiler>
-        , ProClient
-        , public CProfilerCallback
+        , public ProClient<Connector>
+        , public CProfilerCallback<
+            Connector,
+            CorProfilerInfo<LogToProClient<Connector>>,
+            MetaDataDispenser<LogToProClient<Connector>>,
+            MetaDataAssemblyImport<LogToProClient<Connector>>,
+            MetaDataImport<LogToProClient<Connector>>,
+            LogToProClient<Connector>>
     {
     public:
         CDrillProfiler();

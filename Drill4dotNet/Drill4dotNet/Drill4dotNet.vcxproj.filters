@@ -82,9 +82,6 @@
     <ClInclude Include="MethodMalloc.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="CoreInteract.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="InstructionStream.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -103,6 +100,27 @@
     <ClInclude Include="..\Connector\Connector.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="IMetadataImport.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ICorProfilerInfo.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CProfilerCallbackBase.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="IMetadataDispenser.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="IMetaDataAssemblyImport.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MetaDataAssemblyImport.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MetaDataDispenser.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Drill4dotNet.cpp">
@@ -117,13 +135,7 @@
     <ClCompile Include="pch.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="CProfilerCallback.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="CDrillProfiler.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ProClient.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="InfoHandler.cpp">
@@ -133,9 +145,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="MethodBody.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="CorProfilerInfo.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="CorGUIDs.cpp">
@@ -153,7 +162,7 @@
     <ClCompile Include="ExceptionsSection.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\Connector\Connector.cpp">
+    <ClCompile Include="CProfilerCallbackBase.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

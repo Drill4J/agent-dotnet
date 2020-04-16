@@ -1,22 +1,27 @@
 #pragma once
+
 #include <memory>
 #include <string>
 #include <optional>
+#include <concepts>
 
 namespace Drill4dotNet
 {
-    class IConnector
+    // Determines whether the given type can be used for
+    // communication between Drill admin and the profiler.
+    template <typename T>
+    concept IsConnector = requires (T x)
     {
-    public:
-        virtual ~IConnector() = default;
-        virtual void InitializeAgent() = 0;
-        virtual void SendMessage1(const std::string& content) = 0;
+        { x.InitializeAgent() } -> std::same_as<void>;
+        { x.SendMessage1(std::declval<const std::string&>()) } -> std::same_as<void>;
+
         // gets (and pops) the next message from the queue
         // @returns - next message, if available, std::nullopt otherwise
-        virtual std::optional<std::string> GetNextMessage() = 0;
+        { x.GetNextMessage() } -> std::same_as<std::optional<std::string>>;
+
         // waits for availability of a new message in the given timeout
         // returns when the event signaled.
-        virtual void WaitForNextMessage(DWORD timeout = INFINITE) = 0;
-        static std::shared_ptr<IConnector> CreateInstance();
+        { x.WaitForNextMessage() } -> std::same_as<void>;
+        { x.WaitForNextMessage(std::declval<const DWORD>()) } -> std::same_as<void>;
     };
 }

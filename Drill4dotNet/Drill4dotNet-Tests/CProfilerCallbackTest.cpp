@@ -1,5 +1,8 @@
 #include "pch.h"
+#include "ComWrapperBase.h"
 #include "CoreInteractMock.h"
+#include "MetaDataAssemblyImportMock.h"
+#include "MetaDataDispenserMock.h"
 #include "ConnectorMock.h"
 #include "ProClient.h"
 #include <CProfilerCallback.h>
@@ -10,14 +13,11 @@ using namespace testing;
 class CProfilerCallbackTest : public Test
 {
 public:
-
     void SetUp()
     {
-        connectorMock = std::make_shared<ConnectorMock>();
-        EXPECT_CALL(*connectorMock, InitializeAgent).WillOnce(Return());
-        coreInteractMock = std::make_unique<CoreInteractMock>();
-        proClient = std::make_unique<ProClient>(connectorMock);
-        profilerCallback = std::make_unique<CProfilerCallback>(*proClient.get());
+        connectorMock.emplace();
+        proClient.emplace(*connectorMock);
+        profilerCallback.emplace(*proClient);
         WCHAR injectionFileName[_MAX_PATH];
         ::GetModuleFileName(NULL, injectionFileName, _MAX_PATH);
         Drill4dotNet::s_Drill4dotNetLibFilePath = injectionFileName;
@@ -25,61 +25,32 @@ public:
 
     void TearDown()
     {
-        profilerCallback.release();
-        proClient.release();
-        coreInteractMock.release();
+        profilerCallback.reset();
+        proClient.reset();
         // Dirty hack to workaround leaked mock objects GTest bug when using shared_ptr
         // Refer to https://github.com/google/googletest/issues/1310
-        connectorMock.~shared_ptr();
         connectorMock.reset();
     }
 
-    std::unique_ptr<CoreInteractMock> coreInteractMock;
-    std::shared_ptr<ConnectorMock> connectorMock;
-    std::unique_ptr<ProClient> proClient;
-    std::unique_ptr<CProfilerCallback> profilerCallback;
+    std::optional<ProClient<ConnectorMock>> proClient;
+    std::optional<ConnectorMock> connectorMock;
+    std::optional<CProfilerCallback<
+        ConnectorMock,
+        CoreInteractMock,
+        MetaDataDispenserMock,
+        MetaDataAssemblyImportMock,
+        MetadataImportMock,
+        TrivialLogger>> profilerCallback;
 };
-
-namespace Drill4dotNet
-{
-    template<typename TQueryInterface, typename TLogger>
-    std::unique_ptr<ICoreInteract> CreateCorProfilerInfo(TQueryInterface query, const TLogger logger)
-    {
-        // we pass ownership over the caller
-        return std::move(reinterpret_cast<CProfilerCallbackTest*>(query)->coreInteractMock);
-    }
-
-    template
-        std::unique_ptr<ICoreInteract> CreateCorProfilerInfo<IUnknown*, LogToProClient>(
-            IUnknown* pICorProfilerInfoUnk,
-            const LogToProClient logger);
-
-    template<typename TQueryInterface, typename TLogger>
-    std::unique_ptr<ICoreInteract> TryCreateCorProfilerInfo(TQueryInterface query, const TLogger logger)
-    {
-        // we pass ownership over the caller
-        return std::move(reinterpret_cast<CProfilerCallbackTest*>(query)->coreInteractMock);
-    }
-
-    template
-        std::unique_ptr<ICoreInteract> TryCreateCorProfilerInfo<IUnknown*, LogToProClient>(
-            IUnknown* pICorProfilerInfoUnk,
-            const LogToProClient logger);
-
-    std::shared_ptr<IConnector> IConnector::CreateInstance()
-    {
-        return std::make_shared<ConnectorMock>();
-    }
-}
 
 TEST_F(CProfilerCallbackTest, GetClient)
 {
-    EXPECT_EQ(proClient.get(), &(profilerCallback->GetClient()));
+    EXPECT_EQ(&*proClient, &profilerCallback->GetClient());
 }
 
 TEST_F(CProfilerCallbackTest, Client_GetConnector)
 {
-    EXPECT_EQ(connectorMock.get(), &(proClient->GetConnector()));
+    EXPECT_EQ(&(connectorMock.value()), &(proClient->GetConnector()));
 }
 
 TEST_F(CProfilerCallbackTest, Initialize_Shutdown)
@@ -87,23 +58,45 @@ TEST_F(CProfilerCallbackTest, Initialize_Shutdown)
     // We have to pair each Initialize() by Shutdown() to properly clean up resources
     // ...until we change the design of ownership on CorProfilerInterface.
     const auto rti_expected = std::optional<RuntimeInformation>({ 0, COR_PRF_DESKTOP_CLR, 9, 9, 999, 8 });
-    EXPECT_CALL(*coreInteractMock, TryGetRuntimeInformation()).WillOnce(Return(rti_expected));
-    EXPECT_CALL(*coreInteractMock, SetEventMask(_)).WillOnce(Return());
-    EXPECT_CALL(*coreInteractMock, SetEnterLeaveFunctionHooks(_,_,_)).WillOnce(Return());
-    EXPECT_CALL(*coreInteractMock, SetFunctionIDMapper(_)).WillOnce(Return());
+    const auto coreInteractCreation { CoreInteractMock::SetCreationCallBack([rti_expected](
+        CoreInteractMock& corInteractMock,
+        IUnknown* query,
+        TrivialLogger logger)
+    {
+        EXPECT_CALL(corInteractMock, TryGetRuntimeInformation()).WillOnce(Return(rti_expected));
+        EXPECT_CALL(corInteractMock, SetEventMask(_)).WillOnce(Return());
+        EXPECT_CALL(corInteractMock, SetEnterLeaveFunctionHooks(_,_,_)).WillOnce(Return());
+        EXPECT_CALL(corInteractMock, SetFunctionIDMapper(_)).WillOnce(Return());
+    }) };
+
+    const InjectionMetaData expectedInjection { 0x69'6D'71'EF, 0x9A'F0'D6'D8, 0xE9'C2'80'22 };
+    const std::wstring injectionAssemblyName { L"Injection" };
+    const auto metaDataAssemblyImportCreation { MetaDataAssemblyImportMock::SetOnCreate([expectedInjection, injectionAssemblyName](MetaDataAssemblyImportMock& metaDataAssemblyImportMock)
+    {
+        EXPECT_CALL(metaDataAssemblyImportMock, GetAssemblyFromScope()).WillOnce(Return(expectedInjection.Assembly));
+        EXPECT_CALL(metaDataAssemblyImportMock, GetAssemblyProps(expectedInjection.Assembly)).WillOnce(Return(AssemblyProps { injectionAssemblyName, 0 }));
+    }) };
+
+    const std::wstring injectionClassName { L"Drill4dotNet.CInjection" };
+    const std::wstring injectionMethodName { L"FInjection" };
+    const auto metaDataImportCreation { MetadataImportMock::SetOnCreate([expectedInjection, injectionClassName, injectionMethodName](MetadataImportMock& metaDataImportMock)
+    {
+        EXPECT_CALL(metaDataImportMock, FindTypeDefByName(injectionClassName, 0)).WillOnce(Return(expectedInjection.Class));
+        EXPECT_CALL(metaDataImportMock, GetTypeDefProps(expectedInjection.Class)).WillOnce(Return(TypeDefProps { injectionClassName, 0, 0 }));
+        EXPECT_CALL(metaDataImportMock, EnumMethodsWithName(expectedInjection.Class, injectionMethodName)).WillOnce(Return(std::vector { expectedInjection.Function }));
+    }) };
 
     EXPECT_CALL(*connectorMock, SendMessage1("ready")).WillOnce(Return());
 
     IUnknown* p = reinterpret_cast<IUnknown*>(this);
     EXPECT_HRESULT_SUCCEEDED(profilerCallback->Initialize(p));
-    EXPECT_EQ(typeid(CoreInteractMock), typeid(profilerCallback->GetCorProfilerInfo()) );
+    EXPECT_EQ(typeid(std::optional<CoreInteractMock>), typeid(profilerCallback->GetCorProfilerInfo()) );
 
-    const InjectionMetaData emptyInjection;
     const InjectionMetaData actualInjection = profilerCallback->GetInfoHandler().GetInjectionMetaData();
-    EXPECT_NE(emptyInjection.Assembly, actualInjection.Assembly);
-    EXPECT_NE(emptyInjection.Class, actualInjection.Class);
-    EXPECT_NE(emptyInjection.Function, actualInjection.Function);
+    EXPECT_EQ(expectedInjection.Assembly, actualInjection.Assembly);
+    EXPECT_EQ(expectedInjection.Class, actualInjection.Class);
+    EXPECT_EQ(expectedInjection.Function, actualInjection.Function);
 
     EXPECT_HRESULT_SUCCEEDED(profilerCallback->Shutdown());
-    EXPECT_EQ(nullptr, &profilerCallback->GetCorProfilerInfo());
+    EXPECT_FALSE(profilerCallback->GetCorProfilerInfo().has_value());
 }

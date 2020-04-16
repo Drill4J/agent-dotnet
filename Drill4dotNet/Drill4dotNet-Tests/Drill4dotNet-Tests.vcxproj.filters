@@ -5,17 +5,11 @@
       <Filter>Unit Tests</Filter>
     </ClCompile>
     <ClCompile Include="pch.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\lib\native\src\gtest\gtest-all.cc">
+    <ClCompile Include="$(SolutionDir)dependencies\googletest\googletest\src\gtest-all.cc">
       <Filter>Package Files</Filter>
     </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\lib\native\src\gmock\gmock-all.cc">
+    <ClCompile Include="$(SolutionDir)dependencies\googletest\googlemock\src\gmock-all.cc">
       <Filter>Package Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Drill4dotNet\CProfilerCallback.cpp">
-      <Filter>Tested Source</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Drill4dotNet\ProClient.cpp">
-      <Filter>Tested Source</Filter>
     </ClCompile>
     <ClCompile Include="..\Drill4dotNet\InfoHandler.cpp">
       <Filter>Tested Source</Filter>
@@ -65,20 +59,27 @@
     <ClCompile Include="ByteUtilsTests.cpp">
       <Filter>Unit Tests</Filter>
     </ClCompile>
+    <ClCompile Include="..\Drill4dotNet\CProfilerCallbackBase.cpp">
+      <Filter>Tested Source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
     <ClInclude Include="CoreInteractMock.h">
       <Filter>Unit Tests</Filter>
     </ClInclude>
+    <ClInclude Include="MetadataImportMock.h">
+      <Filter>Unit Tests</Filter>
+    </ClInclude>
+    <ClInclude Include="MetaDataAssemblyImportMock.h">
+      <Filter>Unit Tests</Filter>
+    </ClInclude>
+    <ClInclude Include="MetaDataDispenserMock.h">
+      <Filter>Unit Tests</Filter>
+    </ClInclude>
     <ClInclude Include="ConnectorMock.h">
       <Filter>Unit Tests</Filter>
     </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="packages.config">
-      <Filter>Package Files</Filter>
-    </None>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Package Files">

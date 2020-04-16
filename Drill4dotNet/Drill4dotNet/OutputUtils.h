@@ -9,9 +9,25 @@
 #include <iterator>
 #include <utility>
 #include <string>
+#include <concepts>
 
 namespace Drill4dotNet
 {
+    // Determines whether values of the givan type
+    // can be sent to standard streams via << operator.
+    template <typename T>
+    concept HasOutputOperator = requires(
+        const T& value,
+        std::basic_ostream<char>& target)
+    {
+        { target << value } -> std::same_as<decltype(target)>;
+    } || requires(
+        const T& value,
+        std::basic_ostream<wchar_t>& target)
+    {
+        { target << value } -> std::same_as<decltype(target)>;
+    };
+
     // RAII wrapper to save and restore settings
     // of a stream.
     // Usage:
@@ -71,7 +87,7 @@ namespace Drill4dotNet
     //     // Types: 0x0010
     //     std::cout << "0x" << HexOutput<int, 4>(16);
     // }
-    template <typename T, size_t width = 2 * sizeof(T)>
+    template <HasOutputOperator T, size_t width = 2 * sizeof(T)>
     class HexOutput
     {
     private:
@@ -114,7 +130,7 @@ namespace Drill4dotNet
     // Writes the given object to a stream,
     // surrounding it with brackets.
     template <
-        typename T,
+        HasOutputOperator T,
         auto OpenBracket,
         decltype(OpenBracket) CloseBracket>
     class InBrackets
@@ -140,7 +156,7 @@ namespace Drill4dotNet
 
     // Creates an object, which will output the given value,
     // surrounding it with round brackets.
-    template <typename T>
+    template <HasOutputOperator T>
     InBrackets<T, '(', ')'> InRoundBrackets(const T& value)
     {
         return InBrackets<T, '(', ')'>(value);
@@ -148,7 +164,7 @@ namespace Drill4dotNet
 
     // Creates an object, which will output the given value,
     // surrounding it with square brackets.
-    template <typename T>
+    template <HasOutputOperator T>
     InBrackets<T, '[', ']'> InSquareBrackets(const T& value)
     {
         return InBrackets<T, '[', ']'>(value);
@@ -156,7 +172,7 @@ namespace Drill4dotNet
 
     // Creates an object, which will output the given value,
     // surrounding it with curly brackets.
-    template <typename T>
+    template <HasOutputOperator T>
     InBrackets<T, '{', '}'> InCurlyBrackets(const T& value)
     {
         return InBrackets<T, '{', '}'>(value);
@@ -164,7 +180,7 @@ namespace Drill4dotNet
 
     // Creates an object, which will output the given value,
     // surrounding it with spaces.
-    template <typename T>
+    template <HasOutputOperator T>
     InBrackets<T, ' ', ' '> InSpaces(const T& value)
     {
         return InBrackets<T, ' ', ' '>(value);
@@ -172,14 +188,14 @@ namespace Drill4dotNet
 
     // Creates an object, which will output the given value,
     // surrounding it with apostrophes (aka single quotes).
-    template <typename T>
+    template <HasOutputOperator T>
     InBrackets<T, '\'', '\''> InApostrophes(const T& value)
     {
         return InBrackets<T, '\'', '\''>(value);
     }
     // Allows to put content of containers to streams,
     // adding a given delmiter between items.
-    template <typename TContainer, typename TDelimiter>
+    template <typename TContainer, HasOutputOperator TDelimiter>
     class Delimitered
     {
     private:
@@ -226,6 +242,18 @@ namespace Drill4dotNet
         return target << HexOutput<int, 2>(int(value));
     }
 
+    // Determines whether the given type is a container
+    // with std::byte values.
+    template <typename T>
+    concept IsContainerOfBytes = requires(const T& x)
+    {
+        { *std::begin(x) } -> std::convertible_to<const std::byte&>;
+        { *std::end(x) } -> std::convertible_to<const std::byte&>;
+    };
+
+    static_assert(IsContainerOfBytes<std::vector<std::byte>>);
+    static_assert(IsContainerOfBytes<std::byte[42]>);
+
     // Allows to send containers with std::byte to output streams,
     // such as std::vector<std::byte>, std::array<std::byte>, or std::byte[]
     // Outputs hexadecimal digits.
@@ -238,14 +266,7 @@ namespace Drill4dotNet
     // }
     template <
         typename TChar,
-        typename TContainer,
-        std::enable_if_t< // Checks that the given container has std::bytes inside
-            std::is_assignable_v<
-                std::byte&,
-                typename std::iterator_traits<
-                    decltype(std::cbegin(std::declval<TContainer>()))>
-                ::value_type>,
-            int> = 0>
+        IsContainerOfBytes TContainer>
     std::basic_ostream<TChar>& operator <<(std::basic_ostream<TChar>& target, TContainer&& byteRange)
     {
         for (const std::byte b : byteRange)
@@ -273,7 +294,7 @@ namespace Drill4dotNet
     // to an output stream.
     // Writes the contents of the givan optional.
     // If the given optional is empty, types a placeholder.
-    template <typename TChar, typename T>
+    template <typename TChar, HasOutputOperator T>
     std::basic_ostream<TChar>& operator <<(std::basic_ostream<TChar>& target, const std::optional<T>& value)
     {
         if (value.has_value())

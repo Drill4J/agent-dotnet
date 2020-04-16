@@ -61,7 +61,7 @@ Visual Studio 2019 solution `Drill4dotNet.sln` in the top repository folder cons
 
 
 `Drill4dotNet.vcxproj` project is created in ATL COM frame; it uses latest Platform SDK (10.0) and dependency profiling files from [dotnet/runtime](https://github.com/dotnet/runtime) repository as a submodule in `./dependencies` folder.
-It is written in C++ 17 language standard.
+It is written in C++20 language standard.
 
 Note: Do not build (deselect in Batch Build and Configuration Manager) `Drill4dotNetPS.vcxproj`; it is reserved for the future.
 
