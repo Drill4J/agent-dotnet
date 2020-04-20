@@ -57,7 +57,7 @@ namespace Drill4dotNet
             Deleter deleter { fileName };
 
             const HMODULE nakedPointer { ::LoadLibraryW(fileName.wstring().c_str()) };
-            if (nakedPointer == NULL)
+            if (nakedPointer == nullptr)
             {
                 throw std::runtime_error(
                     std::string { "Cannot load " } + fileName.string());
@@ -67,23 +67,6 @@ namespace Drill4dotNet
         }
 
         UniquePtr m_handle;
-
-    public:
-        DllLoader(const std::filesystem::path& fileName)
-            : m_handle { Create(fileName)}
-        {
-        }
-
-        HMODULE Handle() const noexcept
-        {
-            return m_handle.get();
-        }
-    };
-
-    class AgentConnectorDllLoader
-    {
-    private:
-        inline static const std::filesystem::path CONNECTOR_DLL_FILE { L"agent_connector.dll" };
 
         static const std::filesystem::path ResolveAbsolutePath(const std::filesystem::path& name)
         {
@@ -101,17 +84,33 @@ namespace Drill4dotNet
             const std::filesystem::path absolutePath = std::filesystem::path(currentModuleFileName).parent_path() / name;
             std::wcout
                 << "ResolveAbsolutePath: "
-                << absolutePath
+                << absolutePath.wstring()
                 << std::endl;
             return absolutePath;
         }
 
-        const DllLoader m_library { ResolveAbsolutePath(CONNECTOR_DLL_FILE) };
+    public:
+        explicit DllLoader(const std::filesystem::path& fileName)
+            : m_handle{ Create(ResolveAbsolutePath(fileName)) }
+        {
+        }
+
+        HMODULE Handle() const noexcept
+        {
+            return m_handle.get();
+        }
+    };
+
+    class AgentConnectorDllLoader
+        : public DllLoader
+    {
+    private:
+        inline static const std::filesystem::path CONNECTOR_DLL_FILE{ L"agent_connector.dll" };
 
         template <typename T>
         T ImportFunction(LPCSTR const name)
         {
-            void* result = ::GetProcAddress(m_library.Handle(), name);
+            void* result = ::GetProcAddress(Handle(), name);
             if (result == nullptr)
             {
                 throw std::runtime_error(
@@ -129,7 +128,8 @@ namespace Drill4dotNet
         decltype(::sendMessage)* const sendMessage;
 
         AgentConnectorDllLoader()
-            : agent_connector_symbols { ImportFunction<decltype(agent_connector_symbols)>("agent_connector_symbols") },
+            : DllLoader{ CONNECTOR_DLL_FILE },
+            agent_connector_symbols { ImportFunction<decltype(agent_connector_symbols)>("agent_connector_symbols") },
             initialize_agent { ImportFunction<decltype(initialize_agent)>("initialize_agent") },
             sendMessage { ImportFunction<decltype(sendMessage)>("sendMessage") }
         {
@@ -144,12 +144,12 @@ namespace Drill4dotNet
         public:
             void operator()(const HANDLE event) const noexcept
             {
-                if (event != NULL)
+                if (event != nullptr)
                 {
                     if (::CloseHandle(event) == FALSE)
                     {
                         std::wcout
-                            << L"Failed to close event handle"
+                            << L"Failed to close event handle."
                             << std::endl;
                     }
                 }
@@ -171,7 +171,7 @@ namespace Drill4dotNet
                     initialState,
                     name) }
         {
-            if (m_handle == nullptr)
+            if (m_handle.get() == nullptr)
             {
                 throw std::runtime_error("Cannot create an event in Connector");
             }
@@ -186,32 +186,45 @@ namespace Drill4dotNet
     class Connector : public IConnector
     {
     protected:
-        inline static const AgentConnectorDllLoader m_agentLibrary{};
+        const AgentConnectorDllLoader m_agentLibrary{};
 
-        inline static std::queue<std::string> m_messages;
-        inline static std::mutex m_mutex;
-        inline static Event m_event { NULL, TRUE, FALSE, NULL };
+        std::queue<std::string> m_messages;
+        std::mutex m_mutex;
+        Event m_event { NULL, TRUE, FALSE, NULL };
 
+        // a hack for static callback; it should be replaced by context parameter of callback
+        inline static Connector* s_this = nullptr;
     protected:
         // is called by Kotlin native connector to transfer a message.
         // It pushes a message to the queue and signals the event.
         static void ReceiveMessage(const char* destination, const char* message)
         {
-            std::lock_guard<std::mutex> locker(m_mutex);
-            m_messages.push(message);
+            if (s_this == nullptr)
+            {
+                return;
+            }
+            std::lock_guard<std::mutex> locker(s_this->m_mutex);
+            s_this->m_messages.push(message);
             std::wcout << "ReceiveMessage: "
                 << "destination: " << destination
-                << "message: " << message << std::endl;
-            ::SetEvent(m_event.Handle());
+                << "message: " << message
+                << std::endl;
+            ::SetEvent(s_this->m_event.Handle());
         }
 
     public:
         Connector()
         {
+            std::lock_guard<std::mutex> locker(m_mutex);
+            s_this = this;
         }
 
         ~Connector() override
         {
+            {
+                std::lock_guard<std::mutex> locker(m_mutex);
+                s_this = nullptr;
+            }
             ::SetEvent(m_event.Handle()); // to finish all waits
             ::WaitForSingleObject(m_event.Handle(), 0);
         }
