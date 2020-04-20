@@ -21,25 +21,37 @@ int main(int argc, char** argv)
             isKbHit = true;
         });
 
-    std::shared_ptr<IConnector> connector = IConnector::CreateInstance();
-    connector->InitializeAgent();
-    connector->SendMessage1("hello");
-    int i = 0;
-    do
+    try
     {
-        std::optional<std::string> s;
+        std::shared_ptr<IConnector> connector = IConnector::CreateInstance();
+        connector->InitializeAgent();
+        connector->SendMessage1("hello");
+        int i = 0;
         do
         {
-            s = connector->GetNextMessage();
-            if (s)
+            std::optional<std::string> s;
+            do
             {
-                std::cout << s.value() << std::endl;
-            }
-        } while (s);
-        connector->WaitForNextMessage(1000);
-    } while (!isKbHit);
+                s = connector->GetNextMessage();
+                if (s)
+                {
+                    std::cout << s.value() << std::endl;
+                }
+            } while (s);
+            connector->WaitForNextMessage(1000);
+        } while (!isKbHit);
 
-    connector->SendMessage1("bye");
-    keyThread.join();
+        connector->SendMessage1("bye");
+        keyThread.join();
+    }
+    catch(const std::exception &ex)
+    {
+        std::wcout
+            << "Exception caught: "
+            << ex.what()
+            << std::endl;
+        keyThread.detach();
+    }
+
     return 0;
 }
