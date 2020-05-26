@@ -13,6 +13,7 @@
 #include "IMetadataDispenser.h"
 #include "Connector.h"
 #include "ProClient.h"
+#include "Signature.h"
 
 namespace Drill4dotNet
 {
@@ -668,6 +669,13 @@ namespace Drill4dotNet
 
                 const FunctionInfo functionInfo { GetFunctionInfo(moduleMetaData, functionInfoWithoutName) };
 
+                const std::vector<std::byte> signatureBytes { moduleMetaData
+                    .GetMethodProps(functionInfo.token)
+                    .SignatureBlob };
+
+                const ParseResult<MethodSignature> signature {
+                    MethodSignature::Parse(signatureBytes.cbegin(), signatureBytes.cend()) };
+
                 const std::vector<std::byte> functionBytes {
                     m_corProfilerInfo->GetMethodIntermediateLanguageBody(functionInfo) };
 
@@ -675,7 +683,11 @@ namespace Drill4dotNet
                     << L"Compiling function "
                     << InSquareBrackets(functionId)
                     << L" "
+                    << signature.ParsedValue.WritePreamble()
+                    << L" "
                     << functionInfo.fullName()
+                    << L" "
+                    << signature.ParsedValue.WriteParameters()
                     << L" IL Body size: "
                     << functionBytes.size()
                     << L" bytes";
