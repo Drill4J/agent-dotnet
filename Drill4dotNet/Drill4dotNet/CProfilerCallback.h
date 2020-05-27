@@ -697,17 +697,37 @@ namespace Drill4dotNet
                     return S_OK;
                 }
 
+                const auto moduleMetaData { m_corProfilerInfo->GetModuleMetadata(
+                    functionInfo.moduleId,
+                    LogToProClient(g_cb->m_pImplClient)) };
+
                 auto functionBody = MethodBody(
                     functionBytes,
-                    [](const OpCodeArgumentType::InlineMethod::TokenType token)
+                    [moduleMetaData](const OpCodeArgumentType::InlineMethod::TokenType token)
                     {
-                        return OpCodeArgumentType::InlineMethod
+                        std::vector<std::byte> callSignatureBytes{};
+                        switch (token & 0xFF'00'00'00)
                         {
+                        case CorTokenType::mdtMethodDef:
+                            callSignatureBytes = moduleMetaData.GetMethodProps(token).SignatureBlob;
+                            break;
+                        case CorTokenType::mdtMemberRef:
+                            callSignatureBytes = moduleMetaData.GetMemberReferenceProps(token).SignatureBlob;
+                            break;
+                        case CorTokenType::mdtSignature:
+                            callSignatureBytes = moduleMetaData.GetSignatureBlob(token);
+                            break;
+                        default:
+                            throw std::runtime_error("Invalid token type for method signature resolver");
+                        }
+
+                        const ParseResult<MethodSignature> callSignature {
+                            MethodSignature::Parse(callSignatureBytes.cbegin(), callSignatureBytes.cend()) };
+
+                        return OpCodeArgumentType::InlineMethod {
                             token,
-                            // ! dummy values
-                            0,
-                            false
-                        };
+                            callSignature.ParsedValue.ParameterTypes().size(),
+                            callSignature.ParsedValue.ReturnType().PassDescription.has_value() };
                     });
 
                 GetClient().Log()
