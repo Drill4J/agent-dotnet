@@ -703,7 +703,7 @@ namespace Drill4dotNet
 
                 auto functionBody = MethodBody(
                     functionBytes,
-                    [moduleMetaData](const OpCodeArgumentType::InlineMethod::TokenType token)
+                    [&moduleMetaData = std::as_const(moduleMetaData)](const OpCodeArgumentType::InlineMethod::TokenType token)
                     {
                         std::vector<std::byte> callSignatureBytes{};
                         switch (token & 0xFF'00'00'00)
