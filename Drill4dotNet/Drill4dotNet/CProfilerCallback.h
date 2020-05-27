@@ -697,7 +697,18 @@ namespace Drill4dotNet
                     return S_OK;
                 }
 
-                auto functionBody = MethodBody(functionBytes);
+                auto functionBody = MethodBody(
+                    functionBytes,
+                    [](const OpCodeArgumentType::InlineMethod::TokenType token)
+                    {
+                        return OpCodeArgumentType::InlineMethod
+                        {
+                            token,
+                            // ! dummy values
+                            0,
+                            false
+                        };
+                    });
 
                 GetClient().Log()
                     << L"Initially decompiled raw bytes:"
