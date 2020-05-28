@@ -89,11 +89,6 @@
       <AdditionalOptions>/ignore:4099 %(AdditionalOptions)</AdditionalOptions>
       <AdditionalDependencies>Rometadata.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
-    <PostBuildEvent>
-      <Command>copy "$(SolutionDir)bin\AnyCPU\$(Configuration)\Injection\netcoreapp3.1\Injection.dll" "$(OutDir)"
-copy "$(SolutionDir)dependencies\native-agent-connector\mingwX64Debug-0.1.0\agent_connector.dll" "$(OutDir)"</Command>
-      <Message>Copy dependency dlls</Message>
-    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -131,11 +126,6 @@ copy "$(SolutionDir)dependencies\native-agent-connector\mingwX64Debug-0.1.0\agen
       <AdditionalOptions>/ignore:4099 %(AdditionalOptions)</AdditionalOptions>
       <AdditionalDependencies>Rometadata.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
-    <PostBuildEvent>
-      <Command>copy "$(SolutionDir)bin\AnyCPU\$(Configuration)\Injection\netcoreapp3.1\Injection.dll" "$(OutDir)"
-copy "$(SolutionDir)dependencies\native-agent-connector\mingwX64Release-0.1.0\agent_connector.dll" "$(OutDir)"</Command>
-      <Message>Copy dependency dlls</Message>
-    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="ByteUtils.h" />
@@ -205,7 +195,22 @@ copy "$(SolutionDir)dependencies\native-agent-connector\mingwX64Release-0.1.0\ag
   <ItemGroup>
     <Midl Include="Drill4dotNet.idl" />
   </ItemGroup>
+  <ItemGroup>
+    <InjectionFiles Include="$(MSBuildThisFileDirectory)..\..\bin\AnyCPU\$(Configuration)\Injection\netcoreapp3.1\*.*">
+      <InProject>false</InProject>
+    </InjectionFiles>
+  </ItemGroup>
+  <Target Name="CopyInjectionFiles" AfterTargets="AfterBuild">
+    <Copy
+      SourceFiles="@(InjectionFiles)"
+      DestinationFolder="$(OutDir)"
+      SkipUnchangedFiles="true"
+      OverwriteReadOnlyFiles="true"
+      Retries="5"
+      RetryDelayMilliseconds="1000" />
+  </Target>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
+    <Import Project="$(MSBuildThisFileDirectory)..\Connector\native_agent_connector.targets" />
   </ImportGroup>
 </Project>

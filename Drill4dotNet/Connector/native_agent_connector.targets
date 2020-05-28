@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns='http://schemas.microsoft.com/developer/msbuild/2003' ToolsVersion="15.0">
+    <PropertyGroup>
+        <NativeAgentConnectorVersion>0.1.0</NativeAgentConnectorVersion>
+        <NativeAgentConnectorDirectory>$(MSBuildThisFileDirectory)..\..\dependencies\native-agent-connector\</NativeAgentConnectorDirectory>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$(Platform)'=='x64'">
+        <NativeAgentConnectorVersionSpecificDirectory>$(NativeAgentConnectorDirectory)mingwX64$(Configuration)-$(NativeAgentConnectorVersion)\</NativeAgentConnectorVersionSpecificDirectory>
+    </PropertyGroup>
+
+    <ItemDefinitionGroup>
+        <ClCompile>
+            <AdditionalIncludeDirectories>$(NativeAgentConnectorVersionSpecificDirectory);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+        </ClCompile>
+    </ItemDefinitionGroup>
+
+    <ItemGroup>
+        <NativeAgentConnectorDlls Include="$(NativeAgentConnectorVersionSpecificDirectory)\*.dll">
+            <InProject>false</InProject>
+        </NativeAgentConnectorDlls>
+    </ItemGroup>
+
+    <Target Name="CopyNativeAgentConnectorDlls" AfterTargets="AfterBuild">
+        <Copy
+            SourceFiles="@(NativeAgentConnectorDlls)"
+            DestinationFolder="$(OutDir)"
+            SkipUnchangedFiles="true"
+            OverwriteReadOnlyFiles="true"
+            Retries="5"
+            RetryDelayMilliseconds="1000" />
+    </Target>
+
+    <UsingTask
+        TaskName="DownloadNativeAgentConnectorIfRequired"
+        TaskFactory="CodeTaskFactory"
+        AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll" >
+        <ParameterGroup>
+            <Platform Required="true" />
+            <Configuration Required="true" />
+            <Version Required="true" />
+            <Destination Required="true" />
+        </ParameterGroup>
+        <Task>
+            <Reference Include="System.IO.Compression"/>
+            <Reference Include="System.IO.Compression.ZipFile"/>
+            <Reference Include="System.IO.FileSystem"/>
+            <Reference Include="System.Net.Http"/>
+            <Reference Include="System.Xml"/>
+            <Using Namespace="System" />
+            <Using Namespace="System.IO" />
+            <Using Namespace="System.IO.Compression" />
+            <Using Namespace="System.Linq" />
+            <Using Namespace="System.Net" />
+            <Using Namespace="System.Net.Http" />
+            <Using Namespace="System.Security.Authentication" />
+            <Code Type="Fragment" Language="cs">
+                string platformUpperCase = Platform.ToUpperInvariant();
+                if (Directory.Exists(Destination))
+                {
+                    return _Success;
+                }
+
+                Directory.CreateDirectory(Destination);
+
+                string configurationLowerCase = Configuration.ToLowerInvariant();
+                // https://oss.jfrog.org/artifactory/list/oss-release-local/com/epam/drill/dotnet/agent_connector-mingwX64-debug/0.1.0/agent_connector-mingwX64-debug-0.1.0.zip
+                string nativeAgentConnectorUrl = string.Format(
+                    "https://oss.jfrog.org/artifactory/list/oss-release-local/com/epam/drill/dotnet/agent_connector-mingw{0}-{1}/{2}/agent_connector-mingw{0}-{1}-{2}.zip",
+                    platformUpperCase,
+                    configurationLowerCase,
+                    Version);
+
+                var client = new HttpClient(new HttpClientHandler
+                {
+                    SslProtocols = SslProtocols.Tls12 | SslProtocols.Tls13
+                });
+
+                HttpResponseMessage data = client.GetAsync(nativeAgentConnectorUrl).Result;
+                using (var zipArchive = new ZipArchive(data.Content.ReadAsStreamAsync().Result, ZipArchiveMode.Read))
+                {
+                    foreach (var zipEntry in zipArchive.Entries
+                        .Where(x => x.FullName.EndsWith(".dll") || x.FullName.EndsWith(".h") || x.FullName.EndsWith(".def"))
+                        .GroupBy(x => x.FullName)
+                        .Select(g => new { Group = g, MaxContent = g.Max(x => x.Length) })
+                        .SelectMany(g => g.Group.Where(x => x.Length == g.MaxContent).Take(1)))
+                    {
+                        using (Stream decompressed = zipEntry.Open())
+                        {
+                            using (Stream output = File.OpenWrite(Path.Combine(Destination, zipEntry.Name)))
+                            {
+                                decompressed.CopyTo(output);
+                                output.Close();
+                            }
+                        }
+                    }
+                }
+            </Code>
+        </Task>
+    </UsingTask>
+
+    <Target Name="DownloadNativeAgentConnector">
+        <DownloadNativeAgentConnectorIfRequired
+            Platform="$(Platform)"
+            Configuration="$(Configuration)"
+            Version="$(NativeAgentConnectorVersion)"
+            Destination="$(NativeAgentConnectorVersionSpecificDirectory)" />
+    </Target>
+
+    <PropertyGroup>
+        <BuildDependsOn>
+            DownloadNativeAgentConnector;
+            $(BuildDependsOn);
+        </BuildDependsOn>
+    </PropertyGroup>
+</Project>

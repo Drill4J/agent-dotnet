@@ -36,4 +36,7 @@
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="native_agent_connector.targets" />
+  </ItemGroup>
 </Project>
