@@ -64,12 +64,6 @@
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
-    <PreBuildEvent>
-      <Command>copy /y "$(SolutionDir)dependencies\native-agent-connector\mingwX64Debug-0.1.0\agent_connector_api.h" "$(ProjectDir)"</Command>
-    </PreBuildEvent>
-    <PostBuildEvent>
-      <Command>copy /y/b "$(SolutionDir)dependencies\native-agent-connector\mingwX64Debug-0.1.0\agent_connector.dll" "$(TargetDir)"</Command>
-    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -87,12 +81,6 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
-    <PreBuildEvent>
-      <Command>copy /y "$(SolutionDir)dependencies\native-agent-connector\mingwX64Release-0.1.0\agent_connector_api.h" "$(ProjectDir)"</Command>
-    </PreBuildEvent>
-    <PostBuildEvent>
-      <Command>copy /y/b "$(SolutionDir)dependencies\native-agent-connector\mingwX64Release-0.1.0\agent_connector.dll" "$(TargetDir)"</Command>
-    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="ConnectorImplementation.cpp" />
@@ -109,7 +97,11 @@
     <ClInclude Include="ConnectorImplementation.h" />
     <ClInclude Include="pch.h" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="native_agent_connector.targets" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
+    <Import Project="$(MSBuildThisFileDirectory)native_agent_connector.targets" />
   </ImportGroup>
 </Project>

@@ -33,13 +33,6 @@ Visual Studio 2019 installation configuration (required):
   - .NET Core 3.1 SDK
   - .NET Framework 4.7.2 SDK or .NET Framework 4.8 SDK
 
-# Other pre-requisites
-
-To deploy required components, install the following software and include them in path variable:
-
-- curl.exe (http://curl.haxx.se)
-- unzip.exe from Info-ZIP (http://infozip.sourceforge.net/)
-
 # Solution and projects
 
 Visual Studio 2019 solution `Drill4dotNet.sln` in the top repository folder consists of:
@@ -50,7 +43,6 @@ Visual Studio 2019 solution `Drill4dotNet.sln` in the top repository folder cons
     - `Drill4dotNet.vcxproj` to build the COM DLL `Drill4dotNet.dll`;
     - `Drill4dotNetPS.vcxproj` proxy/stub DLL (not used);
     - `Drill4dotNet-Tests.vcxproj` unit tests for `Drill4dotNet.vcxproj`;
-      - This project automatically downloads and installs NuGet package `gmock.v1.10.0` to `./packages` folder;
     - `Injection.csproj` to build .NET `Injection.dll` to be injected to the target application by the profiler.
   - `HelloWorld` folder with a couple of sample C# projects:
     - `HelloWorld.csproj` to build an application to run in .NET Core 3.1 runtime;
@@ -71,7 +63,7 @@ Note: Do not build (deselect in Batch Build and Configuration Manager) Win32 con
 
 `HelloWorldFramework.csproj` project requires .NET Framework 4.7.2 SDK to be installed. If you have different version installed, change Target framework in the project properties. 
 
-Note: You can run HelloWorld.csproj (set As StratUp Project) from the IDE and under debugger. The project defines necessary Environment variables under Debug page. 
+Note: You can run HelloWorld.csproj (set As StartUp Project) from the IDE and under debugger. The project defines necessary Environment variables under Debug page. 
 
 # Running Drill dotNet agent
 
