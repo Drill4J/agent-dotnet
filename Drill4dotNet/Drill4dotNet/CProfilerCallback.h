@@ -697,10 +697,6 @@ namespace Drill4dotNet
                     return S_OK;
                 }
 
-                const auto moduleMetaData { m_corProfilerInfo->GetModuleMetadata(
-                    functionInfo.moduleId,
-                    LogToProClient(g_cb->m_pImplClient)) };
-
                 auto functionBody = MethodBody(
                     functionBytes,
                     [&moduleMetaData = std::as_const(moduleMetaData)](const OpCodeArgumentType::InlineMethod::TokenType token)
