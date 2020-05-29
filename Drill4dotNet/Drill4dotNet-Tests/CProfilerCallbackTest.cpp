@@ -15,8 +15,7 @@ class CProfilerCallbackTest : public Test
 public:
     void SetUp()
     {
-        connectorMock.emplace();
-        proClient.emplace(*connectorMock);
+        proClient.emplace();
         profilerCallback.emplace(*proClient);
         WCHAR injectionFileName[_MAX_PATH];
         ::GetModuleFileName(NULL, injectionFileName, _MAX_PATH);
@@ -27,13 +26,9 @@ public:
     {
         profilerCallback.reset();
         proClient.reset();
-        // Dirty hack to workaround leaked mock objects GTest bug when using shared_ptr
-        // Refer to https://github.com/google/googletest/issues/1310
-        connectorMock.reset();
     }
 
     std::optional<ProClient<ConnectorMock>> proClient;
-    std::optional<ConnectorMock> connectorMock;
     std::optional<CProfilerCallback<
         ConnectorMock,
         CoreInteractMock,
@@ -46,11 +41,6 @@ public:
 TEST_F(CProfilerCallbackTest, GetClient)
 {
     EXPECT_EQ(&*proClient, &profilerCallback->GetClient());
-}
-
-TEST_F(CProfilerCallbackTest, Client_GetConnector)
-{
-    EXPECT_EQ(&(connectorMock.value()), &(proClient->GetConnector()));
 }
 
 TEST_F(CProfilerCallbackTest, Initialize_Shutdown)
@@ -86,7 +76,7 @@ TEST_F(CProfilerCallbackTest, Initialize_Shutdown)
         EXPECT_CALL(metaDataImportMock, EnumMethodsWithName(expectedInjection.Class, injectionMethodName)).WillOnce(Return(std::vector { expectedInjection.Function }));
     }) };
 
-    EXPECT_CALL(*connectorMock, SendMessage1("ready")).WillOnce(Return());
+    EXPECT_CALL(proClient->GetConnector(), SendMessage1("ready")).WillOnce(Return());
 
     IUnknown* p = reinterpret_cast<IUnknown*>(this);
     EXPECT_HRESULT_SUCCEEDED(profilerCallback->Initialize(p));
