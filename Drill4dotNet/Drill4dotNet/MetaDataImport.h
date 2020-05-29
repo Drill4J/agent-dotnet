@@ -370,9 +370,9 @@ namespace Drill4dotNet
             const std::wstring& name) const
         {
             MetaDataEnum enumeration { *this };
-            mdMethodDef chunk[16];
+            constexpr ULONG chunkLength { 16 };
+            std::array<mdMethodDef, chunkLength> chunk;
             std::vector<mdMethodDef> result{};
-            constexpr ULONG chunkLength { std::extent_v<decltype(chunk)> };
             while (true)
             {
                 ULONG methodsRetrieved;
@@ -381,7 +381,7 @@ namespace Drill4dotNet
                     EnumMethodsWithNameCallable(
                         enclosingType,
                         name,
-                        chunk,
+                        chunk.data(),
                         chunkLength,
                         methodsRetrieved,
                         enumeration.Value,
@@ -395,8 +395,8 @@ namespace Drill4dotNet
 
                 result.insert(
                     result.cend(),
-                    std::cbegin(chunk),
-                    std::cend(chunk) + methodsRetrieved);
+                    chunk.cbegin(),
+                    chunk.cbegin() + methodsRetrieved);
 
                 if (methodsRetrieved < chunkLength)
                 {
@@ -414,9 +414,9 @@ namespace Drill4dotNet
             const std::wstring& name) const
         {
             MetaDataEnum enumeration { *this };
-            mdMethodDef chunk[16];
+            constexpr ULONG chunkLength{ 16 };
+            std::array<mdMethodDef, chunkLength> chunk;
             std::vector<mdMethodDef> result{};
-            constexpr ULONG chunkLength{ std::extent_v<decltype(chunk)> };
             while (true)
             {
                 HRESULT peekResult;
@@ -425,7 +425,7 @@ namespace Drill4dotNet
                         EnumMethodsWithNameCallable(
                             enclosingType,
                             name,
-                            chunk,
+                            chunk.data(),
                             chunkLength,
                             methodsRetrieved,
                             enumeration.Value,
@@ -439,8 +439,8 @@ namespace Drill4dotNet
 
                     result.insert(
                         result.cend(),
-                        std::cbegin(chunk),
-                        std::cend(chunk) + methodsRetrieved);
+                        chunk.cbegin(),
+                        chunk.cend() + methodsRetrieved);
 
                     if (methodsRetrieved < chunkLength)
                     {
