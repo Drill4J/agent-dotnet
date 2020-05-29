@@ -1,11 +1,10 @@
 #pragma once
 
-#include <rometadata.h>
-
 #include "IMetaDataDispenser.h"
 #include "ComWrapperBase.h"
 #include "MetaDataAssemblyImport.h"
 #include "MetaDataImport.h"
+#include "ComInitializer.h"
 #include "framework.h"
 
 namespace Drill4dotNet
@@ -28,25 +27,42 @@ namespace Drill4dotNet
         {
             return [this]()
             {
-                return MetaDataGetDispenser(
+                return CoCreateInstance(
                     CLSID_CorMetaDataDispenser,
+                    NULL,
+                    CLSCTX_INPROC_SERVER,
                     IID_IMetaDataDispenser,
                     (LPVOID*)&m_metaDataDispenser);
             };
         }
 
-        inline static const wchar_t s_InitError[]{ L"Failed to initialize MetaDataDispenser." };
-
         // Fills m_corProfilerInfo. Returns false in case of error.
         bool TryInit()
         {
-            return this->TryCallCom(InitCallable(), s_InitError);
+            ComInitializer<TLogger> initializer(m_logger);
+            if (!initializer.TryInitialize())
+            {
+                m_logger.Log() << L"MetaDataDispenser::TryInit: COM initialization failed.";
+                return false;
+            }
+
+            return this->TryCallCom(InitCallable(), L"MetaDataDispenser::TryInit: call to CoCreateInstance failed.");
         }
 
         // Fills m_corProfilerInfo. Throws in case of error.
         void Init()
         {
-            this->CallComOrThrow(InitCallable(), s_InitError);
+            try
+            {
+                ComInitializer<TLogger> initializer(m_logger);
+                initializer.Initialize();
+                this->CallComOrThrow(InitCallable(), L"MetaDataDispenser::Init: call to CoCreateInstance failed.");
+            }
+            catch (const _com_error&)
+            {
+                m_logger.Log() << L"MetaDataDispenser::Init: failed.";
+                throw;
+            }
         }
 
         // Wraps IMetaDataDispenser::OpenScope.

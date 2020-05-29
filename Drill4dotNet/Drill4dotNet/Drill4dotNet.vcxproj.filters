@@ -121,6 +121,9 @@
     <ClInclude Include="MetaDataDispenser.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="ComInitializer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Drill4dotNet.cpp">
