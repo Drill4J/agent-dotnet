@@ -29,9 +29,10 @@ namespace Drill4dotNet
         result.moduleId = functionInfo.moduleId;
         result.classId = functionInfo.classId;
         result.token = functionInfo.token;
+        MethodProps methodProps { metadataImport.GetMethodProps(functionInfo.token) };
         result.name = FunctionName {
-            metadataImport.GetMethodProps(functionInfo.token).Name,
-            metadataImport.GetTypeDefProps(functionInfo.classId).Name };
+            methodProps.Name,
+            metadataImport.GetTypeDefProps(methodProps.EnclosingClass).Name };
         return result;
     }
 
@@ -658,10 +659,16 @@ namespace Drill4dotNet
                 // NOPs will be added to show ability to turn short branching instructions
                 // into long ones.
 
-                const FunctionInfo functionInfo{
+                const FunctionInfoWithoutName functionInfoWithoutName {
                     m_corProfilerInfo->GetFunctionInfo(functionId) };
 
-                const std::vector<std::byte> functionBytes{
+                const auto moduleMetaData { m_corProfilerInfo->GetModuleMetadata(
+                    functionInfoWithoutName.moduleId,
+                    LogToProClient(m_pImplClient)) };
+
+                const FunctionInfo functionInfo { GetFunctionInfo(moduleMetaData, functionInfoWithoutName) };
+
+                const std::vector<std::byte> functionBytes {
                     m_corProfilerInfo->GetMethodIntermediateLanguageBody(functionInfo) };
 
                 GetClient().Log()
