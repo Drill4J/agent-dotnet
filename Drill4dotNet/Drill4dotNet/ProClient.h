@@ -15,14 +15,13 @@ namespace Drill4dotNet
         std::wostream& m_ostream;
         std::wistream& m_istream;
         InfoHandler m_infoHandler;
-        TConnector& m_connector;
+        TConnector m_connector{};
 
     public:
-        ProClient(TConnector& connector)
+        ProClient()
             : m_ostream(std::wcout),
             m_istream(std::wcin),
-            m_infoHandler(m_ostream),
-            m_connector(connector)
+            m_infoHandler(m_ostream)
         {
         }
 
