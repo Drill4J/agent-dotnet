@@ -87,7 +87,6 @@
       <ModuleDefinitionFile>.\Drill4dotNet.def</ModuleDefinitionFile>
       <RegisterOutput>false</RegisterOutput>
       <AdditionalOptions>/ignore:4099 %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>Rometadata.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -124,12 +123,12 @@
       <OptimizeReferences>true</OptimizeReferences>
       <RegisterOutput>false</RegisterOutput>
       <AdditionalOptions>/ignore:4099 %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>Rometadata.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="ByteUtils.h" />
     <ClInclude Include="..\Connector\Connector.h" />
+    <ClInclude Include="ComInitializer.h" />
     <ClInclude Include="CProfilerCallbackBase.h" />
     <ClInclude Include="ICorProfilerInfo.h" />
     <ClInclude Include="IMetaDataAssemblyImport.h" />
