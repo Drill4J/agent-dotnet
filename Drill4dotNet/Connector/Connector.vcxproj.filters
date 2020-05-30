@@ -38,5 +38,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="native_agent_connector.targets" />
+    <None Include="packages.config" />
   </ItemGroup>
 </Project>

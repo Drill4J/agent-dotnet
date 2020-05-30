@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\..\packages\vcpkg.D.GIT.epam.com.EPMD4J.Drill4J.agentdotnet.dependencies.vcpkg.1.0.0\build\native\vcpkg.D.GIT.epam.com.EPMD4J.Drill4J.agentdotnet.dependencies.vcpkg.props" Condition="Exists('..\..\packages\vcpkg.D.GIT.epam.com.EPMD4J.Drill4J.agentdotnet.dependencies.vcpkg.1.0.0\build\native\vcpkg.D.GIT.epam.com.EPMD4J.Drill4J.agentdotnet.dependencies.vcpkg.props')" />
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|x64">
       <Configuration>Debug</Configuration>
@@ -192,6 +193,7 @@
   <ItemGroup>
     <None Include="Drill4dotNet.def" />
     <None Include="Drill4dotNet.rgs" />
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <Midl Include="Drill4dotNet.idl" />
@@ -202,16 +204,18 @@
     </InjectionFiles>
   </ItemGroup>
   <Target Name="CopyInjectionFiles" AfterTargets="AfterBuild">
-    <Copy
-      SourceFiles="@(InjectionFiles)"
-      DestinationFolder="$(OutDir)"
-      SkipUnchangedFiles="true"
-      OverwriteReadOnlyFiles="true"
-      Retries="5"
-      RetryDelayMilliseconds="1000" />
+    <Copy SourceFiles="@(InjectionFiles)" DestinationFolder="$(OutDir)" SkipUnchangedFiles="true" OverwriteReadOnlyFiles="true" Retries="5" RetryDelayMilliseconds="1000" />
   </Target>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
     <Import Project="$(MSBuildThisFileDirectory)..\Connector\native_agent_connector.targets" />
+    <Import Project="..\..\packages\vcpkg.D.GIT.epam.com.EPMD4J.Drill4J.agentdotnet.dependencies.vcpkg.1.0.0\build\native\vcpkg.D.GIT.epam.com.EPMD4J.Drill4J.agentdotnet.dependencies.vcpkg.targets" Condition="Exists('..\..\packages\vcpkg.D.GIT.epam.com.EPMD4J.Drill4J.agentdotnet.dependencies.vcpkg.1.0.0\build\native\vcpkg.D.GIT.epam.com.EPMD4J.Drill4J.agentdotnet.dependencies.vcpkg.targets')" />
   </ImportGroup>
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\..\packages\vcpkg.D.GIT.epam.com.EPMD4J.Drill4J.agentdotnet.dependencies.vcpkg.1.0.0\build\native\vcpkg.D.GIT.epam.com.EPMD4J.Drill4J.agentdotnet.dependencies.vcpkg.props')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\vcpkg.D.GIT.epam.com.EPMD4J.Drill4J.agentdotnet.dependencies.vcpkg.1.0.0\build\native\vcpkg.D.GIT.epam.com.EPMD4J.Drill4J.agentdotnet.dependencies.vcpkg.props'))" />
+    <Error Condition="!Exists('..\..\packages\vcpkg.D.GIT.epam.com.EPMD4J.Drill4J.agentdotnet.dependencies.vcpkg.1.0.0\build\native\vcpkg.D.GIT.epam.com.EPMD4J.Drill4J.agentdotnet.dependencies.vcpkg.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\vcpkg.D.GIT.epam.com.EPMD4J.Drill4J.agentdotnet.dependencies.vcpkg.1.0.0\build\native\vcpkg.D.GIT.epam.com.EPMD4J.Drill4J.agentdotnet.dependencies.vcpkg.targets'))" />
+  </Target>
 </Project>
