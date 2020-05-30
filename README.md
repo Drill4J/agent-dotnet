@@ -65,6 +65,14 @@ Note: Do not build (deselect in Batch Build and Configuration Manager) Win32 con
 
 Note: You can run HelloWorld.csproj (set As StartUp Project) from the IDE and under debugger. The project defines necessary Environment variables under Debug page. 
 
+# Building
+
+Before the first build, run the following commands in the `dependencies\vcpkg` directory:
+```
+bootstrap-vcpkg.bat
+vcpkg install nlohmann-json:x64-windows
+```
+
 # Running Drill dotNet agent
 
 Agent DLL binaries can be found under `./bin/$Platform/$Configuration/Drill4dotNet/` (for example: `./bin/x64/Release/Drill4dotNet/`):
