@@ -126,12 +126,14 @@ namespace Drill4dotNet
         decltype(::agent_connector_symbols)* const agent_connector_symbols;
         decltype(::initialize_agent)* const initialize_agent;
         decltype(::sendMessage)* const sendMessage;
+        decltype(::sendPluginMessage)* const sendPluginMessage;
 
         AgentConnectorDllLoader()
             : DllLoader{ CONNECTOR_DLL_FILE },
             agent_connector_symbols { ImportFunction<decltype(agent_connector_symbols)>("agent_connector_symbols") },
             initialize_agent { ImportFunction<decltype(initialize_agent)>("initialize_agent") },
-            sendMessage { ImportFunction<decltype(sendMessage)>("sendMessage") }
+            sendMessage { ImportFunction<decltype(sendMessage)>("sendMessage") },
+            sendPluginMessage{ ImportFunction<decltype(sendPluginMessage)>("sendPluginMessage") }
         {
         }
     };
@@ -242,7 +244,7 @@ namespace Drill4dotNet
         void SendMessage1(const std::string& content)
         {
             std::wcout << "Connector::SendMessage1: '" << content.c_str() << "'" << std::endl;
-            m_agentLibrary.sendMessage("10", content.c_str());
+            m_agentLibrary.sendPluginMessage("10", content.c_str());
         }
 
         std::optional<std::string> GetNextMessage()
