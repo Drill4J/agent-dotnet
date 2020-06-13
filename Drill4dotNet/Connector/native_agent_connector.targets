@@ -15,15 +15,9 @@
         </ClCompile>
     </ItemDefinitionGroup>
 
-    <ItemGroup>
-        <NativeAgentConnectorDlls Include="$(NativeAgentConnectorVersionSpecificDirectory)\*.dll">
-            <InProject>false</InProject>
-        </NativeAgentConnectorDlls>
-    </ItemGroup>
-
-    <Target Name="CopyNativeAgentConnectorDlls" AfterTargets="AfterBuild">
+    <Target Name="CopyNativeAgentConnectorDlls" AfterTargets="Build">
         <Copy
-            SourceFiles="@(NativeAgentConnectorDlls)"
+            SourceFiles="$(NativeAgentConnectorVersionSpecificDirectory)\agent_connector.dll"
             DestinationFolder="$(OutDir)"
             SkipUnchangedFiles="true"
             OverwriteReadOnlyFiles="true"
