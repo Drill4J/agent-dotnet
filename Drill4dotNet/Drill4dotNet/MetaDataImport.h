@@ -484,7 +484,7 @@ namespace Drill4dotNet
                         methodsRetrieved,
                         enumeration.Value,
                         peekResult),
-                    L"Call to metaDataImport::EnumMethodsWithName failed.");
+                    L"Call to MetaDataImport::EnumMethodsWithName failed.");
 
                 if (peekResult == S_FALSE)
                 {
@@ -528,7 +528,7 @@ namespace Drill4dotNet
                             methodsRetrieved,
                             enumeration.Value,
                             peekResult),
-                        L"Call to metaDataImport::EnumMethodsWithName failed."))
+                        L"Call to MetaDataImport::TryEnumMethodsWithName failed."))
                 {
                     if (peekResult == S_FALSE)
                     {
