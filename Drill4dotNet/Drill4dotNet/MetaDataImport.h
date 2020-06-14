@@ -107,6 +107,57 @@ namespace Drill4dotNet
             };
         };
 
+        // Wraps IMetaDataImport::EnumTypeDefs.
+        auto EnumTypeDefsCallable(
+            HCORENUM& enumeration,
+            mdTypeDef* types,
+            const ULONG typesLength,
+            ULONG& typesRetrieved,
+            HRESULT& result) const
+        {
+            return [
+                this,
+                &enumeration,
+                types,
+                typesLength,
+                &typesRetrieved,
+                &result]()
+            {
+                return result = m_metaDataImport->EnumTypeDefs(
+                    &enumeration,
+                    types,
+                    typesLength,
+                    &typesRetrieved);
+            };
+        }
+
+        // Wraps IMetaDataImport::EnumMethods.
+        auto EnumMethodsCallable(
+            HCORENUM& enumeration,
+            const mdTypeDef enclosingClass,
+            mdMethodDef* methods,
+            const ULONG methodsLength,
+            ULONG& methodsRetrieved,
+            HRESULT& result) const
+        {
+            return [
+                this,
+                &enumeration,
+                enclosingClass,
+                methods,
+                methodsLength,
+                &methodsRetrieved,
+                &result]()
+            {
+                return result = m_metaDataImport->EnumMethods(
+                    &enumeration,
+                    enclosingClass,
+                    methods,
+                    methodsLength,
+                    &methodsRetrieved);
+            };
+        }
+
         // Gets the call to IMetaDataImport2::GetMemberRefProps,
         // which gets the properties and the length of the name.
         // @param memberToken : the token of the reference to
@@ -679,6 +730,178 @@ namespace Drill4dotNet
             }
 
             return CopySignature(signatureBytes, signatureSize);
+        }
+
+        // Gets the tokens of the types in the module.
+        // Throws _com_error in case of an error.
+        std::vector<mdTypeDef> EnumTypeDefinitions() const
+        {
+            MetaDataEnum enumeration { *this };
+            constexpr ULONG chunkLength { 16 };
+            std::array<mdTypeDef, chunkLength> chunk;
+            std::vector<mdTypeDef> result {};
+            while (true)
+            {
+                ULONG typesRetrieved;
+                HRESULT peekResult;
+                this->CallComOrThrow(
+                    EnumTypeDefsCallable(
+                        enumeration.Value,
+                        chunk.data(),
+                        chunkLength,
+                        typesRetrieved,
+                        peekResult),
+                    L"Call to MetaDataImport::EnumTypeDefinitions failed.");
+
+                if (peekResult == S_FALSE)
+                {
+                    break;
+                }
+
+                result.insert(
+                    result.cend(),
+                    chunk.cbegin(),
+                    chunk.cbegin() + typesRetrieved);
+
+                if (typesRetrieved < chunkLength)
+                {
+                    break;
+                }
+            }
+
+            return result;
+        }
+
+        // Gets the tokens of the types in the module.
+        // Returns std::nullopt in case of an error.
+        std::optional<std::vector<mdTypeDef>> TryEnumTypeDefinitions() const
+        {
+            MetaDataEnum enumeration { *this };
+            constexpr ULONG chunkLength { 16 };
+            std::array<mdTypeDef, chunkLength> chunk;
+            std::vector<mdTypeDef> result {};
+            while (true)
+            {
+                HRESULT peekResult;
+                if (ULONG typesRetrieved
+                    ; this->TryCallCom(
+                        EnumTypeDefsCallable(
+                            enumeration.Value,
+                            chunk.data(),
+                            chunkLength,
+                            typesRetrieved,
+                            peekResult),
+                        L"Call to MetaDataImport::TryEnumTypeDefinitions failed."))
+                {
+                    if (peekResult == S_FALSE)
+                    {
+                        break;
+                    }
+
+                    result.insert(
+                        result.cend(),
+                        chunk.cbegin(),
+                        chunk.cend() + typesRetrieved);
+
+                    if (typesRetrieved < chunkLength)
+                    {
+                        break;
+                    }
+                }
+                else
+                {
+                    return std::nullopt;
+                }
+            }
+
+            return result;
+        }
+
+        // Gets the tokens of the methods of the given type.
+        // Throws _com_error in case of an error.
+        std::vector<mdMethodDef> EnumMethods(const mdTypeDef enclosingType) const
+        {
+            MetaDataEnum enumeration { *this };
+            constexpr ULONG chunkLength { 16 };
+            std::array<mdMethodDef, chunkLength> chunk;
+            std::vector<mdMethodDef> result {};
+            while (true)
+            {
+                ULONG methodsRetrieved;
+                HRESULT peekResult;
+                this->CallComOrThrow(
+                    EnumMethodsCallable(
+                        enumeration.Value,
+                        enclosingType,
+                        chunk.data(),
+                        chunkLength,
+                        methodsRetrieved,
+                        peekResult),
+                    L"Call to MetaDataImport::EnumMethods failed.");
+
+                if (peekResult == S_FALSE)
+                {
+                    break;
+                }
+
+                result.insert(
+                    result.cend(),
+                    chunk.cbegin(),
+                    chunk.cbegin() + methodsRetrieved);
+
+                if (methodsRetrieved < chunkLength)
+                {
+                    break;
+                }
+            }
+
+            return result;
+        }
+
+        // Gets the tokens of the methods of the given type.
+        // Returns std::nullopt in case of an error.
+        std::optional<std::vector<mdMethodDef>> TryEnumMethods(const mdTypeDef enclosingClass) const
+        {
+            MetaDataEnum enumeration { *this };
+            constexpr ULONG chunkLength { 16 };
+            std::array<mdMethodDef, chunkLength> chunk;
+            std::vector<mdMethodDef> result {};
+            while (true)
+            {
+                HRESULT peekResult;
+                if (ULONG methodsRetrieved
+                    ; this->TryCallCom(
+                        EnumMethodsCallable(
+                            enumeration.Value,
+                            enclosingClass,
+                            chunk.data(),
+                            chunkLength,
+                            methodsRetrieved,
+                            peekResult),
+                        L"Call to MetaDataImport::TryEnumMethods failed."))
+                {
+                    if (peekResult == S_FALSE)
+                    {
+                        break;
+                    }
+
+                    result.insert(
+                        result.cend(),
+                        chunk.cbegin(),
+                        chunk.cend() + methodsRetrieved);
+
+                    if (methodsRetrieved < chunkLength)
+                    {
+                        break;
+                    }
+                }
+                else
+                {
+                    return std::nullopt;
+                }
+            }
+
+            return result;
         }
     };
 
