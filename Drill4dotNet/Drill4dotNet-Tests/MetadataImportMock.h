@@ -59,6 +59,10 @@ namespace Drill4dotNet
         MOCK_METHOD(std::optional<MemberReferenceProps>, TryGetMemberReferenceProps, (const mdMemberRef memberToken), (const));
         MOCK_METHOD(std::vector<std::byte>, GetSignatureBlob, (const mdSignature signatureToken), (const));
         MOCK_METHOD(std::optional<std::vector<std::byte>>, TryGetSignatureBlob, (const mdSignature signatureToken), (const));
+        MOCK_METHOD(std::vector<mdTypeDef>, EnumTypeDefinitions, (), (const));
+        MOCK_METHOD(std::optional<std::vector<mdTypeDef>>, TryEnumTypeDefinitions, (), (const));
+        MOCK_METHOD(std::vector<mdMethodDef>, EnumMethods, (const mdTypeDef enclosingType), (const));
+        MOCK_METHOD(std::optional<std::vector<mdMethodDef>>, TryEnumMethods, (const mdTypeDef enclosingType), (const));
     };
 
     static_assert(IMetadataImport<MetadataImportMock>);
