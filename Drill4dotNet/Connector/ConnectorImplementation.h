@@ -13,7 +13,9 @@
 #include <filesystem>
 #include <queue>
 #include <mutex>
+#include <concepts>
 #include "../Drill4dotNet/OutputUtils.h"
+#include <nlohmann/json.hpp>
 
 EXTERN_C IMAGE_DOS_HEADER __ImageBase;
 
@@ -185,12 +187,238 @@ namespace Drill4dotNet
         }
     };
 
+    // Converts a UTF-8 string to a std::wstring.
+    // Throws std::runtime_error in case of an error.
+    static std::wstring DecodeUtf8(const std::string& string)
+    {
+        if (string == "")
+        {
+            return std::wstring{};
+        }
+
+        std::wstring result(
+            MultiByteToWideChar(
+                CP_UTF8,
+                WC_ERR_INVALID_CHARS,
+                string.c_str(),
+                string.size(),
+                nullptr,
+                0),
+            L'\0');
+
+        if (MultiByteToWideChar(
+            CP_UTF8,
+            WC_ERR_INVALID_CHARS,
+            string.c_str(),
+            string.size(),
+            result.data(),
+            result.size()) == 0)
+        {
+            throw std::runtime_error("Could no decode UTF-8: Invalid UTF-8 string.");
+        }
+
+        return result;
+    }
+
+    // Converts the given string to UTF-8.
+    // Throws std::runtime_error in case of an error.
+    static std::string EncodeUtf8(const std::wstring& source)
+    {
+        if (source == L"")
+        {
+            return {};
+        }
+
+
+        std::string result(
+            WideCharToMultiByte(
+                CP_UTF8,
+                WC_ERR_INVALID_CHARS,
+                source.c_str(),
+                source.size(),
+                nullptr,
+                0,
+                nullptr,
+                nullptr),
+            '\0');
+
+        if (WideCharToMultiByte(
+            CP_UTF8,
+            WC_ERR_INVALID_CHARS,
+            source.c_str(),
+            source.size(),
+            result.data(),
+            result.size(),
+            nullptr,
+            nullptr) == 0)
+        {
+            throw std::runtime_error("Could no encode UTF-8: Invalid UTF-16 string.");
+        }
+
+        return result;
+    }
+
+    // Converts an AstMethod object to json format.
+    static void to_json(nlohmann::json& target, const AstMethod& data)
+    {
+        std::vector<std::string> params{};
+        params.reserve(data.params.size());
+        for (const auto& param : data.params)
+        {
+            params.push_back(EncodeUtf8(param));
+        }
+
+        target = nlohmann::json{
+            { "name", EncodeUtf8(data.name) },
+            { "params", params },
+            { "returnType", EncodeUtf8(data.returnType) },
+            { "count", data.count },
+            { "probes", data.probes }
+        };
+    }
+
+    // Gets an AstMethod object from json.
+    static void from_json(const nlohmann::json& source, AstMethod& target)
+    {
+        std::string string;
+        source.at("name").get_to(string);
+        target.name = DecodeUtf8(string);
+
+        std::vector<std::string> params{};
+        source.at("params").get_to(params);
+        target.params.clear();
+        target.params.reserve(params.size());
+        for (const auto& param : params)
+        {
+            target.params.push_back(DecodeUtf8(param));
+        }
+
+        source.at("returnType").get_to(string);
+        target.returnType = DecodeUtf8(string);
+
+        source.at("count").get_to(target.count);
+        source.at("probes").get_to(target.probes);
+    }
+
+    // Converts an AstEntity object to json format.
+    static void to_json(nlohmann::json& target, const AstEntity& data)
+    {
+        target = nlohmann::json{
+            { "path", EncodeUtf8(data.path) },
+            { "name", EncodeUtf8(data.name) },
+            { "methods", data.methods }
+        };
+    }
+
+    // Gets an AstEntity object from json.
+    static void from_json(const nlohmann::json& source, AstEntity& target)
+    {
+        std::string string;
+        source.at("path").get_to(string);
+        target.path = DecodeUtf8(string);
+
+        source.at("name").get_to(string);
+        target.name = DecodeUtf8(string);
+
+        source.at("methods").get_to(target.methods);
+    }
+
+    // Sent to Drill admin to notify that classes data will be sent.
+    class InitInfo
+    {
+    public:
+        std::string type { "INIT" };
+        uint32_t classesCount;
+        std::string message { "" };
+        bool init { true };
+
+        InitInfo(uint32_t classesCount)
+            : classesCount { classesCount }
+        {
+        }
+    };
+
+    // Converts an InitInfo object to json format.
+    static void to_json(nlohmann::json& target, const InitInfo& data)
+    {
+        target = nlohmann::json{
+            { "type", data.type },
+            { "classesCount", data.classesCount },
+            { "message", data.message },
+            { "init", data.init }
+        };
+    }
+
+    // Gets an InitInfo object from json.
+    static void from_json(const nlohmann::json& source, InitInfo& target)
+    {
+        source.at("type").get_to(target.type);
+        source.at("classesCount").get_to(target.classesCount);
+        source.at("message").get_to(target.message);
+        source.at("init").get_to(target.init);
+    }
+
+    // Sent to Drill admin to provide information about classes.
+    class InitDataPart
+    {
+    public:
+        std::string type { "INIT_DATA_PART" };
+        std::vector<AstEntity> astEntities;
+
+        InitDataPart(std::vector<AstEntity> astEntities)
+            : astEntities { std::move(astEntities) }
+        {
+        }
+    };
+
+    // Converts an InitDataPart object to json format.
+    static void to_json(nlohmann::json& target, const InitDataPart& data)
+    {
+        target = nlohmann::json{
+            { "type", data.type },
+            { "astEntities", data.astEntities }
+        };
+    }
+
+    // Gets an InitDataPart object from json.
+    static void from_json(const nlohmann::json& source, InitDataPart& target)
+    {
+        source.at("type").get_to(target.type);
+        source.at("astEntities").get_to(target.astEntities);
+    }
+
+    // Sent to Drill admin to notify that all information about classes was sent.
+    class Initialized
+    {
+    public:
+        std::string type { "INITIALIZED" };
+        std::string msg { "" };
+    };
+
+    // Converts an Initialized object to json format.
+    static void to_json(nlohmann::json& target, const Initialized& data)
+    {
+        target = nlohmann::json{
+            { "type", data.type },
+            { "msg", data.msg }
+        };
+    }
+
+    // Gets an Initialized object from json.
+    static void from_json(const nlohmann::json& source, Initialized& target)
+    {
+        source.at("type").get_to(target.type);
+        source.at("msg").get_to(target.msg);
+    }
+
+    template <IsTreeProvider TreeProvider>
     class Connector
     {
     protected:
         const AgentConnectorDllLoader m_agentLibrary{};
 
-        std::queue<std::string> m_messages;
+        TreeProvider m_treeProvider;
+        std::queue<ConnectorQueueItem> m_messages;
         std::mutex m_mutex;
         Event m_event { NULL, TRUE, FALSE, NULL };
 
@@ -203,18 +431,39 @@ namespace Drill4dotNet
         {
             if (s_connector)
             {
-                std::lock_guard<std::mutex> locker(s_connector->m_mutex);
-                s_connector->m_messages.push(message);
                 std::wcout << "ReceiveMessage: "
                     << "destination: " << destination
-                    << "message: " << message
+                    << " message: " << message
                     << std::endl;
-                ::SetEvent(s_connector->m_event.Handle());
+                if (std::string { "/agent/load" } == destination)
+                {
+                    std::vector<AstEntity> classes { s_connector->m_treeProvider() };
+                    const std::string pluginName { "test2code" };
+
+                    // send INIT
+                    nlohmann::json initMessage = InitInfo { static_cast<uint32_t>(classes.size()) };
+                    s_connector->SendPluginMessage(
+                        pluginName,
+                        initMessage.dump());
+
+                    // send INIT_DATA_PART
+                    nlohmann::json initDataPartMessage = InitDataPart(classes);
+                    s_connector->SendPluginMessage(
+                        pluginName,
+                        initDataPartMessage.dump());
+
+                    // send INITIALIZED
+                    nlohmann::json initializedMessage = Initialized{};
+                    s_connector->SendPluginMessage(
+                        pluginName,
+                        initializedMessage.dump());
+                }
             }
         }
 
     public:
-        Connector()
+        Connector(TreeProvider treeProvider)
+            : m_treeProvider { std::move(treeProvider) }
         {
             s_connector = this;
         }
@@ -223,6 +472,11 @@ namespace Drill4dotNet
         {
             ::SetEvent(m_event.Handle()); // to finish all waits
             ::WaitForSingleObject(m_event.Handle(), 0);
+        }
+
+        TreeProvider& TreeProvider() &
+        {
+            return m_treeProvider;
         }
 
         void InitializeAgent()
@@ -235,28 +489,60 @@ namespace Drill4dotNet
                 "mysuperAgent",
                 "localhost:8090",
                 "1.0.0",
-                "group",
+                "",
                 "fail",
                 function);
             std::wcout << "Connector::InitializeAgent end." << std::endl;
         }
 
-        void SendMessage1(const std::string& content)
+        void SendAgentMessage(
+            const std::string& messageType,
+            const std::string& destination,
+            const std::string& content)
         {
-            std::wcout << "Connector::SendMessage1: '" << content.c_str() << "'" << std::endl;
-            m_agentLibrary.sendPluginMessage("10", content.c_str());
+            std::cout
+                << "Connector::SendAgentMessage: { MessageType = "
+                << messageType
+                << ", Destination = "
+                << destination
+                << ", Content = "
+                << content
+                << "}"
+                << std::endl;
+
+            m_agentLibrary.sendMessage(
+                messageType.c_str(),
+                destination.c_str(),
+                content.c_str());
         }
 
-        std::optional<std::string> GetNextMessage()
+        void SendPluginMessage(
+            const std::string& pluginId,
+            const std::string& content)
         {
-            std::string result;
+            std::cout
+                << "Connector::SendPluginMessage: { PluginId = "
+                << pluginId
+                << ", Content = "
+                << content
+                << "}"
+                << std::endl;
+
+            m_agentLibrary.sendPluginMessage(
+                pluginId.c_str(),
+                content.c_str());
+        }
+
+        std::optional<ConnectorQueueItem> GetNextMessage()
+        {
             std::lock_guard<std::mutex> locker(m_mutex);
             if (!m_messages.empty())
             {
-                result = m_messages.front();
+                const ConnectorQueueItem result { m_messages.front() };
                 m_messages.pop();
                 return result;
             }
+
             return std::nullopt;
         }
 
@@ -276,5 +562,14 @@ namespace Drill4dotNet
         }
     };
 
-    static_assert(IsConnector<Connector>);
+    class TrivialTreeProvider
+    {
+    public:
+        std::vector<AstEntity> operator()() const
+        {
+            return {};
+        }
+    };
+
+    static_assert(IsConnector<Connector<TrivialTreeProvider>>);
 }

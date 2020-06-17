@@ -1,7 +1,9 @@
 #pragma once
 
 #include <optional>
+#include <filesystem>
 #include <type_traits>
+#include <functional>
 
 #include "LogBuffer.h"
 #include "ICorProfilerInfo.h"
@@ -275,7 +277,67 @@ namespace Drill4dotNet
             m_pImplClient.Log() << L"CProfilerCallback::Initialize";
             try
             {
-                GetClient().GetConnector().SendMessage1("ready");
+                GetClient().GetConnector().TreeProvider() = std::function { [this]()
+                {
+                    std::vector<AstEntity> result{};
+                    uint32_t i { 1 };
+
+                    for (const auto& file : std::filesystem::directory_iterator("."))
+                    {
+                        if (file.path().extension() == L".dll")
+                        {
+                            std::wcout << L"File found: " << file.path() << std::endl;
+
+                            MetaDataDispenser currentDllDispenser { TLogger(m_pImplClient) };
+                            MetaDataAssemblyImport currentDllAssemblyImport {
+                                currentDllDispenser.OpenScopeMetaDataAssemblyImport(
+                                    file.path(), TLogger(m_pImplClient)) };
+
+                            AssemblyProps assemblyProps { currentDllAssemblyImport.GetAssemblyProps(currentDllAssemblyImport.GetAssemblyFromScope()) };
+
+                            MetaDataImport currentDllImport { currentDllDispenser.OpenScopeMetaDataImport(
+                                file.path(),
+                                TLogger(m_pImplClient)) };
+
+                            for (const auto& type : currentDllImport.EnumTypeDefinitions())
+                            {
+                                AstEntity typeAst {
+                                    assemblyProps.Name,
+                                    currentDllImport.GetTypeDefProps(type).Name };
+
+                                for (const auto& method : currentDllImport.EnumMethods(type))
+                                {
+                                    MethodProps methodDetails { currentDllImport.GetMethodProps(method) };
+                                    const ParseResult<MethodSignature> signature{
+                                        MethodSignature::Parse(methodDetails.SignatureBlob.cbegin(), methodDetails.SignatureBlob.cend()) };
+
+                                    std::wstringstream returnType{};
+                                    returnType << signature.ParsedValue.ReturnType();
+                                    AstMethod methodAst {
+                                        .name { methodDetails.Name },
+                                        .returnType { returnType.str() },
+                                        .count { 1 },
+                                        .probes { i++ } };
+
+                                    for (const auto& param : signature.ParsedValue.ParameterTypes())
+                                    {
+                                        std::wstringstream parameter{};
+                                        parameter << param;
+                                        methodAst.params.push_back(parameter.str());
+                                    }
+
+                                    typeAst.methods.push_back(methodAst);
+                                }
+
+                                result.push_back(typeAst);
+                            }
+                        }
+                    }
+
+                    return result;
+                } };
+
+                GetClient().GetConnector().InitializeAgent();
                 m_corProfilerInfo.emplace(pICorProfilerInfoUnk, TLogger(m_pImplClient));
 
                 InjectionMetaData injection;
