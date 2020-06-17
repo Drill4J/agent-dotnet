@@ -76,7 +76,8 @@ TEST_F(CProfilerCallbackTest, Initialize_Shutdown)
         EXPECT_CALL(metaDataImportMock, EnumMethodsWithName(expectedInjection.Class, injectionMethodName)).WillOnce(Return(std::vector { expectedInjection.Function }));
     }) };
 
-    EXPECT_CALL(proClient->GetConnector(), SendMessage1("ready")).WillOnce(Return());
+    std::function<std::vector<AstEntity>()> treeProvider{};
+    EXPECT_CALL(proClient->GetConnector(), TreeProvider()).WillOnce(ReturnRef(treeProvider));
 
     IUnknown* p = reinterpret_cast<IUnknown*>(this);
     EXPECT_HRESULT_SUCCEEDED(profilerCallback->Initialize(p));

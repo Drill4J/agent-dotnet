@@ -2,6 +2,7 @@
 
 #include "ConnectorImplementation.h"
 #include <iostream>
+#include <sstream>
 #include <thread>
 #include <atomic>
 
@@ -23,26 +24,22 @@ int main(int argc, char** argv)
 
     try
     {
-        Connector connector{};
-        connector.InitializeAgent();
-        connector.SendMessage1("hello");
-        int i = 0;
-        do
-        {
-            std::optional<std::string> s;
-            do
-            {
-                s = connector.GetNextMessage();
-                if (s)
-                {
-                    std::cout << s.value() << std::endl;
-                }
-            } while (s);
-            connector.WaitForNextMessage(1000);
-        } while (!isKbHit);
+        Connector connector{ []() {
+            return std::vector {
+                AstEntity {
+                    L"my_path",
+                    L"my_name",
+                    std::vector {
+                        AstMethod {
+                            std::wstring { L"my_method" },
+                            std::vector { std::wstring { L"my_param" } },
+                            L"my_return_type",
+                            1,
+                            std::vector { uint32_t { 42 } } } } } }; } };
 
-        connector.SendMessage1("bye");
-        keyThread.join();
+        connector.InitializeAgent();
+        int x;
+        std::cin >> x;
     }
     catch(const std::exception &ex)
     {

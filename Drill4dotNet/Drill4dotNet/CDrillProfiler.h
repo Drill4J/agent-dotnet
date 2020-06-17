@@ -12,14 +12,14 @@ namespace Drill4dotNet
     class ATL_NO_VTABLE CDrillProfiler
         : public ATL::CComObjectRootEx<ATL::CComSingleThreadModel>
         , public ATL::CComCoClass<CDrillProfiler, &CLSID_DrillProfiler>
-        , public ProClient<Connector>
+        , public ProClient<Connector<std::function<std::vector<AstEntity>()>>>
         , public CProfilerCallback<
-            Connector,
-            CorProfilerInfo<LogToProClient<Connector>>,
-            MetaDataDispenser<LogToProClient<Connector>>,
-            MetaDataAssemblyImport<LogToProClient<Connector>>,
-            MetaDataImport<LogToProClient<Connector>>,
-            LogToProClient<Connector>>
+            Connector<std::function<std::vector<AstEntity>()>>,
+            CorProfilerInfo<LogToProClient<Connector<std::function<std::vector<AstEntity>()>>>>,
+            MetaDataDispenser<LogToProClient<Connector<std::function<std::vector<AstEntity>()>>>>,
+            MetaDataAssemblyImport<LogToProClient<Connector<std::function<std::vector<AstEntity>()>>>>,
+            MetaDataImport<LogToProClient<Connector<std::function<std::vector<AstEntity>()>>>>,
+            LogToProClient<Connector<std::function<std::vector<AstEntity>()>>>>
     {
     public:
         CDrillProfiler();
