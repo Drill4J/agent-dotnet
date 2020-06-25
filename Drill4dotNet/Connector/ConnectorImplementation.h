@@ -199,7 +199,7 @@ namespace Drill4dotNet
         std::wstring result(
             MultiByteToWideChar(
                 CP_UTF8,
-                WC_ERR_INVALID_CHARS,
+                MB_ERR_INVALID_CHARS,
                 string.c_str(),
                 string.size(),
                 nullptr,
@@ -208,7 +208,7 @@ namespace Drill4dotNet
 
         if (MultiByteToWideChar(
             CP_UTF8,
-            WC_ERR_INVALID_CHARS,
+            MB_ERR_INVALID_CHARS,
             string.c_str(),
             string.size(),
             result.data(),
