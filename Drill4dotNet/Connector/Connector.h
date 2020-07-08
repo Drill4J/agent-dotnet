@@ -105,6 +105,174 @@ namespace Drill4dotNet
         }
     };
 
+    class SessionStarted
+    {
+    public:
+        std::string type { "SESSION_STARTED" };
+
+        std::wstring sessionId;
+
+        std::wstring testType;
+
+        int64_t ts;
+
+        SessionStarted() = default;
+
+        SessionStarted(
+            std::wstring sessionId,
+            std::wstring testType,
+            int64_t ts)
+            : sessionId { sessionId },
+            testType { testType },
+            ts { ts }
+        {
+        }
+    };
+
+    class SessionCancelled
+    {
+    public:
+        std::string type { "SESSION_CANCELLED" };
+
+        std::wstring sessionId;
+
+        int64_t ts;
+
+        SessionCancelled() = default;
+
+        SessionCancelled(
+            std::wstring sessionId,
+            int64_t ts)
+            : sessionId { sessionId },
+            ts { ts }
+        {
+        }
+    };
+
+    class AllSessionsCancelled
+    {
+    public:
+        std::string type { "ALL_SESSIONS_CANCELLED" };
+
+        std::vector<std::wstring> ids;
+
+        int64_t ts;
+
+        AllSessionsCancelled() = default;
+
+        AllSessionsCancelled(
+            std::vector<std::wstring> ids,
+            int64_t ts)
+            : ids { ids },
+            ts { ts }
+        {
+        }
+    };
+
+    class ExecClassData
+    {
+    public:
+        int64_t id { 0 };
+
+        std::wstring className;
+
+        std::vector<bool> probes;
+
+        std::wstring testName { L"" };
+    };
+
+    class CoverDataPart
+    {
+    public:
+        std::string type { "COVERAGE_DATA_PART" };
+
+        std::wstring sessionId;
+
+        std::vector<ExecClassData> data;
+
+        CoverDataPart() = default;
+
+        CoverDataPart(
+            std::wstring sessionId,
+            std::vector<ExecClassData> data)
+            : sessionId { sessionId },
+            data { data }
+        {
+        }
+    };
+
+    class SessionChanged
+    {
+    public:
+        std::string type { "SESSION_CHANGED" };
+
+        std::wstring sessionId;
+
+        int32_t probeCount;
+
+        SessionChanged() = default;
+
+        SessionChanged(
+            std::wstring sessionId,
+            int32_t probeCount)
+            : sessionId { sessionId },
+            probeCount { probeCount }
+        {
+        }
+    };
+
+    class SessionFinished
+    {
+    public:
+        std::string type { "SESSION_FINISHED" };
+
+        std::wstring sessionId;
+
+        int64_t ts;
+
+        SessionFinished() = default;
+
+        SessionFinished(
+            std::wstring sessionId,
+            int64_t ts)
+            : sessionId { sessionId },
+            ts { ts }
+        {
+        }
+    };
+
+    class StartSessionPayload
+    {
+    public:
+        std::wstring sessionId;
+
+        StartPayload startPayload;
+    };
+
+    class StartSession
+    {
+    public:
+        inline static const std::string Discriminator { "START_AGENT_SESSION" };
+
+        std::string type { Discriminator };
+
+        StartSessionPayload payload;
+
+        StartSession() = default;
+
+        StartSession(StartSessionPayload payload)
+            : payload { payload }
+        {
+        }
+    };
+
+    class PluginAction
+    {
+    public:
+        std::wstring id;
+        std::wstring message;
+    };
+
     // Determines whether the given functor can be
     // used as a source of classes tree.
     template <typename F>

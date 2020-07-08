@@ -427,6 +427,22 @@ namespace Drill4dotNet
         }
     }
 
+    // Converts a PluginAction object to json format.
+    static void to_json(nlohmann::json& target, const PluginAction& data)
+    {
+        target = nlohmann::json {
+            { "id", EncodeUtf8(data.id) },
+            { "message", EncodeUtf8(data.message) }
+        };
+    }
+
+    // Gets a PluginAction object from json.
+    static void from_json(const nlohmann::json& source, PluginAction& target)
+    {
+        target.id = DecodeUtf8(source.at("id").get<std::string>());
+        target.message = DecodeUtf8(source.at("message").get<std::string>());
+    }
+
     // Converts a SessionPayload object to json format.
     static void to_json(nlohmann::json& target, const SessionPayload& data)
     {
@@ -487,6 +503,202 @@ namespace Drill4dotNet
         source.at("payload").get_to(target.payload);
     }
 
+    // Converts a StartSessionPayload object to json format.
+    static void to_json(nlohmann::json& target, const StartSessionPayload& data)
+    {
+        target = nlohmann::json {
+            { "sessionId", EncodeUtf8(data.sessionId) },
+            { "startPayload", data.startPayload }
+        };
+    }
+
+    // Gets a StartSessionPayload object from json.
+    static void from_json(const nlohmann::json& source, StartSessionPayload& target)
+    {
+        target.sessionId = DecodeUtf8(source.at("sessionId").get<std::string>());
+        source.at("startPayload").get_to(target.startPayload);
+    }
+
+    // Converts a StartSession object to json format.
+    static void to_json(nlohmann::json& target, const StartSession& data)
+    {
+        target = nlohmann::json {
+            { "type", data.type },
+            { "payload", data.payload }
+        };
+    }
+
+    // Gets a StartSession object from json.
+    static void from_json(const nlohmann::json& source, StartSession& target)
+    {
+        source.at("type").get_to(target.type);
+        source.at("payload").get_to(target.payload);
+    }
+
+    // Converts a SessionStarted object to json format.
+    static void to_json(nlohmann::json& target, const SessionStarted& data)
+    {
+        target = nlohmann::json {
+            { "type", data.type },
+            { "sessionId", EncodeUtf8(data.sessionId) },
+            { "testType", EncodeUtf8(data.testType) },
+            { "ts", data.ts }
+        };
+    }
+
+    // Gets a SessionStarted object from json.
+    static void from_json(const nlohmann::json& source, SessionStarted& target)
+    {
+        source.at("type").get_to(target.type);
+        target.sessionId = DecodeUtf8(source.at("sessionId").get<std::string>());
+        target.testType = DecodeUtf8(source.at("testType").get<std::string>());
+        source.at("ts").get_to(target.ts);
+    }
+
+    // Converts a SessionCancelled object to json format.
+    static void to_json(nlohmann::json& target, const SessionCancelled& data)
+    {
+        target = nlohmann::json {
+            { "type", data.type },
+            { "sessionId", EncodeUtf8(data.sessionId) },
+            { "ts", data.ts}
+        };
+    }
+
+    // Gets a SessionCancelled object from json.
+    static void from_json(const nlohmann::json& source, SessionCancelled& target)
+    {
+        source.at("type").get_to(target.type);
+        target.sessionId = DecodeUtf8(source.at("sessionId").get<std::string>());
+        source.at("ts").get_to(target.ts);
+    }
+
+    // Converts a AllSessionsCancelled object to json format.
+    static void to_json(nlohmann::json& target, const AllSessionsCancelled& data)
+    {
+        std::vector<std::string> ids{};
+        ids.reserve(data.ids.size());
+        for (const auto& id : data.ids)
+        {
+            ids.push_back(EncodeUtf8(id));
+        }
+
+        target = nlohmann::json {
+            { "type", data.type },
+            { "ids", ids },
+            { "ts", data.ts}
+        };
+    }
+
+    // Gets a AllSessionsCancelled object from json.
+    static void from_json(const nlohmann::json& source, AllSessionsCancelled& target)
+    {
+        source.at("type").get_to(target.type);
+        std::vector<std::string> ids { source.at("ids").get<decltype(ids)>() };
+        target.ids.clear();
+        target.ids.reserve(ids.size());
+        for (const auto& id : ids)
+        {
+            target.ids.push_back(DecodeUtf8(id));
+        }
+
+        source.at("ts").get_to(target.ts);
+    }
+
+    // Converts a ExecClassData object to json format.
+    static void to_json(nlohmann::json& target, const ExecClassData& data)
+    {
+        target = nlohmann::json {
+            { "id", data.id },
+            { "className", EncodeUtf8(data.className) },
+            { "probes", data.probes },
+            { "testName", EncodeUtf8(data.testName) }
+        };
+    }
+
+    // Gets a ExecClassData object from json.
+    static void from_json(const nlohmann::json& source, ExecClassData& target)
+    {
+        source.at("id").get_to(target.id);
+        target.className = DecodeUtf8(source.at("className").get<std::string>());
+        source.at("probes").get_to(target.probes);
+        target.testName = DecodeUtf8(source.at("testName").get<std::string>());
+    }
+
+    // Converts a CoverDataPart object to json format.
+    static void to_json(nlohmann::json& target, const CoverDataPart& data)
+    {
+        target = nlohmann::json {
+            { "type", data.type },
+            { "sessionId", EncodeUtf8(data.sessionId) },
+            { "data", data.data }
+        };
+    }
+
+    // Gets a CoverDataPart object from json.
+    static void from_json(const nlohmann::json& source, CoverDataPart& target)
+    {
+        source.at("type").get_to(target.type);
+        target.sessionId = DecodeUtf8(source.at("sessionId").get<std::string>());
+        source.at("data").get_to(target.data);
+    }
+
+    // Converts a SessionChanged object to json format.
+    static void to_json(nlohmann::json& target, const SessionChanged& data)
+    {
+        target = nlohmann::json {
+            { "type", data.type },
+            { "sessionId", EncodeUtf8(data.sessionId) },
+            { "probeCount", data.probeCount }
+        };
+    }
+
+    // Gets a SessionChanged object from json.
+    static void from_json(const nlohmann::json& source, SessionChanged& target)
+    {
+        source.at("type").get_to(target.type);
+        target.sessionId = DecodeUtf8(source.at("sessionId").get<std::string>());
+        source.at("probeCount").get_to(target.probeCount);
+    }
+
+    // Converts a SessionFinished object to json format.
+    static void to_json(nlohmann::json& target, const SessionFinished& data)
+    {
+        target = nlohmann::json {
+            { "type", data.type },
+            { "sessionId", EncodeUtf8(data.sessionId) },
+            { "ts", data.ts }
+        };
+    }
+
+    // Gets a SessionFinished object from json.
+    static void from_json(const nlohmann::json& source, SessionFinished& target)
+    {
+        source.at("type").get_to(target.type);
+        target.sessionId = DecodeUtf8(source.at("sessionId").get<std::string>());
+        source.at("ts").get_to(target.ts);
+    }
+
+    static int64_t GetCurrentTimeMillis()
+    {
+        const std::chrono::system_clock::time_point now {
+            std::chrono::system_clock::now() };
+
+        std::tm zero {
+           .tm_sec = 0,
+           .tm_min = 0,
+           .tm_hour = 0,
+           .tm_mday = 1,
+           .tm_mon = 0,
+           .tm_year = 1970 - 1900 };
+
+        std::chrono::system_clock::time_point zeroPoint {
+            std::chrono::system_clock::from_time_t(
+                mktime(&zero)) };
+        return std::chrono::duration_cast<std::chrono::milliseconds>(
+            now - zeroPoint).count();
+    }
+
     template <
         IsTreeProvider TreeProvider,
         IsPackagesPrefixesHandler PackagesPrefixesHandler>
@@ -540,6 +752,50 @@ namespace Drill4dotNet
                 else if (std::string { "/agent/set-packages-prefixes" } == destination)
                 {
                     s_connector->m_packagesPrefixesHandler(nlohmann::json::parse(message).get<PackagesPrefixes>());
+                }
+                else if (std::string { "/plugin/action" } == destination)
+                {
+                    PluginAction wrapper { nlohmann::json::parse(message).get<PluginAction>() };
+                    nlohmann::json messageText { nlohmann::json::parse(wrapper.message) };
+                    std::string discriminator { messageText.at("type").get<std::string>() };
+                    if (discriminator == StartSession::Discriminator)
+                    {
+                        StartSession startSession { messageText.get<StartSession>() };
+                        nlohmann::json startMessage = SessionStarted {
+                            startSession.payload.startPayload.sessionId,
+                            startSession.payload.startPayload.testType,
+                            GetCurrentTimeMillis() };
+                        s_connector->SendPluginMessage(
+                            "test2code",
+                            startMessage.dump());
+                    }
+                    else if (discriminator == StopSession::Discriminator)
+                    {
+                        StopSession stopSession{ messageText.get<StopSession>() };
+                        nlohmann::json coverageDataPart = CoverDataPart{
+                            stopSession.payload.sessionId,
+                            std::vector{
+                                ExecClassData{
+                                    .id = 0,
+                                    .className = L"my_path/my_name",
+                                    .probes = { true },
+                                    .testName = L"my_test"
+                                }
+                            }
+                        };
+
+                        s_connector->SendPluginMessage(
+                            "test2code",
+                            coverageDataPart.dump());
+
+                        nlohmann::json stopMessage = SessionFinished {
+                            stopSession.payload.sessionId,
+                            GetCurrentTimeMillis() };
+
+                        s_connector->SendPluginMessage(
+                            "test2code",
+                            stopMessage.dump());
+                    }
                 }
             }
         }
