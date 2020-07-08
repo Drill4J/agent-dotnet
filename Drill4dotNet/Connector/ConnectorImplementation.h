@@ -280,12 +280,9 @@ namespace Drill4dotNet
     // Gets an AstMethod object from json.
     static void from_json(const nlohmann::json& source, AstMethod& target)
     {
-        std::string string;
-        source.at("name").get_to(string);
-        target.name = DecodeUtf8(string);
+        target.name = DecodeUtf8(source.at("name").get<std::string>());
 
-        std::vector<std::string> params{};
-        source.at("params").get_to(params);
+        std::vector<std::string> params { source.at("params").get<std::vector<std::string>>() };
         target.params.clear();
         target.params.reserve(params.size());
         for (const auto& param : params)
@@ -293,8 +290,7 @@ namespace Drill4dotNet
             target.params.push_back(DecodeUtf8(param));
         }
 
-        source.at("returnType").get_to(string);
-        target.returnType = DecodeUtf8(string);
+        target.returnType = DecodeUtf8(source.at("returnType").get<std::string>());
 
         source.at("count").get_to(target.count);
         source.at("probes").get_to(target.probes);
@@ -313,13 +309,8 @@ namespace Drill4dotNet
     // Gets an AstEntity object from json.
     static void from_json(const nlohmann::json& source, AstEntity& target)
     {
-        std::string string;
-        source.at("path").get_to(string);
-        target.path = DecodeUtf8(string);
-
-        source.at("name").get_to(string);
-        target.name = DecodeUtf8(string);
-
+        target.path = DecodeUtf8(source.at("path").get<std::string>());
+        target.name = DecodeUtf8(source.at("name").get<std::string>());
         source.at("methods").get_to(target.methods);
     }
 
@@ -427,8 +418,7 @@ namespace Drill4dotNet
     // Gets a PackagesPrefixes object from json.
     static void from_json(const nlohmann::json& source, PackagesPrefixes& target)
     {
-        std::vector<std::string> packagesPrefixes{};
-        source.at("packagesPrefixes").get_to(packagesPrefixes);
+        std::vector<std::string> packagesPrefixes { source.at("packagesPrefixes").get<std::vector<std::string>>() };
         target.packagesPrefixes.clear();
         target.packagesPrefixes.reserve(packagesPrefixes.size());
         for (const auto& item : packagesPrefixes)
