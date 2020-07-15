@@ -427,6 +427,66 @@ namespace Drill4dotNet
         }
     }
 
+    // Converts a SessionPayload object to json format.
+    static void to_json(nlohmann::json& target, const SessionPayload& data)
+    {
+        target = nlohmann::json { { "sessionId", EncodeUtf8(data.sessionId) } };
+    }
+
+    // Gets a SessionPayload object from json.
+    static void from_json(const nlohmann::json& source, SessionPayload& target)
+    {
+        target.sessionId = DecodeUtf8(source.at("sessionId").get<std::string>());
+    }
+
+    // Converts a StopSession object to json format.
+    static void to_json(nlohmann::json& target, const StopSession& data)
+    {
+        target = nlohmann::json {
+            { "type", data.type },
+            { "payload", data.payload }
+        };
+    }
+
+    // Gets a StopSession object from json.
+    static void from_json(const nlohmann::json& source, StopSession& target)
+    {
+        source.at("type").get_to(target.type);
+        source.at("payload").get_to(target.payload);
+    }
+
+    // Converts a StartPayload object to json format.
+    static void to_json(nlohmann::json& target, const StartPayload& data)
+    {
+        target = nlohmann::json {
+            { "testType", EncodeUtf8(data.testType) },
+            { "sessionId", EncodeUtf8(data.sessionId) }
+        };
+    }
+
+    // Gets a StartPayload object from json.
+    static void from_json(const nlohmann::json& source, StartPayload& target)
+    {
+        target.testType = DecodeUtf8(source.at("testType").get<std::string>());
+        target.sessionId = DecodeUtf8(source.at("sessionId").get<std::string>());
+    }
+
+    // Converts a StartSessionHttpRequest object to json format.
+    static void to_json(nlohmann::json& target, const StartSessionHttpRequest& data)
+    {
+        target = nlohmann::json {
+            { "type", data.type },
+            { "payload", data.payload }
+        };
+    }
+
+    // Gets a StartSessionHttpRequest object from json.
+    static void from_json(const nlohmann::json& source, StartSessionHttpRequest& target)
+    {
+        source.at("type").get_to(target.type);
+        source.at("payload").get_to(target.payload);
+    }
+
     template <
         IsTreeProvider TreeProvider,
         IsPackagesPrefixesHandler PackagesPrefixesHandler>
