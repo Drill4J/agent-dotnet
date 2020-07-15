@@ -70,7 +70,7 @@ Note: You can run HelloWorld.csproj (set As StartUp Project) from the IDE and un
 Before the first build, run the following commands in the `dependencies\vcpkg` directory:
 ```
 bootstrap-vcpkg.bat
-vcpkg install nlohmann-json:x64-windows
+vcpkg install nlohmann-json:x64-windows curl:x64-windows
 ```
 
 # Running Drill dotNet agent

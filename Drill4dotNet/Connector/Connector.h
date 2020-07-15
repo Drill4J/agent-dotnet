@@ -59,6 +59,52 @@ namespace Drill4dotNet
         std::vector<std::wstring> packagesPrefixes;
     };
 
+    class StartPayload
+    {
+    public:
+        std::wstring testType { L"AUTO" };
+
+        std::wstring sessionId;
+    };
+
+    class StartSessionHttpRequest
+    {
+    public:
+        std::string type { "START" };
+
+        StartPayload payload;
+
+        StartSessionHttpRequest() = default;
+
+        StartSessionHttpRequest(StartPayload payload)
+            : payload { payload }
+        {
+        }
+    };
+
+    class SessionPayload
+    {
+    public:
+        std::wstring sessionId;
+    };
+
+    class StopSession
+    {
+    public:
+        inline static const std::string Discriminator { "STOP" };
+
+        std::string type { Discriminator };
+
+        SessionPayload payload;
+
+        StopSession() = default;
+
+        StopSession(SessionPayload payload)
+            : payload { payload }
+        {
+        }
+    };
+
     // Determines whether the given functor can be
     // used as a source of classes tree.
     template <typename F>
