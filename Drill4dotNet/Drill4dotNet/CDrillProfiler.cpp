@@ -6,7 +6,7 @@ namespace Drill4dotNet
 {
 
     CDrillProfiler::CDrillProfiler()
-        : CProfilerCallback(dynamic_cast<ProClient<Connector<std::function<std::vector<AstEntity>()>>>&>(*this))
+        : CProfilerCallback(dynamic_cast<ProClient<TConnector>&>(*this))
         , ProClient()
     {
     }
