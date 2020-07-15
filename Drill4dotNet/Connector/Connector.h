@@ -273,6 +273,59 @@ namespace Drill4dotNet
         std::wstring message;
     };
 
+    class ScopeInitialized
+    {
+    public:
+        std::string type { "SCOPE_INITIALIZED" };
+
+        std::wstring id;
+
+        std::wstring name;
+
+        std::wstring prevId;
+
+        int64_t ts;
+
+        ScopeInitialized() = default;
+
+        ScopeInitialized(
+            std::wstring id,
+            std::wstring name,
+            std::wstring prevId,
+            int64_t ts)
+            : id { id },
+            name { name },
+            prevId { prevId },
+            ts { ts }
+        {
+        }
+    };
+
+    class InitScopePayload
+    {
+    public:
+        std::wstring id;
+        std::wstring name;
+        std::wstring prevId;
+    };
+
+    class InitActiveScope
+    {
+    public:
+        inline static const std::string Discriminator { "INIT_ACTIVE_SCOPE" };
+
+        std::string type { Discriminator };
+
+        InitScopePayload payload;
+
+        InitActiveScope() = default;
+
+        InitActiveScope(InitScopePayload payload)
+            : payload { payload }
+        {
+        }
+    };
+
     // Determines whether the given functor can be
     // used as a source of classes tree.
     template <typename F>
