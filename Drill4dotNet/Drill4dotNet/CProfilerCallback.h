@@ -750,6 +750,8 @@ namespace Drill4dotNet
                     << functionInfo.fullName()
                     << L" "
                     << signature.ParsedValue.WriteParameters()
+                    << L" RVA: "
+                    << HexOutput(moduleMetaData.GetMethodProps(functionInfo.token).CodeRelativeVirtualAddress)
                     << L" IL Body size: "
                     << functionBytes.size()
                     << L" bytes";
