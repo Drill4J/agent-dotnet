@@ -4,6 +4,10 @@
 #include <filesystem>
 #include <type_traits>
 #include <functional>
+#include <thread>
+#include <chrono>
+#include <condition_variable>
+#include <mutex>
 
 #include "LogBuffer.h"
 #include "ICorProfilerInfo.h"
@@ -160,6 +164,7 @@ namespace Drill4dotNet
 
         ProClient<TConnector>& m_pImplClient;
         std::optional<CorProfilerInfo> m_corProfilerInfo;
+        std::optional<std::thread> m_adminInteractionThread;
 
         inline static CProfilerCallback* g_cb = nullptr;
 
@@ -337,7 +342,16 @@ namespace Drill4dotNet
                     return result;
                 } };
 
-                GetClient().GetConnector().InitializeAgent();
+                m_adminInteractionThread.emplace([this]()
+                {
+                    GetClient().GetConnector().InitializeAgent();
+
+                    while (true)
+                    {
+                        std::this_thread::sleep_for(std::chrono::seconds(1));
+                    }
+                });
+
                 m_corProfilerInfo.emplace(pICorProfilerInfoUnk, TLogger(m_pImplClient));
 
                 InjectionMetaData injection;
@@ -452,6 +466,11 @@ namespace Drill4dotNet
                 g_cb = nullptr;
                 GetInfoHandler().OutputStatistics();
                 m_corProfilerInfo.reset();
+                if (m_adminInteractionThread.has_value())
+                {
+                    m_adminInteractionThread->join();
+                    m_adminInteractionThread.reset();
+                }
             }
             catch (const _com_error& exception)
             {
