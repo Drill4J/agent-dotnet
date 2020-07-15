@@ -164,6 +164,7 @@ namespace Drill4dotNet
 
         ProClient<TConnector>& m_pImplClient;
         std::optional<CorProfilerInfo> m_corProfilerInfo;
+        std::optional<std::vector<std::wstring>> m_packagesPrefixes;
         std::optional<std::thread> m_adminInteractionThread;
 
         inline static CProfilerCallback* g_cb = nullptr;
@@ -289,7 +290,16 @@ namespace Drill4dotNet
 
                     for (const auto& file : std::filesystem::directory_iterator("."))
                     {
-                        if (file.path().extension() == L".dll")
+                        if (file.path().extension() == L".dll"
+                            && (
+                                !m_packagesPrefixes.has_value()
+                                || std::find_if(
+                                    m_packagesPrefixes->cbegin(),
+                                    m_packagesPrefixes->cend(),
+                                    [file](const std::wstring& prefix)
+                                    {
+                                        return StartsWithIgnoreCase(std::wstring{ file.path().filename() }, prefix);
+                                    }) != m_packagesPrefixes->cend()))
                         {
                             std::wcout << L"File found: " << file.path() << std::endl;
 
@@ -340,6 +350,27 @@ namespace Drill4dotNet
                     }
 
                     return result;
+                } };
+
+                GetClient().GetConnector().PackagesPrefixesHandler() = std::function { [this](const PackagesPrefixes& prefixes)
+                {
+                    std::vector<std::wstring> packagesPrefixes{};
+                    for (auto&& prefix : prefixes.packagesPrefixes)
+                    {
+                        if (prefix != L"")
+                        {
+                            packagesPrefixes.push_back(std::move(prefix));
+                        }
+                    }
+
+                    if (packagesPrefixes.empty())
+                    {
+                        m_packagesPrefixes.reset();
+                    }
+                    else
+                    {
+                        m_packagesPrefixes = std::move(packagesPrefixes);
+                    }
                 } };
 
                 m_adminInteractionThread.emplace([this]()

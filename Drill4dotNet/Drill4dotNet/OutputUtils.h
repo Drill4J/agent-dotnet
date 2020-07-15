@@ -343,4 +343,50 @@ namespace Drill4dotNet
         }
         return target;
     }
+
+    template<typename TChar>
+    int CompareIgnoreCase(
+        std::basic_string<TChar> left,
+        std::basic_string<TChar> right,
+        size_t partToCompare)
+    {
+        for (ptrdiff_t i { 0 }; i != partToCompare; ++i)
+        {
+            if (left.size() == i)
+            {
+                if (right.size() == i)
+                {
+                    return true;
+                }
+                else
+                {
+                    return -1;
+                }
+            }
+            else if (right.size() == i)
+            {
+                return +1;
+            }
+            else
+            {
+                TChar leftLower { std::tolower(left[i], std::locale::classic()) };
+                TChar rightLower { std::tolower(right[i], std::locale::classic()) };
+                if (leftLower != rightLower)
+                {
+                    return leftLower - rightLower;
+                }
+            }
+        }
+
+        return 0;
+    }
+
+    template<typename TChar>
+    bool StartsWithIgnoreCase(std::basic_string<TChar> stringToTest, std::basic_string<TChar> prefix)
+    {
+        return CompareIgnoreCase(
+            stringToTest,
+            prefix,
+            prefix.size()) == 0;
+    }
 }

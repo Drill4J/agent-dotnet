@@ -411,13 +411,42 @@ namespace Drill4dotNet
         source.at("msg").get_to(target.msg);
     }
 
-    template <IsTreeProvider TreeProvider>
+    // Converts a PackagesPrefixes object to json format.
+    static void to_json(nlohmann::json& target, const PackagesPrefixes& data)
+    {
+        std::vector<std::string> packagesPrefixes{};
+        packagesPrefixes.reserve(data.packagesPrefixes.size());
+        for (const auto& item : data.packagesPrefixes)
+        {
+            packagesPrefixes.push_back(EncodeUtf8(item));
+        }
+
+        target = nlohmann::json { { "packagesPrefixes", packagesPrefixes } };
+    }
+
+    // Gets a PackagesPrefixes object from json.
+    static void from_json(const nlohmann::json& source, PackagesPrefixes& target)
+    {
+        std::vector<std::string> packagesPrefixes{};
+        source.at("packagesPrefixes").get_to(packagesPrefixes);
+        target.packagesPrefixes.clear();
+        target.packagesPrefixes.reserve(packagesPrefixes.size());
+        for (const auto& item : packagesPrefixes)
+        {
+            target.packagesPrefixes.push_back(DecodeUtf8(item));
+        }
+    }
+
+    template <
+        IsTreeProvider TreeProvider,
+        IsPackagesPrefixesHandler PackagesPrefixesHandler>
     class Connector
     {
     protected:
         const AgentConnectorDllLoader m_agentLibrary{};
 
         TreeProvider m_treeProvider;
+        PackagesPrefixesHandler m_packagesPrefixesHandler;
         std::queue<ConnectorQueueItem> m_messages;
         std::mutex m_mutex;
         Event m_event { NULL, TRUE, FALSE, NULL };
@@ -458,12 +487,19 @@ namespace Drill4dotNet
                         pluginName,
                         initializedMessage.dump());
                 }
+                else if (std::string { "/agent/set-packages-prefixes" } == destination)
+                {
+                    s_connector->m_packagesPrefixesHandler(nlohmann::json::parse(message).get<PackagesPrefixes>());
+                }
             }
         }
 
     public:
-        Connector(TreeProvider treeProvider)
-            : m_treeProvider { std::move(treeProvider) }
+        Connector(
+            TreeProvider treeProvider,
+            PackagesPrefixesHandler packagesPrefixesHandler)
+            : m_treeProvider { std::move(treeProvider) },
+            m_packagesPrefixesHandler { std::move(packagesPrefixesHandler) }
         {
             s_connector = this;
         }
@@ -477,6 +513,11 @@ namespace Drill4dotNet
         TreeProvider& TreeProvider() &
         {
             return m_treeProvider;
+        }
+
+        PackagesPrefixesHandler& PackagesPrefixesHandler() &
+        {
+            return m_packagesPrefixesHandler;
         }
 
         void InitializeAgent()
@@ -571,5 +612,13 @@ namespace Drill4dotNet
         }
     };
 
-    static_assert(IsConnector<Connector<TrivialTreeProvider>>);
+    class TrivialPackagesPrefixesHandler
+    {
+    public:
+        void operator()(const PackagesPrefixes prefixes) const
+        {
+        }
+    };
+
+    static_assert(IsConnector<Connector<TrivialTreeProvider, TrivialPackagesPrefixesHandler>>);
 }

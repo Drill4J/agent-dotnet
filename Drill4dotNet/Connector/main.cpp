@@ -24,18 +24,30 @@ int main(int argc, char** argv)
 
     try
     {
-        Connector connector{ []() {
-            return std::vector {
-                AstEntity {
-                    L"my_path",
-                    L"my_name",
-                    std::vector {
-                        AstMethod {
-                            std::wstring { L"my_method" },
-                            std::vector { std::wstring { L"my_param" } },
-                            L"my_return_type",
-                            1,
-                            std::vector { uint32_t { 42 } } } } } }; } };
+        Connector connector {
+            []()
+            {
+                return std::vector {
+                    AstEntity {
+                        L"my_path",
+                        L"my_name",
+                        std::vector {
+                            AstMethod {
+                                std::wstring { L"my_method" },
+                                std::vector { std::wstring { L"my_param" } },
+                                L"my_return_type",
+                                1,
+                                std::vector { uint32_t { 42 } } } } } };
+            },
+            [](const PackagesPrefixes& prefixes)
+            {
+                std::wcout << L"Received packages prefixes settings:" << std::endl;
+                for (const auto& item : prefixes.packagesPrefixes)
+                {
+                    std::wcout << L'\t' << item << std::endl;
+                }
+            }
+        };
 
         connector.InitializeAgent();
         int x;

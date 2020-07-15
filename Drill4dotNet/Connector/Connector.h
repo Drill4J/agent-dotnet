@@ -53,12 +53,26 @@ namespace Drill4dotNet
         std::vector<AstMethod> methods;
     };
 
+    class PackagesPrefixes
+    {
+    public:
+        std::vector<std::wstring> packagesPrefixes;
+    };
+
     // Determines whether the given functor can be
     // used as a source of classes tree.
     template <typename F>
     concept IsTreeProvider = requires (const F& f)
     {
         { f() } -> std::same_as<std::vector<AstEntity>>;
+    };
+
+    // Determines whether the given functor can be
+    // used as a handler of assembly filter.
+    template <typename F>
+    concept IsPackagesPrefixesHandler = requires (F f, PackagesPrefixes prefixes)
+    {
+        { f(prefixes) } -> std::same_as<void>;
     };
 
     // Determines whether the given type can be used for
@@ -85,5 +99,6 @@ namespace Drill4dotNet
         { x.WaitForNextMessage(std::declval<const DWORD>()) } -> std::same_as<void>;
 
         { x.TreeProvider() } -> IsTreeProvider;
+        { x.PackagesPrefixesHandler() } -> IsPackagesPrefixesHandler;
     };
 }

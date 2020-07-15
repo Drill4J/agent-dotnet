@@ -15,7 +15,9 @@ namespace Drill4dotNet
         std::wostream& m_ostream;
         std::wistream& m_istream;
         InfoHandler m_infoHandler;
-        TConnector m_connector { std::function<std::vector<AstEntity>()>{} };
+        TConnector m_connector {
+            std::function<std::vector<AstEntity>()>{},
+            std::function<void(const PackagesPrefixes&)>{} };
 
     public:
         ProClient()

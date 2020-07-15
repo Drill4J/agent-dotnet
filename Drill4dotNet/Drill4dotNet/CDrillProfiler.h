@@ -9,7 +9,7 @@
 
 namespace Drill4dotNet
 {
-    using TConnector = Connector<std::function<std::vector<AstEntity>()>>;
+    using TConnector = Connector<std::function<std::vector<AstEntity>()>, std::function<void(const PackagesPrefixes&)>>;
     using TLogger = LogToProClient<TConnector>;
     class ATL_NO_VTABLE CDrillProfiler
         : public ATL::CComObjectRootEx<ATL::CComSingleThreadModel>
