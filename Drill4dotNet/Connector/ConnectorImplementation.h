@@ -679,6 +679,62 @@ namespace Drill4dotNet
         source.at("ts").get_to(target.ts);
     }
 
+    // Converts a ScopeInitialized object to json format.
+    static void to_json(nlohmann::json& target, const ScopeInitialized& data)
+    {
+        target = nlohmann::json {
+            { "type", data.type },
+            { "id", EncodeUtf8(data.id) },
+            { "name", EncodeUtf8(data.name) },
+            { "prevId", EncodeUtf8(data.prevId) },
+            { "ts", data.ts }
+        };
+    }
+
+    // Gets a ScopeInitialized object from json.
+    static void from_json(const nlohmann::json& source, ScopeInitialized& target)
+    {
+        source.at("type").get_to(target.type);
+        target.id = DecodeUtf8(source.at("id").get<std::string>());
+        target.name = DecodeUtf8(source.at("name").get<std::string>());
+        target.prevId = DecodeUtf8(source.at("prevId").get<std::string>());
+        source.at("ts").get_to(target.ts);
+    }
+
+    // Converts a InitScopePayload object to json format.
+    static void to_json(nlohmann::json& target, const InitScopePayload& data)
+    {
+        target = nlohmann::json {
+            { "id", EncodeUtf8(data.id) },
+            { "name", EncodeUtf8(data.name) },
+            { "prevId", EncodeUtf8(data.prevId) }
+        };
+    }
+
+    // Gets a InitScopePayload object from json.
+    static void from_json(const nlohmann::json& source, InitScopePayload& target)
+    {
+        target.id = DecodeUtf8(source.at("id").get<std::string>());
+        target.name = DecodeUtf8(source.at("name").get<std::string>());
+        target.prevId = DecodeUtf8(source.at("prevId").get<std::string>());
+    }
+
+    // Converts a InitActiveScope object to json format.
+    static void to_json(nlohmann::json& target, const InitActiveScope& data)
+    {
+        target = nlohmann::json {
+            { "type", data.type },
+            { "payload", data.payload }
+        };
+    }
+
+    // Gets a InitActiveScope object from json.
+    static void from_json(const nlohmann::json& source, InitActiveScope& target)
+    {
+        source.at("type").get_to(target.type);
+        source.at("payload").get_to(target.payload);
+    }
+
     static int64_t GetCurrentTimeMillis()
     {
         const std::chrono::system_clock::time_point now {
@@ -795,6 +851,19 @@ namespace Drill4dotNet
                         s_connector->SendPluginMessage(
                             "test2code",
                             stopMessage.dump());
+                    }
+                    else if (discriminator == InitActiveScope::Discriminator)
+                    {
+                        InitActiveScope init { messageText.get<decltype(init)>() };
+                        nlohmann::json initMessage = ScopeInitialized {
+                            init.payload.id,
+                            init.payload.name,
+                            init.payload.prevId,
+                            GetCurrentTimeMillis() };
+
+                        s_connector->SendPluginMessage(
+                            "test2code",
+                            initMessage.dump());
                     }
                 }
             }
