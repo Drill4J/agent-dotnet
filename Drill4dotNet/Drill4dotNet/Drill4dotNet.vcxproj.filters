@@ -1,14 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="Source Files">
-      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
-      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
-    </Filter>
-    <Filter Include="Header Files">
-      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
-      <Extensions>h;hh;hpp;hxx;hm;inl;inc;ipp;xsd</Extensions>
-    </Filter>
     <Filter Include="Resource Files">
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
@@ -17,165 +9,183 @@
       <UniqueIdentifier>{7a084262-3d43-4d27-822f-5c7735c64e13}</UniqueIdentifier>
       <SourceControlFiles>False</SourceControlFiles>
     </Filter>
+    <Filter Include="AdminCommunication">
+      <UniqueIdentifier>{a3aad9d8-4801-4762-84fe-cadb4cd68ea7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Rewiting">
+      <UniqueIdentifier>{d252e569-972d-427d-9aa2-ca61bab8e48e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ComWrappers">
+      <UniqueIdentifier>{396c3342-e235-4f14-8140-e14c390f2845}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Main">
+      <UniqueIdentifier>{16a0daf1-5119-45d9-88f5-247b464015ef}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Utils">
+      <UniqueIdentifier>{e8f9c2ef-656a-40d3-b145-ca52531f606f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Profiler">
+      <UniqueIdentifier>{74ca5a7e-575b-43e3-832e-85427bcf5113}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="framework.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="targetver.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Resource.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="dllmain.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Drill4dotNet_i.h">
       <Filter>Generated Files</Filter>
     </ClInclude>
-    <ClInclude Include="pch.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="CProfilerCallback.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="CDrillProfiler.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ProClient.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="LogBuffer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="OutputUtils.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="CorProfilerInfo.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="CorDataStructures.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ComWrapperBase.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="MetaDataImport.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="InfoHandler.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="OpCodes.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="DefineOpCodesGeneratorSpecializations.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="UnDefineOpCodesGeneratorSpecializations.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="MethodBody.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="MethodMalloc.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="InstructionStream.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="MethodHeader.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ExceptionClause.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ExceptionsSection.h">
-      <Filter>Header Files</Filter>
+      <Filter>Utils</Filter>
     </ClInclude>
     <ClInclude Include="ByteUtils.h">
-      <Filter>Header Files</Filter>
+      <Filter>Utils</Filter>
     </ClInclude>
-    <ClInclude Include="Connector.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ConnectorImplementation.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="IMetadataImport.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ICorProfilerInfo.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="CProfilerCallbackBase.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="IMetadataDispenser.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="IMetaDataAssemblyImport.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="MetaDataAssemblyImport.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="MetaDataDispenser.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="ComWrapperBase.h">
+      <Filter>ComWrappers</Filter>
     </ClInclude>
     <ClInclude Include="ComInitializer.h">
-      <Filter>Header Files</Filter>
+      <Filter>ComWrappers</Filter>
+    </ClInclude>
+    <ClInclude Include="OpCodes.h">
+      <Filter>Rewiting</Filter>
+    </ClInclude>
+    <ClInclude Include="MetaDataImport.h">
+      <Filter>ComWrappers</Filter>
+    </ClInclude>
+    <ClInclude Include="MetaDataAssemblyImport.h">
+      <Filter>ComWrappers</Filter>
+    </ClInclude>
+    <ClInclude Include="MetaDataDispenser.h">
+      <Filter>ComWrappers</Filter>
+    </ClInclude>
+    <ClInclude Include="IMetaDataAssemblyImport.h">
+      <Filter>ComWrappers</Filter>
+    </ClInclude>
+    <ClInclude Include="IMetadataDispenser.h">
+      <Filter>ComWrappers</Filter>
+    </ClInclude>
+    <ClInclude Include="IMetadataImport.h">
+      <Filter>ComWrappers</Filter>
+    </ClInclude>
+    <ClInclude Include="ICorProfilerInfo.h">
+      <Filter>ComWrappers</Filter>
+    </ClInclude>
+    <ClInclude Include="CorProfilerInfo.h">
+      <Filter>ComWrappers</Filter>
+    </ClInclude>
+    <ClInclude Include="DefineOpCodesGeneratorSpecializations.h">
+      <Filter>Rewiting</Filter>
+    </ClInclude>
+    <ClInclude Include="UnDefineOpCodesGeneratorSpecializations.h">
+      <Filter>Rewiting</Filter>
+    </ClInclude>
+    <ClInclude Include="InstructionStream.h">
+      <Filter>Rewiting</Filter>
+    </ClInclude>
+    <ClInclude Include="ExceptionsSection.h">
+      <Filter>Rewiting</Filter>
+    </ClInclude>
+    <ClInclude Include="ExceptionClause.h">
+      <Filter>Rewiting</Filter>
+    </ClInclude>
+    <ClInclude Include="MethodBody.h">
+      <Filter>Rewiting</Filter>
+    </ClInclude>
+    <ClInclude Include="MethodHeader.h">
+      <Filter>Rewiting</Filter>
+    </ClInclude>
+    <ClInclude Include="Connector.h">
+      <Filter>AdminCommunication</Filter>
+    </ClInclude>
+    <ClInclude Include="ConnectorImplementation.h">
+      <Filter>AdminCommunication</Filter>
+    </ClInclude>
+    <ClInclude Include="CDrillProfiler.h">
+      <Filter>Main</Filter>
+    </ClInclude>
+    <ClInclude Include="CorDataStructures.h">
+      <Filter>Profiler</Filter>
+    </ClInclude>
+    <ClInclude Include="CProfilerCallback.h">
+      <Filter>Profiler</Filter>
+    </ClInclude>
+    <ClInclude Include="CProfilerCallbackBase.h">
+      <Filter>Profiler</Filter>
+    </ClInclude>
+    <ClInclude Include="InfoHandler.h">
+      <Filter>Profiler</Filter>
+    </ClInclude>
+    <ClInclude Include="LogBuffer.h">
+      <Filter>Profiler</Filter>
+    </ClInclude>
+    <ClInclude Include="ProClient.h">
+      <Filter>Profiler</Filter>
+    </ClInclude>
+    <ClInclude Include="dllmain.h">
+      <Filter>Main</Filter>
+    </ClInclude>
+    <ClInclude Include="framework.h">
+      <Filter>Main</Filter>
+    </ClInclude>
+    <ClInclude Include="pch.h">
+      <Filter>Main</Filter>
+    </ClInclude>
+    <ClInclude Include="Resource.h">
+      <Filter>Main</Filter>
+    </ClInclude>
+    <ClInclude Include="targetver.h">
+      <Filter>Main</Filter>
+    </ClInclude>
+    <ClInclude Include="MethodMalloc.h">
+      <Filter>ComWrappers</Filter>
     </ClInclude>
     <ClInclude Include="Signature.h">
-      <Filter>Header Files</Filter>
+      <Filter>Rewiting</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Drill4dotNet.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="dllmain.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Drill4dotNet_i.c">
       <Filter>Generated Files</Filter>
     </ClCompile>
-    <ClCompile Include="pch.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="CDrillProfiler.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="InfoHandler.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="OpCodes.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="MethodBody.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Main</Filter>
     </ClCompile>
     <ClCompile Include="CorGUIDs.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="InstructionStream.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="MethodHeader.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ExceptionClause.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ExceptionsSection.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Main</Filter>
     </ClCompile>
     <ClCompile Include="CProfilerCallbackBase.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Profiler</Filter>
+    </ClCompile>
+    <ClCompile Include="dllmain.cpp">
+      <Filter>Main</Filter>
+    </ClCompile>
+    <ClCompile Include="Drill4dotNet.cpp">
+      <Filter>Main</Filter>
+    </ClCompile>
+    <ClCompile Include="ExceptionClause.cpp">
+      <Filter>Rewiting</Filter>
+    </ClCompile>
+    <ClCompile Include="ExceptionsSection.cpp">
+      <Filter>Rewiting</Filter>
+    </ClCompile>
+    <ClCompile Include="InstructionStream.cpp">
+      <Filter>Rewiting</Filter>
+    </ClCompile>
+    <ClCompile Include="MethodBody.cpp">
+      <Filter>Rewiting</Filter>
+    </ClCompile>
+    <ClCompile Include="MethodHeader.cpp">
+      <Filter>Rewiting</Filter>
+    </ClCompile>
+    <ClCompile Include="OpCodes.cpp">
+      <Filter>Rewiting</Filter>
     </ClCompile>
     <ClCompile Include="Signature.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Rewiting</Filter>
+    </ClCompile>
+    <ClCompile Include="pch.cpp">
+      <Filter>Main</Filter>
+    </ClCompile>
+    <ClCompile Include="InfoHandler.cpp">
+      <Filter>Profiler</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -187,15 +197,15 @@
     <None Include="Drill4dotNet.rgs">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="Drill4dotNet.def">
-      <Filter>Source Files</Filter>
-    </None>
     <None Include="packages.config" />
     <None Include="native_agent_connector.targets" />
+    <None Include="Drill4dotNet.def">
+      <Filter>Main</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Midl Include="Drill4dotNet.idl">
-      <Filter>Source Files</Filter>
+      <Filter>Main</Filter>
     </Midl>
   </ItemGroup>
 </Project>
