@@ -143,6 +143,9 @@
     <ClInclude Include="AdminDataStructures.h">
       <Filter>AdminCommunication</Filter>
     </ClInclude>
+    <ClInclude Include="HttpPost.h">
+      <Filter>AdminCommunication</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Drill4dotNet_i.c">
@@ -195,6 +198,9 @@
     </ClCompile>
     <ClCompile Include="OutputUtils.cpp">
       <Filter>Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="HttpPost.cpp">
+      <Filter>AdminCommunication</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -133,6 +133,7 @@
     <ClInclude Include="ComInitializer.h" />
     <ClInclude Include="ConnectorImplementation.h" />
     <ClInclude Include="CProfilerCallbackBase.h" />
+    <ClInclude Include="HttpPost.h" />
     <ClInclude Include="ICorProfilerInfo.h" />
     <ClInclude Include="IMetaDataAssemblyImport.h" />
     <ClInclude Include="IMetadataDispenser.h" />
@@ -179,6 +180,7 @@
     </ClCompile>
     <ClCompile Include="ExceptionClause.cpp" />
     <ClCompile Include="ExceptionsSection.cpp" />
+    <ClCompile Include="HttpPost.cpp" />
     <ClCompile Include="InfoHandler.cpp" />
     <ClCompile Include="InstructionStream.cpp" />
     <ClCompile Include="MethodBody.cpp" />
