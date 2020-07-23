@@ -389,4 +389,12 @@ namespace Drill4dotNet
             prefix,
             prefix.size()) == 0;
     }
+
+    // Converts a UTF-8 string to a std::wstring.
+    // Throws std::runtime_error in case of an error.
+    std::wstring DecodeUtf8(const std::string& string);
+
+    // Converts the given string to UTF-8.
+    // Throws std::runtime_error in case of an error.
+    std::string EncodeUtf8(const std::wstring& source);
 }

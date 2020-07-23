@@ -193,6 +193,9 @@
     <ClCompile Include="AdminDataStructures.cpp">
       <Filter>AdminCommunication</Filter>
     </ClCompile>
+    <ClCompile Include="OutputUtils.cpp">
+      <Filter>Utils</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Drill4dotNet.rc">

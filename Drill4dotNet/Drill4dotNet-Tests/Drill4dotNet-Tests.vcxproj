@@ -1,5 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\..\packages\vcpkg.D.GIT.epam.com.EPMD4J.Drill4J.agentdotnet.dependencies.vcpkg.1.0.0\build\native\vcpkg.D.GIT.epam.com.EPMD4J.Drill4J.agentdotnet.dependencies.vcpkg.props" Condition="Exists('..\..\packages\vcpkg.D.GIT.epam.com.EPMD4J.Drill4J.agentdotnet.dependencies.vcpkg.1.0.0\build\native\vcpkg.D.GIT.epam.com.EPMD4J.Drill4J.agentdotnet.dependencies.vcpkg.props')" />
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|x64">
       <Configuration>Debug</Configuration>
@@ -144,9 +145,14 @@
       <Project>{2ab82ce8-683b-4984-a566-9ffc579e3b47}</Project>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
   <ItemDefinitionGroup />
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
-  <ImportGroup Label="ExtensionTargets" />
+  <ImportGroup Label="ExtensionTargets">
+    <Import Project="..\..\packages\vcpkg.D.GIT.epam.com.EPMD4J.Drill4J.agentdotnet.dependencies.vcpkg.1.0.0\build\native\vcpkg.D.GIT.epam.com.EPMD4J.Drill4J.agentdotnet.dependencies.vcpkg.targets" Condition="Exists('..\..\packages\vcpkg.D.GIT.epam.com.EPMD4J.Drill4J.agentdotnet.dependencies.vcpkg.1.0.0\build\native\vcpkg.D.GIT.epam.com.EPMD4J.Drill4J.agentdotnet.dependencies.vcpkg.targets')" />
+  </ImportGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
@@ -193,4 +199,11 @@
       <Message>Copy injection.dll</Message>
     </PostBuildEvent>
   </ItemDefinitionGroup>
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\..\packages\vcpkg.D.GIT.epam.com.EPMD4J.Drill4J.agentdotnet.dependencies.vcpkg.1.0.0\build\native\vcpkg.D.GIT.epam.com.EPMD4J.Drill4J.agentdotnet.dependencies.vcpkg.props')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\vcpkg.D.GIT.epam.com.EPMD4J.Drill4J.agentdotnet.dependencies.vcpkg.1.0.0\build\native\vcpkg.D.GIT.epam.com.EPMD4J.Drill4J.agentdotnet.dependencies.vcpkg.props'))" />
+    <Error Condition="!Exists('..\..\packages\vcpkg.D.GIT.epam.com.EPMD4J.Drill4J.agentdotnet.dependencies.vcpkg.1.0.0\build\native\vcpkg.D.GIT.epam.com.EPMD4J.Drill4J.agentdotnet.dependencies.vcpkg.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\vcpkg.D.GIT.epam.com.EPMD4J.Drill4J.agentdotnet.dependencies.vcpkg.1.0.0\build\native\vcpkg.D.GIT.epam.com.EPMD4J.Drill4J.agentdotnet.dependencies.vcpkg.targets'))" />
+  </Target>
 </Project>
