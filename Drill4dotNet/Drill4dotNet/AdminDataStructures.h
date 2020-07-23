@@ -1,9 +1,19 @@
 #pragma once
 
 #include <nlohmann/json.hpp>
+#include <concepts>
 
 namespace Drill4dotNet
 {
+    // Determines whether the given type can be converted
+    // to and from JSON using the nlohmann::json library.
+    template <typename T>
+    concept IsJsonConvertible = requires()
+    {
+        { to_json(std::declval<nlohmann::json&>(), std::declval<const T&>()) } -> std::same_as<void>;
+        { from_json(std::declval<const nlohmann::json&>(), std::declval<T&>()) } -> std::same_as<void>;
+    };
+
     // Data about a method sent to Drill admin.
     class AstMethod
     {
@@ -484,4 +494,28 @@ namespace Drill4dotNet
 
     // Gets a InitActiveScope object from json.
     void from_json(const nlohmann::json& source, InitActiveScope& target);
+
+    static_assert(IsJsonConvertible<AstMethod>);
+    static_assert(IsJsonConvertible<AstEntity>);
+    static_assert(IsJsonConvertible<InitInfo>);
+    static_assert(IsJsonConvertible<InitDataPart>);
+    static_assert(IsJsonConvertible<Initialized>);
+    static_assert(IsJsonConvertible<PackagesPrefixes>);
+    static_assert(IsJsonConvertible<PluginAction>);
+    static_assert(IsJsonConvertible<SessionPayload>);
+    static_assert(IsJsonConvertible<StopSession>);
+    static_assert(IsJsonConvertible<StartPayload>);
+    static_assert(IsJsonConvertible<StartSessionHttpRequest>);
+    static_assert(IsJsonConvertible<StartSessionPayload>);
+    static_assert(IsJsonConvertible<StartSession>);
+    static_assert(IsJsonConvertible<SessionStarted>);
+    static_assert(IsJsonConvertible<SessionCancelled>);
+    static_assert(IsJsonConvertible<AllSessionsCancelled>);
+    static_assert(IsJsonConvertible<ExecClassData>);
+    static_assert(IsJsonConvertible<CoverDataPart>);
+    static_assert(IsJsonConvertible<SessionChanged>);
+    static_assert(IsJsonConvertible<SessionFinished>);
+    static_assert(IsJsonConvertible<ScopeInitialized>);
+    static_assert(IsJsonConvertible<InitScopePayload>);
+    static_assert(IsJsonConvertible<InitActiveScope>);
 }
