@@ -128,8 +128,9 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="ByteUtils.h" />
-    <ClInclude Include="..\Connector\Connector.h" />
+    <ClInclude Include="Connector.h" />
     <ClInclude Include="ComInitializer.h" />
+    <ClInclude Include="ConnectorImplementation.h" />
     <ClInclude Include="CProfilerCallbackBase.h" />
     <ClInclude Include="ICorProfilerInfo.h" />
     <ClInclude Include="IMetaDataAssemblyImport.h" />
@@ -193,6 +194,7 @@
   <ItemGroup>
     <None Include="Drill4dotNet.def" />
     <None Include="Drill4dotNet.rgs" />
+    <None Include="native_agent_connector.targets" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
@@ -208,7 +210,7 @@
   </Target>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
-    <Import Project="$(MSBuildThisFileDirectory)..\Connector\native_agent_connector.targets" />
+    <Import Project="native_agent_connector.targets" />
     <Import Project="..\..\packages\vcpkg.D.GIT.epam.com.EPMD4J.Drill4J.agentdotnet.dependencies.vcpkg.1.0.0\build\native\vcpkg.D.GIT.epam.com.EPMD4J.Drill4J.agentdotnet.dependencies.vcpkg.targets" Condition="Exists('..\..\packages\vcpkg.D.GIT.epam.com.EPMD4J.Drill4J.agentdotnet.dependencies.vcpkg.1.0.0\build\native\vcpkg.D.GIT.epam.com.EPMD4J.Drill4J.agentdotnet.dependencies.vcpkg.targets')" />
   </ImportGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">

@@ -60,6 +60,7 @@
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpplatest</LanguageStandard>
+      <AdditionalIncludeDirectories>$(MSBuildThisFileDirectory)..\Drill4dotNet;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -75,6 +76,7 @@
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpplatest</LanguageStandard>
+      <AdditionalIncludeDirectories>$(MSBuildThisFileDirectory)..\Drill4dotNet;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -84,7 +86,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="ConnectorImplementation.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
@@ -94,17 +95,17 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Connector.h" />
-    <ClInclude Include="ConnectorImplementation.h" />
+    <ClInclude Include="..\Drill4dotNet\Connector.h" />
+    <ClInclude Include="..\Drill4dotNet\ConnectorImplementation.h" />
     <ClInclude Include="pch.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="native_agent_connector.targets" />
+    <None Include="$(MSBuildThisFileDirectory)..\Drill4dotNet\native_agent_connector.targets" />
     <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
-    <Import Project="$(MSBuildThisFileDirectory)native_agent_connector.targets" />
+    <Import Project="$(MSBuildThisFileDirectory)..\Drill4dotNet\native_agent_connector.targets" />
     <Import Project="..\..\packages\vcpkg.D.GIT.epam.com.EPMD4J.Drill4J.agentdotnet.dependencies.vcpkg.1.0.0\build\native\vcpkg.D.GIT.epam.com.EPMD4J.Drill4J.agentdotnet.dependencies.vcpkg.targets" Condition="Exists('..\..\packages\vcpkg.D.GIT.epam.com.EPMD4J.Drill4J.agentdotnet.dependencies.vcpkg.1.0.0\build\native\vcpkg.D.GIT.epam.com.EPMD4J.Drill4J.agentdotnet.dependencies.vcpkg.targets')" />
   </ImportGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">

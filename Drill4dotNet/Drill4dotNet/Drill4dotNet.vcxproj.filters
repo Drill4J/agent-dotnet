@@ -97,7 +97,10 @@
     <ClInclude Include="ByteUtils.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\Connector\Connector.h">
+    <ClInclude Include="Connector.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ConnectorImplementation.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="IMetadataImport.h">
@@ -188,6 +191,7 @@
       <Filter>Source Files</Filter>
     </None>
     <None Include="packages.config" />
+    <None Include="native_agent_connector.targets" />
   </ItemGroup>
   <ItemGroup>
     <Midl Include="Drill4dotNet.idl">

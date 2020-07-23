@@ -21,23 +21,20 @@
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ConnectorImplementation.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Connector.h">
+    <ClInclude Include="..\Drill4dotNet\Connector.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="pch.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ConnectorImplementation.h">
+    <ClInclude Include="..\Drill4dotNet\ConnectorImplementation.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="native_agent_connector.targets" />
+    <None Include="$(MSBuildThisFileDirectory)..\Drill4dotNet\native_agent_connector.targets" />
     <None Include="packages.config" />
   </ItemGroup>
 </Project>

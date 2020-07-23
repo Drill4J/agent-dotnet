@@ -20,7 +20,6 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Drill4dotNet", "Drill4dotNet\Drill4dotNet\Drill4dotNet.vcxproj", "{2AB82CE8-683B-4984-A566-9FFC579E3B47}"
 	ProjectSection(ProjectDependencies) = postProject
 		{2D761E31-20C2-47A6-B928-260C0F590A92} = {2D761E31-20C2-47A6-B928-260C0F590A92}
-		{47CB3895-4B15-47DB-80C5-CB8631A510B7} = {47CB3895-4B15-47DB-80C5-CB8631A510B7}
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Drill4dotNetPS", "Drill4dotNet\Drill4dotNetPS\Drill4dotNetPS.vcxproj", "{5A2A665D-549C-4698-95BC-E5BCF70473D4}"
@@ -42,6 +41,9 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Drill4dotNet-Tests", "Drill
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Connector", "Drill4dotNet\Connector\Connector.vcxproj", "{47CB3895-4B15-47DB-80C5-CB8631A510B7}"
+	ProjectSection(ProjectDependencies) = postProject
+		{2AB82CE8-683B-4984-A566-9FFC579E3B47} = {2AB82CE8-683B-4984-A566-9FFC579E3B47}
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Calculator", "HelloWorld\Calculator\Calculator.csproj", "{FF353E74-9149-4160-82B2-2E6223743DA5}"
 	ProjectSection(ProjectDependencies) = postProject
