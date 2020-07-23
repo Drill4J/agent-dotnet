@@ -140,6 +140,9 @@
     <ClInclude Include="Signature.h">
       <Filter>Rewiting</Filter>
     </ClInclude>
+    <ClInclude Include="AdminDataStructures.h">
+      <Filter>AdminCommunication</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Drill4dotNet_i.c">
@@ -186,6 +189,9 @@
     </ClCompile>
     <ClCompile Include="InfoHandler.cpp">
       <Filter>Profiler</Filter>
+    </ClCompile>
+    <ClCompile Include="AdminDataStructures.cpp">
+      <Filter>AdminCommunication</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
