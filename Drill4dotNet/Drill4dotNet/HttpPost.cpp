@@ -3,7 +3,6 @@
 #include "HttpPost.h"
 #include "OutputUtils.h"
 
-#include <curl/curl.h>
 #include <mutex>
 
 namespace Drill4dotNet
@@ -86,6 +85,7 @@ namespace Drill4dotNet
     HttpPost::HttpPost()
     {
         ChangeHttpPost(+1);
+        m_errorBuffer.resize(CURL_ERROR_SIZE);
     }
 
     HttpPost::~HttpPost()
@@ -96,7 +96,8 @@ namespace Drill4dotNet
 
     HttpPost::HttpPost(HttpPost&& other)
         : m_curl { std::exchange(other.m_curl, nullptr) },
-        m_headerList { std::exchange(other.m_headerList, nullptr) }
+        m_headerList { std::exchange(other.m_headerList, nullptr) },
+        m_errorBuffer { std::move(other.m_errorBuffer) }
     {
     }
 
@@ -105,6 +106,7 @@ namespace Drill4dotNet
         FreeInstance();
         m_headerList = std::exchange(other.m_headerList, nullptr);
         m_curl = std::exchange(other.m_curl, nullptr);
+        m_errorBuffer = std::move(other.m_errorBuffer);
         return *this;
     }
 
@@ -118,11 +120,10 @@ namespace Drill4dotNet
                 throw std::runtime_error("curl_easy_init failed");
             }
 
-            std::array<char, CURL_ERROR_SIZE> errorBuffer{};
             curl_easy_setopt(
                 m_curl,
                 CURLOPT_ERRORBUFFER,
-                errorBuffer.data());
+                m_errorBuffer.data());
 
             curl_easy_setopt(
                 m_curl,

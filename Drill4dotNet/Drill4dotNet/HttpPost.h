@@ -1,6 +1,5 @@
 #pragma once
 
-#include <array>
 #include <vector>
 #include <curl/curl.h>
 
@@ -18,7 +17,7 @@ namespace Drill4dotNet
     private:
         CURL* m_curl { nullptr };
         curl_slist* m_headerList { nullptr };
-        std::array<char, CURL_ERROR_SIZE> m_errorBuffer{};
+        std::string m_errorBuffer;
 
         void InitCurlIfRequired();
         void FreeInstance();
