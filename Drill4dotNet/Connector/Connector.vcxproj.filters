@@ -27,6 +27,9 @@
     <ClCompile Include="..\Drill4dotNet\OutputUtils.cpp">
       <Filter>Tested Source</Filter>
     </ClCompile>
+    <ClCompile Include="..\Drill4dotNet\HttpPost.cpp">
+      <Filter>Tested Source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Drill4dotNet\Connector.h">

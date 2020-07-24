@@ -397,4 +397,20 @@ namespace Drill4dotNet
     // Converts the given string to UTF-8.
     // Throws std::runtime_error in case of an error.
     std::string EncodeUtf8(const std::wstring& source);
+
+    template <typename TChar>
+    void TrimSpaces(std::basic_string<TChar>& target)
+    {
+        const char spaces[] { " \t\r\n" };
+        const size_t first = target.find_first_not_of(spaces);
+        if (std::basic_string<TChar>::npos == first)
+        {
+            target = std::basic_string<TChar>{};
+            return;
+        }
+
+        const size_t last = target.find_last_not_of(spaces);
+        std::basic_string<TChar> result { target.substr(first, (last - first + 1)) };
+        target = std::move(result);
+    }
 }
