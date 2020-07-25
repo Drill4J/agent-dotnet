@@ -1,17 +1,10 @@
 #pragma once
 
-#include <vector>
 #include <curl/curl.h>
+#include "IHttpPost.h"
 
 namespace Drill4dotNet
 {
-    class HttpResponse
-    {
-    public:
-        long HttpCode;
-        std::vector<std::pair<std::string, std::string>> Headers;
-    };
-
     class HttpPost
     {
     private:
@@ -43,4 +36,6 @@ namespace Drill4dotNet
 
         HttpResponse Execute() const;
     };
+
+    static_assert(IsHttpPost<HttpPost>);
 }
