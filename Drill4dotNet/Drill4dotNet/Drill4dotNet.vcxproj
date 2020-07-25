@@ -135,6 +135,7 @@
     <ClInclude Include="CProfilerCallbackBase.h" />
     <ClInclude Include="HttpPost.h" />
     <ClInclude Include="ICorProfilerInfo.h" />
+    <ClInclude Include="IHttpPost.h" />
     <ClInclude Include="IMetaDataAssemblyImport.h" />
     <ClInclude Include="IMetadataDispenser.h" />
     <ClInclude Include="IMetadataImport.h" />
