@@ -146,6 +146,9 @@
     <ClInclude Include="HttpPost.h">
       <Filter>AdminCommunication</Filter>
     </ClInclude>
+    <ClInclude Include="SessionControl.h">
+      <Filter>AdminCommunication</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Drill4dotNet_i.c">

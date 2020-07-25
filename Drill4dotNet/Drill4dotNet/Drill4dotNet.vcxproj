@@ -162,6 +162,7 @@
     <ClInclude Include="pch.h" />
     <ClInclude Include="ProClient.h" />
     <ClInclude Include="Resource.h" />
+    <ClInclude Include="SessionControl.h" />
     <ClInclude Include="Signature.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="OutputUtils.h" />
