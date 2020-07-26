@@ -2,6 +2,7 @@
 
 #include <ConnectorImplementation.h>
 #include <HttpPost.h>
+#include <SessionControl.h>
 #include <iostream>
 #include <sstream>
 #include <thread>
@@ -53,65 +54,15 @@ int main(int argc, char** argv)
         connector.InitializeAgent();
         std::this_thread::sleep_for(std::chrono::seconds(16));
 
-        HttpPost poster{};
-        const HttpResponse loginResponse { poster
-            .Url("http://localhost:8090/api/login")
-            .Execute() };
+        SessionControl<HttpPost> sessionControl(
+            "http://localhost:8090",
+            L"mysuperAgent",
+            L"{6D2831ED-6A9D-42FB-9375-1ABFAAF81933}",
+            L"AUTO");
 
-        std::optional<std::string> authorization;
-        const char authorizationKey[] { "Authorization" };
-        std::wcout << loginResponse.HttpCode;
-        if (loginResponse.HttpCode == 200)
-        {
-            const auto authorizationHeader{ std::find_if(
-                loginResponse.Headers.cbegin(),
-                loginResponse.Headers.cend(),
-                [&authorizationKey](const auto& value)
-                {
-                    return value.first == authorizationKey;
-                }) };
+        std::this_thread::sleep_for(std::chrono::seconds(32));
 
-            if (authorizationHeader != loginResponse.Headers.cend())
-            {
-                authorization = "Bearer " + authorizationHeader->second;
-            }
-
-            std::cout << *authorization;
-        }
-
-        if (authorization.has_value())
-        {
-            const nlohmann::json startBody = StartSessionHttpRequest{
-                StartPayload {
-                    .testType = L"AUTO",
-                    .sessionId = L"{6D2831ED-6A9D-42FB-9375-1ABFAAF81933}",
-                }
-            };
-
-            const HttpResponse startResponse { poster
-                .Url("http://localhost:8090/api/agents/mysuperAgent/plugins/test2code/dispatch-action")
-                .Header(authorizationKey, *authorization)
-                .Header("Content-Type", "application/json")
-                .Body(startBody.dump())
-                .Execute() };
-
-            std::wcout << startResponse.HttpCode;
-
-            if (startResponse.HttpCode == 200)
-            {
-                std::this_thread::sleep_for(std::chrono::seconds(32));
-
-                const nlohmann::json stopBody = StopSession {
-                    SessionPayload {
-                        L"{6D2831ED-6A9D-42FB-9375-1ABFAAF81933}" } };
-
-                const HttpResponse stopResponse { poster
-                    .Body(stopBody.dump())
-                    .Execute() };
-
-                std::wcout << stopResponse.HttpCode;
-            }
-        }
+        sessionControl.Stop();
 
         std::this_thread::sleep_for(std::chrono::seconds(16));
         int x;
