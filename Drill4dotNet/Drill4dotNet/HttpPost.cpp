@@ -288,7 +288,7 @@ namespace Drill4dotNet
 
     std::string HttpPost::UrlEncode(const std::wstring& data) const
     {
-        const auto deleter { [this](void* pointer)
+        const auto deleter { [](void* pointer)
         {
             curl_free(pointer);
         } };
