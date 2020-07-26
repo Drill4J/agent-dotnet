@@ -81,6 +81,8 @@ namespace Drill4dotNet
             {
                 throw std::runtime_error("Request to /dispatch-action was not successful");
             }
+
+            m_httpPost.reset();
         }
     };
 }
