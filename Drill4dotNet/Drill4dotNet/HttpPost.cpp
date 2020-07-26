@@ -285,4 +285,22 @@ namespace Drill4dotNet
 
         return result;
     }
+
+    std::string HttpPost::UrlEncode(const std::wstring& data) const
+    {
+        const auto deleter { [this](void* pointer)
+        {
+            curl_free(pointer);
+        } };
+
+        const std::string utf8 { EncodeUtf8(data) };
+
+        char* const nakedPointer { curl_easy_escape(
+            m_curl,
+            utf8.c_str(),
+            utf8.size()) };
+
+        const std::unique_ptr<char, decltype(deleter)> result(nakedPointer, deleter);
+        return std::string(result.get());
+    }
 }

@@ -35,6 +35,8 @@ namespace Drill4dotNet
         HttpPost& Body(const std::string& content) &;
 
         HttpResponse Execute() const;
+
+        std::string UrlEncode(const std::wstring& data) const;
     };
 
     static_assert(IsHttpPost<HttpPost>);

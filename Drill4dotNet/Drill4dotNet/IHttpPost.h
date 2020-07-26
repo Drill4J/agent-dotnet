@@ -22,6 +22,7 @@ namespace Drill4dotNet
             { x.Url(std::declval<const std::string&>()) } -> std::same_as<T&>;
             { x.Header(std::declval<const std::string&>(), std::declval<const std::string&>()) } -> std::same_as<T&>;
             { x.Body(std::declval<const std::string&>()) } -> std::same_as<T&>;
-            { x.Execute() } -> std::same_as<HttpResponse>;
+            { std::as_const(x).Execute() } -> std::same_as<HttpResponse>;
+            { std::as_const(x).UrlEncode(std::declval<const std::wstring&>()) } -> std::same_as<std::string>;
         };
 }
