@@ -48,7 +48,7 @@ namespace Drill4dotNet
 
             std::string authorization{ "Bearer " + authorizationHeader->second };
 
-            const nlohmann::json startBody = StartSessionHttpRequest{
+            const nlohmann::json startBody = StartSessionHttpRequest {
                 StartPayload {
                     .testType = testType,
                     .sessionId = sessionId,
@@ -56,7 +56,7 @@ namespace Drill4dotNet
             };
 
             const HttpResponse startResponse { m_httpPost
-                ->Url(apiEndPoint + "agents/" + m_httpPost->UrlEncode(agentName) + "/plugins/test2code/dispatch-action")
+                ->Url(apiEndPoint + "/agents/" + m_httpPost->UrlEncode(agentName) + "/plugins/test2code/dispatch-action")
                 .Header(authorizationKey, authorization)
                 .Header("Content-Type", "application/json")
                 .Body(startBody.dump())

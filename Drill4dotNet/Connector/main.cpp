@@ -55,7 +55,7 @@ int main(int argc, char** argv)
         std::this_thread::sleep_for(std::chrono::seconds(16));
 
         SessionControl<HttpPost> sessionControl(
-            "http://localhost:8090",
+            "http://localhost:8090/api",
             L"mysuperAgent",
             L"{6D2831ED-6A9D-42FB-9375-1ABFAAF81933}",
             L"AUTO");
