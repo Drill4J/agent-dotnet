@@ -217,9 +217,6 @@ namespace Drill4dotNet
 
         TreeProvider m_treeProvider;
         PackagesPrefixesHandler m_packagesPrefixesHandler;
-        std::queue<ConnectorQueueItem> m_messages;
-        std::mutex m_mutex;
-        Event m_event { NULL, TRUE, FALSE, NULL };
 
         // a hack for static callback; it should be replaced by context parameter of callback
         inline static Connector* s_connector;
@@ -331,12 +328,6 @@ namespace Drill4dotNet
             s_connector = this;
         }
 
-        ~Connector()
-        {
-            ::SetEvent(m_event.Handle()); // to finish all waits
-            ::WaitForSingleObject(m_event.Handle(), 0);
-        }
-
         TreeProvider& TreeProvider() &
         {
             return m_treeProvider;
@@ -399,34 +390,6 @@ namespace Drill4dotNet
             m_agentLibrary.sendPluginMessage(
                 pluginId.c_str(),
                 content.c_str());
-        }
-
-        std::optional<ConnectorQueueItem> GetNextMessage()
-        {
-            std::lock_guard<std::mutex> locker(m_mutex);
-            if (!m_messages.empty())
-            {
-                const ConnectorQueueItem result { m_messages.front() };
-                m_messages.pop();
-                return result;
-            }
-
-            return std::nullopt;
-        }
-
-        void WaitForNextMessage(DWORD timeout = INFINITE)
-        {
-            DWORD waitResult = ::WaitForSingleObject(m_event.Handle(), timeout);
-            switch (waitResult)
-            {
-            case WAIT_OBJECT_0:
-            case WAIT_TIMEOUT:
-                return;
-            case WAIT_ABANDONED:
-            case WAIT_FAILED:
-            default:
-                throw std::runtime_error("WaitForSingleObject failed.");
-            }
         }
     };
 
