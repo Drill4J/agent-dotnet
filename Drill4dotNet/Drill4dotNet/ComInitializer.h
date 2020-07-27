@@ -6,8 +6,8 @@ namespace Drill4dotNet
 {
     // RAII-style wrapper for CoInitialize / CoUninitialize.
     // with logging and error handling capability.
-    template <Logger TLogger>
-    class ComInitializer : protected ComWrapperBase<TLogger>
+    template <IsLogger Logger>
+    class ComInitializer : protected ComWrapperBase<Logger>
     {
     private:
         bool m_initialized{ false };
@@ -28,7 +28,7 @@ namespace Drill4dotNet
     public:
         // Creates a new instance.
         // @param logger : the tool to log errors.
-        ComInitializer(TLogger logger)
+        ComInitializer(Logger logger)
             : ComWrapperBase(logger)
         {
         }

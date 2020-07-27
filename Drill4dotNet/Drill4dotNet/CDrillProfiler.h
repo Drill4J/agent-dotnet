@@ -10,18 +10,17 @@
 namespace Drill4dotNet
 {
     using TConnector = Connector<std::function<std::vector<AstEntity>()>, std::function<void(const PackagesPrefixes&)>>;
-    using TLogger = LogToProClient<TConnector>;
     class ATL_NO_VTABLE CDrillProfiler
         : public ATL::CComObjectRootEx<ATL::CComSingleThreadModel>
         , public ATL::CComCoClass<CDrillProfiler, &CLSID_DrillProfiler>
-        , public ProClient<TConnector>
+        , public ProClient<TConnector, ConsoleLogger>
         , public CProfilerCallback<
             TConnector,
-            CorProfilerInfo<TLogger>,
-            MetaDataDispenser<TLogger>,
-            MetaDataAssemblyImport<TLogger>,
-            MetaDataImport<TLogger>,
-            TLogger>
+            CorProfilerInfo<ConsoleLogger>,
+            MetaDataDispenser<ConsoleLogger>,
+            MetaDataAssemblyImport<ConsoleLogger>,
+            MetaDataImport<ConsoleLogger>,
+        ConsoleLogger>
     {
     public:
         CDrillProfiler();

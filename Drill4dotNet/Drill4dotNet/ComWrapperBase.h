@@ -5,7 +5,7 @@
 #include <comdef.h>
 
 #include "OutputUtils.h"
-#include <concepts>
+#include "LogBuffer.h"
 
 namespace Drill4dotNet
 {
@@ -35,66 +35,15 @@ namespace Drill4dotNet
         TryCallCom(callable, [](const _com_error error) { throw error; });
     }
 
-    // Checks the given type is suitable for usage as
-    // a logger in classes derived from ComWrapperBase.
-    // The type must have methods bool IsLogEnabled()
-    //     and Log(). The second one should provide some
-    //     object allowing to output data with << in the
-    //     same manner as standard output streams do.
-    template <typename TLogger>
-    concept Logger = requires (const TLogger& logger)
-    {
-        { logger.IsLogEnabled() } -> std::same_as<bool>;
-        { logger.Log() };
-    };
-
-    // Simple logger satisfying the Logger requirements.
-    // Will discard all log entries.
-    class TrivialLogger
-    {
-    private:
-        class LogWriter
-        {
-            template <typename T>
-            constexpr friend LogWriter& operator<<(LogWriter& target, const T& value) noexcept
-            {
-                return target;
-            }
-        };
-    public:
-        // Creates a new instance.
-        // Ignores all arguments.
-        template <typename ... Ts>
-        constexpr TrivialLogger(const Ts& ... args) noexcept
-        {
-        }
-
-        // Determines when log is enabled.
-        // This implementation will always return false.
-        constexpr bool IsLogEnabled() const noexcept
-        {
-            return false;
-        }
-
-        // Returns the object which can accept log entries.
-        // The returned object will ignore all log entries.
-        constexpr auto Log() const noexcept
-        {
-            return LogWriter{};
-        }
-    };
-
-    static_assert(Logger<TrivialLogger>);
-
     // Provides error handling and logging capabilities
     // to classes wrapping COM objects. Derived classes get
     // per-instance logging context. Their user must provide
     // the logging object upon construction of such objects.
-    // TLogger: class with methods bool IsLogEnabled()
+    // Logger: class with methods bool IsLogEnabled()
     //     and Log(). The second one should provide some
     //     object allowing to output data with << in the
     //     same manner as standard output streams do.
-    template <Logger TLogger>
+    template <IsLogger Logger>
     class ComWrapperBase
     {
     private:
@@ -114,9 +63,9 @@ namespace Drill4dotNet
     protected:
         // Logger for this instance, each instance has
         // its own logger, allowing to have per-object context.
-        TLogger m_logger;
+        Logger m_logger;
 
-        ComWrapperBase(const TLogger logger)
+        ComWrapperBase(const Logger logger)
             : m_logger(logger)
         {
         }

@@ -11,14 +11,14 @@ namespace Drill4dotNet
 {
     // Uses an implementation of IMetaDataDispenser to get information about
     // an assembly from .net Profiling API.
-    template <Logger TLogger>
-    class MetaDataDispenser : protected ComWrapperBase<TLogger>
+    template <IsLogger Logger>
+    class MetaDataDispenser : protected ComWrapperBase<Logger>
     {
     private:
         ATL::CComQIPtr<IMetaDataDispenser, &IID_IMetaDataDispenser> m_metaDataDispenser{};
 
         inline static constexpr int s_NoInit { 0 };
-        MetaDataDispenser(TLogger logger, int dummy)
+        MetaDataDispenser(Logger logger, int dummy)
             : ComWrapperBase(logger)
         {
         }
@@ -54,7 +54,7 @@ namespace Drill4dotNet
         {
             try
             {
-                ComInitializer<TLogger> initializer(m_logger);
+                ComInitializer<Logger> initializer(m_logger);
                 initializer.Initialize();
                 this->CallComOrThrow(InitCallable(), L"MetaDataDispenser::Init: call to CoCreateInstance failed.");
             }
@@ -84,16 +84,16 @@ namespace Drill4dotNet
     public:
 
         // Creates a new instance. Throws _com_error in case of an error.
-        MetaDataDispenser(TLogger logger)
+        MetaDataDispenser(Logger logger)
             : MetaDataDispenser(logger, s_NoInit)
         {
             Init();
         }
 
         // Creates a new instance. Returns std::nullopt in case of an error.
-        static std::optional<MetaDataDispenser<TLogger>> TryCreate(TLogger logger)
+        static std::optional<MetaDataDispenser<Logger>> TryCreate(Logger logger)
         {
-            if (MetaDataDispenser<TLogger> result(logger, s_NoInit)
+            if (MetaDataDispenser<Logger> result(logger, s_NoInit)
                 ; result.TryInit())
             {
                 return result;
@@ -104,7 +104,7 @@ namespace Drill4dotNet
 
         // Returns MetaDataAssemblyImport
         // for the given assembly file. Throws on error.
-        template <Logger TMetaDataLogger = TLogger>
+        template <IsLogger TMetaDataLogger = Logger>
         MetaDataAssemblyImport<TMetaDataLogger> OpenScopeMetaDataAssemblyImport(const std::filesystem::path& path, TMetaDataLogger logger) const
         {
             ATL::CComQIPtr<IMetaDataAssemblyImport, &IID_IMetaDataAssemblyImport> metaDataAssemblyImport{};
@@ -119,7 +119,7 @@ namespace Drill4dotNet
 
         // Returns MetaDataAssemblyImport
         // for the given assembly file. Returns std::nullopt on error.
-        template <Logger TMetaDataLogger = TLogger>
+        template <IsLogger TMetaDataLogger = Logger>
         MetaDataImport<TMetaDataLogger> OpenScopeMetaDataImport(const std::filesystem::path& path, TMetaDataLogger logger) const
         {
             ATL::CComQIPtr<IMetaDataImport2, &IID_IMetaDataImport2> metaDataImport{};
@@ -133,7 +133,7 @@ namespace Drill4dotNet
         }
 
         // Returns MetaDataImport for the given assembly file. Throws _com_error on error.
-        template <Logger TMetaDataLogger = TLogger>
+        template <IsLogger TMetaDataLogger = Logger>
         std::optional<MetaDataAssemblyImport<TMetaDataLogger>> TryOpenScopeMetaDataAssemblyImport(const std::filesystem::path& path, TMetaDataLogger logger) const
         {
             if (ATL::CComQIPtr<IMetaDataAssemblyImport, &IID_IMetaDataAssemblyImport> metaDataAssemblyImport{}
@@ -152,7 +152,7 @@ namespace Drill4dotNet
 
 
         // Returns MetaDataImport for the given assembly file. returns std::nullopt on error.
-        template <Logger TMetaDataLogger = TLogger>
+        template <IsLogger TMetaDataLogger = Logger>
         std::optional<MetaDataImport<TMetaDataLogger>> TryOpenScopeMetaDataImport(const std::filesystem::path& path, TMetaDataLogger logger) const
         {
             if (ATL::CComQIPtr<IMetaDataImport2, &IID_IMetaDataImport2> metaDataImport{}

@@ -2,6 +2,7 @@
 
 #include <sstream>
 #include <iostream>
+#include <concepts>
 
 namespace Drill4dotNet
 {
@@ -72,4 +73,81 @@ namespace Drill4dotNet
     {
         return LogBuffer<std::wostream>(std::wcout);
     }
+
+    // Checks the given type is suitable for usage as
+    // a logger in classes derived from ComWrapperBase.
+    // The type must have methods bool IsLogEnabled()
+    //     and Log(). The second one should provide some
+    //     object allowing to output data with << in the
+    //     same manner as standard output streams do.
+    template <typename Logger>
+    concept IsLogger = requires (const Logger & logger)
+    {
+        { logger.IsLogEnabled() } -> std::same_as<bool>;
+        { logger.Log() };
+    };
+
+    // Simple logger satisfying the Logger requirements.
+    // Will discard all log entries.
+    class TrivialLogger
+    {
+    private:
+        class LogWriter
+        {
+        public:
+            template <typename T>
+            constexpr LogWriter& operator<<(T&&) noexcept
+            {
+                return *this;
+            }
+
+            // Adds support for std::hex, std::boolalpha, std::endl, etc
+            constexpr LogWriter& operator <<(const std::add_pointer_t<std::basic_ostream<wchar_t>&(std::basic_ostream<wchar_t>&)> manipulator)
+            {
+                return *this;
+            }
+        };
+    public:
+        // Creates a new instance.
+        constexpr TrivialLogger() noexcept
+        {
+        }
+
+        // Determines when log is enabled.
+        // This implementation will always return false.
+        constexpr bool IsLogEnabled() const noexcept
+        {
+            return false;
+        }
+
+        // Returns the object which can accept log entries.
+        // The returned object will ignore all log entries.
+        constexpr auto Log() const noexcept
+        {
+            return LogWriter{};
+        }
+    };
+
+    static_assert(IsLogger<TrivialLogger>);
+
+    // Log interface for console.
+    class ConsoleLogger
+    {
+    public:
+        ConsoleLogger() noexcept
+        {
+        }
+
+        constexpr bool IsLogEnabled() const noexcept
+        {
+            return true;
+        }
+
+        LogBuffer<std::wostream> Log() const
+        {
+            return LogBuffer<std::wostream>(std::wcout);
+        }
+    };
+
+    static_assert(IsLogger<ConsoleLogger>);
 }

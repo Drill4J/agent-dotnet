@@ -13,17 +13,17 @@
 namespace Drill4dotNet
 {
     // Provides logging and error handling capabilities for ICorProfilerInfo3.
-    // TLogger: class with methods bool IsLogEnabled()
+    // Logger: class with methods bool IsLogEnabled()
     //     and Log(). The second one should provide some
     //     object allowing to output data with << in the
     //     same manner as standard output streams do.
-    template <Logger TLogger>
-    class CorProfilerInfo : protected ComWrapperBase<TLogger>
+    template <IsLogger Logger>
+    class CorProfilerInfo : protected ComWrapperBase<Logger>
     {
     private:
         ATL::CComQIPtr<ICorProfilerInfo3> m_corProfilerInfo{};
 
-        CorProfilerInfo(const TLogger logger) : ComWrapperBase(logger)
+        CorProfilerInfo(const Logger logger) : ComWrapperBase(logger)
         {
         }
 
@@ -169,7 +169,7 @@ namespace Drill4dotNet
         // Throws _com_error in case of an error.
         // pICorProfilerInfoUnk : should provide ICorProfilerInfo3.
         // logger : tool to log the exceptions.
-        CorProfilerInfo(IUnknown* pICorProfilerInfoUnk, const TLogger logger)
+        CorProfilerInfo(IUnknown* pICorProfilerInfoUnk, const Logger logger)
             : CorProfilerInfo(logger)
         {
             Init(pICorProfilerInfoUnk);
@@ -179,9 +179,9 @@ namespace Drill4dotNet
         // @returns CorProfilerInfo instance or std::nullopt in case of an error.
         // @param pICorProfilerInfoUnk : should provide a query for ICorProfilerInfo3.
         // @param logger : a tool to log the exceptions.
-        static std::optional<CorProfilerInfo<TLogger>> TryCreate(IUnknown* pICorProfilerInfoUnk, const TLogger logger)
+        static std::optional<CorProfilerInfo<Logger>> TryCreate(IUnknown* pICorProfilerInfoUnk, const Logger logger)
         {
-            if (CorProfilerInfo<TLogger> result(logger)
+            if (CorProfilerInfo<Logger> result(logger)
                 ; result.TryInit(pICorProfilerInfoUnk))
             {
                 return result;
@@ -222,7 +222,7 @@ namespace Drill4dotNet
         // some logging context is required to create it, user of this
         // function must provide loggerForMetadata.
         // Throws _com_error in case of an error.
-        template <Logger TMetaDataLogger = TLogger>
+        template <IsLogger TMetaDataLogger = Logger>
         MetaDataImport<TMetaDataLogger> GetModuleMetadata(
             const ModuleID moduleId,
             const TMetaDataLogger loggerForMetadata) const
@@ -240,7 +240,7 @@ namespace Drill4dotNet
         // some logging context is required to create it, user of this
         // function must provide loggerForMetadata.
         // Returns an empty optional in case of an error.
-        template <Logger TMetaDataLogger = TLogger>
+        template <IsLogger TMetaDataLogger = Logger>
         std::optional<MetaDataImport<TMetaDataLogger>> TryGetModuleMetadata(
             const ModuleID moduleId,
             const TMetaDataLogger loggerForMetadata) const
@@ -716,7 +716,7 @@ namespace Drill4dotNet
         // some logging context is required to create it, user of this
         // function must provide loggerForMalloc.
         // Throws _com_error in case of an error.
-        template <typename TMetaDataLogger = TLogger>
+        template <typename TMetaDataLogger = Logger>
         MethodMalloc<TMetaDataLogger> GetILFunctionBodyAllocator(
             const ModuleID moduleId,
             const TMetaDataLogger loggerForMalloc) const
@@ -734,7 +734,7 @@ namespace Drill4dotNet
         // some logging context is required to create it, user of this
         // function must provide loggerForMalloc.
         // Returns std::nullopt in case of an error.
-        template <typename TMetaDataLogger = TLogger>
+        template <typename TMetaDataLogger = Logger>
         std::optional<MethodMalloc<TMetaDataLogger>> TryGetILFunctionBodyAllocator(
             const ModuleID moduleId,
             const TMetaDataLogger loggerForMalloc) const

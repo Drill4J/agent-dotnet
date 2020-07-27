@@ -6,20 +6,20 @@ namespace Drill4dotNet
 {
 
     CDrillProfiler::CDrillProfiler()
-        : CProfilerCallback(dynamic_cast<ProClient<TConnector>&>(*this))
+        : CProfilerCallback(dynamic_cast<ProClient<TConnector, ConsoleLogger>&>(*this), ConsoleLogger{})
         , ProClient()
     {
     }
 
     HRESULT CDrillProfiler::FinalConstruct()
     {
-        Log() << L"Entering CDrillProfiler::FinalConstruct";
+        m_logger.Log() << L"Entering CDrillProfiler::FinalConstruct";
         return S_OK;
     }
 
     void CDrillProfiler::FinalRelease()
     {
-        Log() << L"Entering CDrillProfiler::FinalRelease";
+        m_logger.Log() << L"Entering CDrillProfiler::FinalRelease";
     }
 
 }

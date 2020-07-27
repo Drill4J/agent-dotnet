@@ -8,8 +8,8 @@ namespace Drill4dotNet
 {
     // Uses IMetaDataAssemblyImport to get information about
     // an assembly from .net Profiling API.
-    template <Logger TLogger>
-    class MetaDataAssemblyImport : protected ComWrapperBase<TLogger>
+    template <IsLogger Logger>
+    class MetaDataAssemblyImport : protected ComWrapperBase<Logger>
     {
     private:
         ATL::CComQIPtr<IMetaDataAssemblyImport, &IID_IMetaDataAssemblyImport> m_metaDataAssemblyImport{};
@@ -69,7 +69,7 @@ namespace Drill4dotNet
         // Creates a new instance with the given values.
         MetaDataAssemblyImport(
             ATL::CComQIPtr<IMetaDataAssemblyImport, &IID_IMetaDataAssemblyImport> metaDataAssemblyImport,
-            TLogger logger)
+            Logger logger)
             : ComWrapperBase(logger),
             m_metaDataAssemblyImport { metaDataAssemblyImport }
         {

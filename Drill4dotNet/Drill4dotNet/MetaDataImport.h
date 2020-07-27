@@ -15,8 +15,8 @@ namespace Drill4dotNet
     //     and Log(). The second one should provide some
     //     object allowing to output data with << in the
     //     same manner as standard output streams do.
-    template <Logger TLogger>
-    class MetaDataImport : protected ComWrapperBase<TLogger>
+    template <IsLogger Logger>
+    class MetaDataImport : protected ComWrapperBase<Logger>
     {
     private:
         ATL::CComQIPtr<IMetaDataImport2, &IID_IMetaDataImport2> m_metaDataImport{};
@@ -256,7 +256,7 @@ namespace Drill4dotNet
         // logger: tool to log the exceptions.
         MetaDataImport(
             ATL::CComQIPtr<IMetaDataImport2, &IID_IMetaDataImport2> metaDataImport,
-            TLogger logger)
+            Logger logger)
             : ComWrapperBase(logger),
             m_metaDataImport(metaDataImport)
         {

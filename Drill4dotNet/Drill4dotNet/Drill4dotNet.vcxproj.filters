@@ -113,9 +113,6 @@
     <ClInclude Include="InfoHandler.h">
       <Filter>Profiler</Filter>
     </ClInclude>
-    <ClInclude Include="LogBuffer.h">
-      <Filter>Profiler</Filter>
-    </ClInclude>
     <ClInclude Include="ProClient.h">
       <Filter>Profiler</Filter>
     </ClInclude>
@@ -151,6 +148,9 @@
     </ClInclude>
     <ClInclude Include="IHttpPost.h">
       <Filter>AdminCommunication</Filter>
+    </ClInclude>
+    <ClInclude Include="LogBuffer.h">
+      <Filter>Utils</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

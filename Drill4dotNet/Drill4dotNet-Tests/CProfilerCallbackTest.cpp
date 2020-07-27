@@ -16,7 +16,7 @@ public:
     void SetUp()
     {
         proClient.emplace();
-        profilerCallback.emplace(*proClient);
+        profilerCallback.emplace(*proClient, TrivialLogger{});
         WCHAR injectionFileName[_MAX_PATH];
         ::GetModuleFileName(NULL, injectionFileName, _MAX_PATH);
         Drill4dotNet::s_Drill4dotNetLibFilePath = injectionFileName;
@@ -28,7 +28,7 @@ public:
         proClient.reset();
     }
 
-    std::optional<ProClient<ConnectorMock>> proClient;
+    std::optional<ProClient<ConnectorMock, TrivialLogger>> proClient;
     std::optional<CProfilerCallback<
         ConnectorMock,
         CoreInteractMock,

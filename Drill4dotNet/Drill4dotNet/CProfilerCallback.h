@@ -23,8 +23,6 @@
 
 namespace Drill4dotNet
 {
-    class InfoHandler;
-
     // Adds function name to the given function info.
     // Throws _com_error in case of an error.
     template <IMetadataImport TMetadataImport>
@@ -117,42 +115,19 @@ namespace Drill4dotNet
         return result;
     }
 
-    // Wraps ProClient to make its logging interface
-    // compatible with CorProfilerInfo.
-    template <IsConnector TConnector>
-    class LogToProClient
-    {
-    private:
-        std::reference_wrapper<ProClient<TConnector>> m_proClient;
-
-    public:
-
-        explicit LogToProClient(ProClient<TConnector>& target) noexcept
-            : m_proClient(target)
-        {
-        }
-
-        constexpr bool IsLogEnabled() const noexcept
-        {
-            return true;
-        }
-
-        LogBuffer<std::wostream> Log() const
-        {
-            return m_proClient.get().Log();
-        }
-    };
-
     template <
         IsConnector TConnector,
         TCorProfilerInfo CorProfilerInfo,
         IsMetadataDispenser MetaDataDispenser,
         IsMetadataAssemblyImport MetaDataAssemblyImport,
         IMetadataImport MetaDataImport,
-        Logger TLogger>
+        IsLogger Logger>
     class CProfilerCallback :
         public CProfilerCallbackBase
     {
+    protected:
+        Logger m_logger;
+
     private:
         inline static constexpr DWORD EVENTS_WE_MONITOR =
             COR_PRF_MONITOR_CLASS_LOADS |
@@ -162,7 +137,7 @@ namespace Drill4dotNet
             COR_PRF_MONITOR_JIT_COMPILATION |
             COR_PRF_MONITOR_ENTERLEAVE;
 
-        ProClient<TConnector>& m_pImplClient;
+        ProClient<TConnector, Logger>& m_pImplClient;
         std::optional<CorProfilerInfo> m_corProfilerInfo;
         std::optional<std::vector<std::wstring>> m_packagesPrefixes;
         std::optional<std::thread> m_adminInteractionThread;
@@ -181,11 +156,11 @@ namespace Drill4dotNet
             if (std::optional<FunctionInfo> functionInfo = g_cb->GetInfoHandler().TryGetFunctionInfo(funcId);
                 functionInfo.has_value())
             {
-                g_cb->GetClient().Log() << L"Enter function: " << functionInfo->fullName();
+                g_cb->m_logger.Log() << L"Enter function: " << functionInfo->fullName();
             }
             else
             {
-                g_cb->GetClient().Log() << L"Enter function: " << funcId;
+                g_cb->m_logger.Log() << L"Enter function: " << funcId;
             }
             g_cb->GetInfoHandler().FunctionCalled(funcId);
         }
@@ -202,11 +177,11 @@ namespace Drill4dotNet
             if (std::optional<FunctionInfo> functionInfo = g_cb->GetInfoHandler().TryGetFunctionInfo(funcId);
                 functionInfo.has_value())
             {
-                g_cb->GetClient().Log() << L"Leave function: " << functionInfo->fullName();
+                g_cb->m_logger.Log() << L"Leave function: " << functionInfo->fullName();
             }
             else
             {
-                g_cb->GetClient().Log() << L"Leave function: " << funcId;
+                g_cb->m_logger.Log() << L"Leave function: " << funcId;
             }
         }
 
@@ -221,11 +196,11 @@ namespace Drill4dotNet
             if (std::optional<FunctionInfo> functionInfo = g_cb->GetInfoHandler().TryGetFunctionInfo(funcId);
                 functionInfo.has_value())
             {
-                g_cb->GetClient().Log() << L"Tailcall at function: " << functionInfo->fullName();
+                g_cb->m_logger.Log() << L"Tailcall at function: " << functionInfo->fullName();
             }
             else
             {
-                g_cb->GetClient().Log() << L"Tailcall at function: " << funcId;
+                g_cb->m_logger.Log() << L"Tailcall at function: " << funcId;
             }
         }
 
@@ -240,11 +215,11 @@ namespace Drill4dotNet
                 ; functionInfoWithoutName.has_value())
             {
                 if (const std::optional<FunctionInfo> functionInfo { TryGetFunctionInfo(
-                    g_cb->GetCorProfilerInfo()->TryGetModuleMetadata(functionInfoWithoutName->moduleId, LogToProClient(g_cb->m_pImplClient)),
+                    g_cb->GetCorProfilerInfo()->TryGetModuleMetadata(functionInfoWithoutName->moduleId, Logger{}),
                     functionInfoWithoutName) }
                     ; functionInfo.has_value())
                 {
-                    g_cb->GetClient().Log() << "Mapping   function[" << funcId << "] to " << functionInfo->fullName();
+                    g_cb->m_logger.Log() << "Mapping   function[" << funcId << "] to " << functionInfo->fullName();
                     g_cb->GetInfoHandler().MapFunctionInfo(funcId, functionInfo.value());
                 }
             }
@@ -257,12 +232,15 @@ namespace Drill4dotNet
         }
 
     public:
-        CProfilerCallback(ProClient<TConnector>& client)
-            : m_pImplClient(client)
+        CProfilerCallback(
+            ProClient<TConnector, Logger>& client,
+            Logger logger)
+            : m_pImplClient(client),
+            m_logger(logger)
         {
         }
 
-        ProClient<TConnector>& GetClient()
+        ProClient<TConnector, Logger>& GetClient()
         {
             return  m_pImplClient;
         }
@@ -272,7 +250,7 @@ namespace Drill4dotNet
             return m_corProfilerInfo;
         }
 
-        InfoHandler& GetInfoHandler()
+        InfoHandler<Logger>& GetInfoHandler()
         {
             return m_pImplClient.GetInfoHandler();
         }
@@ -280,7 +258,7 @@ namespace Drill4dotNet
         // Inherited via ICorProfilerCallback
         virtual HRESULT __stdcall Initialize(IUnknown* pICorProfilerInfoUnk) override
         {
-            m_pImplClient.Log() << L"CProfilerCallback::Initialize";
+            m_logger.Log() << L"CProfilerCallback::Initialize";
             try
             {
                 GetClient().GetConnector().TreeProvider() = std::function { [this]()
@@ -303,16 +281,16 @@ namespace Drill4dotNet
                         {
                             std::wcout << L"File found: " << file.path() << std::endl;
 
-                            MetaDataDispenser currentDllDispenser { TLogger(m_pImplClient) };
+                            MetaDataDispenser currentDllDispenser { Logger{} };
                             MetaDataAssemblyImport currentDllAssemblyImport {
                                 currentDllDispenser.OpenScopeMetaDataAssemblyImport(
-                                    file.path(), TLogger(m_pImplClient)) };
+                                    file.path(), Logger{}) };
 
                             AssemblyProps assemblyProps { currentDllAssemblyImport.GetAssemblyProps(currentDllAssemblyImport.GetAssemblyFromScope()) };
 
                             MetaDataImport currentDllImport { currentDllDispenser.OpenScopeMetaDataImport(
                                 file.path(),
-                                TLogger(m_pImplClient)) };
+                                Logger{}) };
 
                             for (const auto& type : currentDllImport.EnumTypeDefinitions())
                             {
@@ -383,23 +361,23 @@ namespace Drill4dotNet
                     }
                 });
 
-                m_corProfilerInfo.emplace(pICorProfilerInfoUnk, TLogger(m_pImplClient));
+                m_corProfilerInfo.emplace(pICorProfilerInfoUnk, Logger{});
 
                 InjectionMetaData injection;
-                MetaDataDispenser metaDataDispenser { TLogger(m_pImplClient) };
+                MetaDataDispenser metaDataDispenser { Logger{} };
                 const std::filesystem::path pathInjection = Drill4dotNet::s_Drill4dotNetLibFilePath.parent_path() / L"Injection.dll";
 
                 MetaDataAssemblyImport metaDataAssemblyImport {
                     metaDataDispenser.OpenScopeMetaDataAssemblyImport(
-                        pathInjection, TLogger(m_pImplClient)) };
+                        pathInjection, Logger{}) };
 
                 injection.Assembly = metaDataAssemblyImport.GetAssemblyFromScope();
 
-                m_pImplClient.Log()
+                m_logger.Log()
                     << L"GetAssemblyFromScope token: " << HexOutput(injection.Assembly);
 
                 AssemblyProps assemblyProps { metaDataAssemblyImport.GetAssemblyProps(injection.Assembly) };
-                m_pImplClient.Log()
+                m_logger.Log()
                     << L"GetAssemblyProps() name: "
                     << assemblyProps.Name
                     << L" flags: "
@@ -407,19 +385,19 @@ namespace Drill4dotNet
 
                 MetaDataImport metaDataImport { metaDataDispenser.OpenScopeMetaDataImport(
                     pathInjection,
-                    TLogger(m_pImplClient)) };
+                    Logger{}) };
 
                 injection.Class = metaDataImport.FindTypeDefByName(
 #pragma message("TODO: Choose a unique name for injection class.")
                     L"Drill4dotNet.CInjection",
                     NULL);
 
-                m_pImplClient.Log()
+                m_logger.Log()
                     << L"FindTypeDefByName('Drill4dotNet.CInjection'): "
                     << HexOutput(injection.Class);
 
                 const TypeDefProps typeDefProps { metaDataImport.GetTypeDefProps(injection.Class) };
-                m_pImplClient.Log()
+                m_logger.Log()
                     << L"GetTypeDefProps"
                     << InRoundBrackets(HexOutput(injection.Class))
                     << L": Name: "
@@ -440,14 +418,14 @@ namespace Drill4dotNet
                 for (const mdMethodDef methodToken : foundMethods)
                 {
                     injection.Function = methodToken;
-                    m_pImplClient.Log()
+                    m_logger.Log()
                         << L"EnumMethodsWithName('FInjection'): "
                         << L" Method: " << methodToken;
                 }
 
                 const MethodProps methodProps { metaDataImport.GetMethodProps(injection.Function) };
 
-                m_pImplClient.Log()
+                m_logger.Log()
                     << L"GetMethodProps(" << HexOutput(injection.Function) << L"): "
                     << L" TypeDef: " << HexOutput(methodProps.EnclosingClass)
                     << L" Name: " << methodProps.Name
@@ -459,7 +437,7 @@ namespace Drill4dotNet
                 if (auto runtimeInformation = m_corProfilerInfo->TryGetRuntimeInformation();
                     runtimeInformation)
                 {
-                    m_pImplClient.Log()
+                    m_logger.Log()
                         << L"Drill profiler is running in:" << InSpaces(runtimeInformation->RuntimeType())
                         << L"version" << InSpaces(runtimeInformation->Version())
                         << L"QFE version" << InSpaces(runtimeInformation->QFEVersion());
@@ -479,19 +457,19 @@ namespace Drill4dotNet
             catch (const _com_error& exception)
             {
                 HRESULT errorCode = exception.Error();
-                m_pImplClient.Log() << L"COM error: " << HexOutput(errorCode) << " " << exception.ErrorMessage();
+                m_logger.Log() << L"COM error: " << HexOutput(errorCode) << " " << exception.ErrorMessage();
                 return errorCode;
             }
             catch (const std::exception& exception)
             {
-                m_pImplClient.Log() << L"Std exception: " << exception.what();
+                m_logger.Log() << L"Std exception: " << exception.what();
             }
             return S_OK;
         }
 
         virtual HRESULT __stdcall Shutdown() override
         {
-            m_pImplClient.Log() << L"CProfilerCallback::Shutdown";
+            m_logger.Log() << L"CProfilerCallback::Shutdown";
             try
             {
                 g_cb = nullptr;
@@ -506,84 +484,84 @@ namespace Drill4dotNet
             catch (const _com_error& exception)
             {
                 HRESULT errorCode = exception.Error();
-                m_pImplClient.Log() << L"COM error: " << HexOutput(errorCode) << " " << exception.ErrorMessage();
+                m_logger.Log() << L"COM error: " << HexOutput(errorCode) << " " << exception.ErrorMessage();
                 return errorCode;
             }
             catch (const std::exception& exception)
             {
-                m_pImplClient.Log() << L"Std exception: " << exception.what();
+                m_logger.Log() << L"Std exception: " << exception.what();
             }
             return S_OK;
         }
 
         virtual HRESULT __stdcall AppDomainCreationStarted(AppDomainID appDomainId) override
         {
-            m_pImplClient.Log() << L"CProfilerCallback::AppDomainCreationStarted(" << appDomainId << ")";
+            m_logger.Log() << L"CProfilerCallback::AppDomainCreationStarted(" << appDomainId << ")";
             return S_OK;
         }
 
         virtual HRESULT __stdcall AppDomainCreationFinished(AppDomainID appDomainId, HRESULT hrStatus) override
         {
-            m_pImplClient.Log() << L"CProfilerCallback::AppDomainCreationFinished(" << appDomainId << "), with status: " << HexOutput(hrStatus);
+            m_logger.Log() << L"CProfilerCallback::AppDomainCreationFinished(" << appDomainId << "), with status: " << HexOutput(hrStatus);
             try
             {
                 // valid when the Finished event is called
                 std::optional<AppDomainInfo> info = m_corProfilerInfo->TryGetAppDomainInfo(appDomainId);
                 if (info)
                 {
-                    m_pImplClient.Log() << L"Domain name: " << info->name << L", process id: " << info->processId;
+                    m_logger.Log() << L"Domain name: " << info->name << L", process id: " << info->processId;
                     GetInfoHandler().MapAppDomainInfo(appDomainId, info.value());
                 }
             }
             catch (const _com_error& exception)
             {
                 HRESULT errorCode = exception.Error();
-                m_pImplClient.Log() << L"COM error: " << HexOutput(errorCode) << " " << exception.ErrorMessage();
+                m_logger.Log() << L"COM error: " << HexOutput(errorCode) << " " << exception.ErrorMessage();
             }
             catch (const std::exception& exception)
             {
-                m_pImplClient.Log() << L"Std exception: " << exception.what();
+                m_logger.Log() << L"Std exception: " << exception.what();
             }
             return S_OK;
         }
 
         virtual HRESULT __stdcall AppDomainShutdownStarted(AppDomainID appDomainId) override
         {
-            m_pImplClient.Log() << L"CProfilerCallback::AppDomainShutdownStarted(" << appDomainId << ")";
+            m_logger.Log() << L"CProfilerCallback::AppDomainShutdownStarted(" << appDomainId << ")";
             try
             {
                 GetInfoHandler().OutputAppDomainInfo(appDomainId);
             }
             catch (const std::exception& exception)
             {
-                m_pImplClient.Log() << L"Std exception: " << exception.what();
+                m_logger.Log() << L"Std exception: " << exception.what();
             }
             return S_OK;
         }
 
         virtual HRESULT __stdcall AppDomainShutdownFinished(AppDomainID appDomainId, HRESULT hrStatus) override
         {
-            m_pImplClient.Log() << L"CProfilerCallback::AppDomainShutdownFinished(" << appDomainId << "), with status: " << HexOutput(hrStatus);
+            m_logger.Log() << L"CProfilerCallback::AppDomainShutdownFinished(" << appDomainId << "), with status: " << HexOutput(hrStatus);
             try
             {
                 GetInfoHandler().OutputAppDomainInfo(appDomainId);
             }
             catch (const std::exception& exception)
             {
-                m_pImplClient.Log() << L"Std exception: " << exception.what();
+                m_logger.Log() << L"Std exception: " << exception.what();
             }
             return S_OK;
         }
 
         virtual HRESULT __stdcall AssemblyLoadStarted(AssemblyID assemblyId) override
         {
-            m_pImplClient.Log() << L"CProfilerCallback::AssemblyLoadStarted(" << assemblyId << ")";
+            m_logger.Log() << L"CProfilerCallback::AssemblyLoadStarted(" << assemblyId << ")";
             return S_OK;
         }
 
         virtual HRESULT __stdcall AssemblyLoadFinished(AssemblyID assemblyId, HRESULT hrStatus) override
         {
-            m_pImplClient.Log() << L"CProfilerCallback::AssemblyLoadFinished(" << assemblyId << "), with status: " << HexOutput(hrStatus);
+            m_logger.Log() << L"CProfilerCallback::AssemblyLoadFinished(" << assemblyId << "), with status: " << HexOutput(hrStatus);
             try
             {
                 // valid when the Finished event is called
@@ -597,52 +575,52 @@ namespace Drill4dotNet
             catch (const _com_error& exception)
             {
                 HRESULT errorCode = exception.Error();
-                m_pImplClient.Log() << L"COM error: " << HexOutput(errorCode) << " " << exception.ErrorMessage();
+                m_logger.Log() << L"COM error: " << HexOutput(errorCode) << " " << exception.ErrorMessage();
             }
             catch (const std::exception& exception)
             {
-                m_pImplClient.Log() << L"Std exception: " << exception.what();
+                m_logger.Log() << L"Std exception: " << exception.what();
             }
             return S_OK;
         }
 
         virtual HRESULT __stdcall AssemblyUnloadStarted(AssemblyID assemblyId) override
         {
-            m_pImplClient.Log() << L"CProfilerCallback::AssemblyUnloadStarted(" << assemblyId << ")";
+            m_logger.Log() << L"CProfilerCallback::AssemblyUnloadStarted(" << assemblyId << ")";
             try
             {
                 GetInfoHandler().OutputAssemblyInfo(assemblyId);
             }
             catch (const std::exception& exception)
             {
-                m_pImplClient.Log() << L"Std exception: " << exception.what();
+                m_logger.Log() << L"Std exception: " << exception.what();
             }
             return S_OK;
         }
 
         virtual HRESULT __stdcall AssemblyUnloadFinished(AssemblyID assemblyId, HRESULT hrStatus) override
         {
-            m_pImplClient.Log() << L"CProfilerCallback::AssemblyUnloadFinished(" << assemblyId << "), with status: " << HexOutput(hrStatus);
+            m_logger.Log() << L"CProfilerCallback::AssemblyUnloadFinished(" << assemblyId << "), with status: " << HexOutput(hrStatus);
             try
             {
                 GetInfoHandler().OutputAssemblyInfo(assemblyId);
             }
             catch (const std::exception& exception)
             {
-                m_pImplClient.Log() << L"Std exception: " << exception.what();
+                m_logger.Log() << L"Std exception: " << exception.what();
             }
             return S_OK;
         }
 
         virtual HRESULT __stdcall ModuleLoadStarted(ModuleID moduleId) override\
         {
-            m_pImplClient.Log() << L"CProfilerCallback::ModuleLoadStarted(" << moduleId << ")";
+            m_logger.Log() << L"CProfilerCallback::ModuleLoadStarted(" << moduleId << ")";
             return S_OK;
         }
 
         virtual HRESULT __stdcall ModuleLoadFinished(ModuleID moduleId, HRESULT hrStatus) override
         {
-            m_pImplClient.Log() << L"CProfilerCallback::ModuleLoadFinished(" << moduleId << ")";
+            m_logger.Log() << L"CProfilerCallback::ModuleLoadFinished(" << moduleId << ")";
             try
             {
                 // valid when the Finished event is called
@@ -656,52 +634,52 @@ namespace Drill4dotNet
             catch (const _com_error& exception)
             {
                 HRESULT errorCode = exception.Error();
-                m_pImplClient.Log() << L"COM error: " << HexOutput(errorCode) << " " << exception.ErrorMessage();
+                m_logger.Log() << L"COM error: " << HexOutput(errorCode) << " " << exception.ErrorMessage();
             }
             catch (const std::exception& exception)
             {
-                m_pImplClient.Log() << L"Std exception: " << exception.what();
+                m_logger.Log() << L"Std exception: " << exception.what();
             }
             return S_OK;
         }
 
         virtual HRESULT __stdcall ModuleUnloadStarted(ModuleID moduleId) override
         {
-            m_pImplClient.Log() << L"CProfilerCallback::ModuleUnloadStarted(" << moduleId << ")";
+            m_logger.Log() << L"CProfilerCallback::ModuleUnloadStarted(" << moduleId << ")";
             try
             {
                 GetInfoHandler().OutputModuleInfo(moduleId);
             }
             catch (const std::exception& exception)
             {
-                m_pImplClient.Log() << L"Std exception: " << exception.what();
+                m_logger.Log() << L"Std exception: " << exception.what();
             }
             return S_OK;
         }
 
         virtual HRESULT __stdcall ModuleUnloadFinished(ModuleID moduleId, HRESULT hrStatus) override
         {
-            m_pImplClient.Log() << L"CProfilerCallback::ModuleUnloadFinished(" << moduleId << ")";
+            m_logger.Log() << L"CProfilerCallback::ModuleUnloadFinished(" << moduleId << ")";
             try
             {
                 GetInfoHandler().OutputModuleInfo(moduleId);
             }
             catch (const std::exception& exception)
             {
-                m_pImplClient.Log() << L"Std exception: " << exception.what();
+                m_logger.Log() << L"Std exception: " << exception.what();
             }
             return S_OK;
         }
 
         virtual HRESULT __stdcall ClassLoadStarted(ClassID classId) override
         {
-            m_pImplClient.Log() << L"CProfilerCallback::ClassLoadStarted(" << classId << ")";
+            m_logger.Log() << L"CProfilerCallback::ClassLoadStarted(" << classId << ")";
             return S_OK;
         }
 
         virtual HRESULT __stdcall ClassLoadFinished(ClassID classId, HRESULT hrStatus) override
         {
-            m_pImplClient.Log() << L"CProfilerCallback::ClassLoadFinished(" << classId << ")";
+            m_logger.Log() << L"CProfilerCallback::ClassLoadFinished(" << classId << ")";
             try
             {
                 // valid when the Finished event is called
@@ -712,7 +690,7 @@ namespace Drill4dotNet
                     if (const std::optional<ClassInfo> info { TryGetClassInfo(
                             m_corProfilerInfo->TryGetModuleMetadata(
                                 classInfoWithoutName->moduleId,
-                                TLogger(m_pImplClient)),
+                                Logger{}),
                             classInfoWithoutName) }
                     ; info.has_value())
                     {
@@ -724,46 +702,46 @@ namespace Drill4dotNet
             catch (const _com_error& exception)
             {
                 HRESULT errorCode = exception.Error();
-                m_pImplClient.Log() << L"COM error: " << HexOutput(errorCode) << " " << exception.ErrorMessage();
+                m_logger.Log() << L"COM error: " << HexOutput(errorCode) << " " << exception.ErrorMessage();
             }
             catch (const std::exception& exception)
             {
-                m_pImplClient.Log() << L"Std exception: " << exception.what();
+                m_logger.Log() << L"Std exception: " << exception.what();
             }
             return S_OK;
         }
 
         virtual HRESULT __stdcall ClassUnloadStarted(ClassID classId) override
         {
-            m_pImplClient.Log() << L"CProfilerCallback::ClassUnloadStarted(" << classId << ")";
+            m_logger.Log() << L"CProfilerCallback::ClassUnloadStarted(" << classId << ")";
             try
             {
                 GetInfoHandler().OutputClassInfo(classId);
             }
             catch (const std::exception& exception)
             {
-                m_pImplClient.Log() << L"Std exception: " << exception.what();
+                m_logger.Log() << L"Std exception: " << exception.what();
             }
             return S_OK;
         }
 
         virtual HRESULT __stdcall ClassUnloadFinished(ClassID classId, HRESULT hrStatus) override
         {
-            m_pImplClient.Log() << L"CProfilerCallback::ClassUnloadFinished(" << classId << ")";
+            m_logger.Log() << L"CProfilerCallback::ClassUnloadFinished(" << classId << ")";
             try
             {
                 GetInfoHandler().OutputClassInfo(classId);
             }
             catch (const std::exception& exception)
             {
-                m_pImplClient.Log() << L"Std exception: " << exception.what();
+                m_logger.Log() << L"Std exception: " << exception.what();
             }
             return S_OK;
         }
 
         virtual HRESULT __stdcall JITCompilationStarted(FunctionID functionId, BOOL fIsSafeToBlock) override
         {
-            GetClient().Log() << L"CProfilerCallback::JITCompilationStarted";
+            m_logger.Log() << L"CProfilerCallback::JITCompilationStarted";
             try
             {
                 // This example injection will insert artificial calls to Console.WriteLine
@@ -777,7 +755,7 @@ namespace Drill4dotNet
 
                 const auto moduleMetaData { m_corProfilerInfo->GetModuleMetadata(
                     functionInfoWithoutName.moduleId,
-                    LogToProClient(m_pImplClient)) };
+                    Logger{}) };
 
                 const FunctionInfo functionInfo { GetFunctionInfo(moduleMetaData, functionInfoWithoutName) };
 
@@ -791,7 +769,7 @@ namespace Drill4dotNet
                 const std::vector<std::byte> functionBytes {
                     m_corProfilerInfo->GetMethodIntermediateLanguageBody(functionInfo) };
 
-                GetClient().Log()
+                m_logger.Log()
                     << L"Compiling function "
                     << InSquareBrackets(functionId)
                     << L" "
@@ -813,7 +791,7 @@ namespace Drill4dotNet
 
                 auto functionBody = MethodBody(functionBytes);
 
-                GetClient().Log()
+                m_logger.Log()
                     << L"Initially decompiled raw bytes:"
                     << std::endl
                     << functionBytes
@@ -825,11 +803,11 @@ namespace Drill4dotNet
                 const bool roundTripOk{ functionBody.Compile() == functionBytes };
                 if (roundTripOk)
                 {
-                    GetClient().Log() << L"Compiling without any injection is OK.";
+                    m_logger.Log() << L"Compiling without any injection is OK.";
                 }
                 else
                 {
-                    GetClient().Log() << L"Error: got different bytes when compiled method without any injection.";
+                    m_logger.Log() << L"Error: got different bytes when compiled method without any injection.";
                     return S_OK;
                 }
 
@@ -941,7 +919,7 @@ namespace Drill4dotNet
                     label);
 
                 const std::vector<std::byte> afterInjection = functionBody.Compile();
-                GetClient().Log()
+                m_logger.Log()
                     << L"After injection: IL Body size "
                     << afterInjection.size()
                     << L", raw bytes:"
@@ -953,13 +931,13 @@ namespace Drill4dotNet
                     << functionBody;
 
                 m_corProfilerInfo->SetILFunctionBody(functionInfo, afterInjection);
-                GetClient().Log() << L"Injected successfully.";
+                m_logger.Log() << L"Injected successfully.";
 
                 return S_OK;
             }
             catch (const _com_error& exception)
             {
-                m_pImplClient.Log()
+                m_logger.Log()
                     << L"COM error: "
                     << HexOutput(exception.Error())
                     << " "
@@ -969,7 +947,7 @@ namespace Drill4dotNet
             }
             catch (const std::exception& exception)
             {
-                m_pImplClient.Log() << L"Std exception: " << exception.what();
+                m_logger.Log() << L"Std exception: " << exception.what();
             }
             return S_OK;
         }
