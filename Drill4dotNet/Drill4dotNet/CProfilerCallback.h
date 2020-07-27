@@ -355,7 +355,7 @@ namespace Drill4dotNet
                 {
                     GetClient().GetConnector().InitializeAgent();
 
-                    while (true)
+                    while (m_corProfilerInfo.has_value())
                     {
                         std::this_thread::sleep_for(std::chrono::seconds(1));
                     }
