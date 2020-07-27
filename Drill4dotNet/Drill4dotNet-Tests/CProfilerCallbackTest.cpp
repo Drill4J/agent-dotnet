@@ -79,6 +79,9 @@ TEST_F(CProfilerCallbackTest, Initialize_Shutdown)
     std::function<std::vector<AstEntity>()> treeProvider{};
     EXPECT_CALL(proClient->GetConnector(), TreeProvider()).WillOnce(ReturnRef(treeProvider));
 
+    std::function<void(const PackagesPrefixes&)> packagesPrefixesHandler{};
+    EXPECT_CALL(proClient->GetConnector(), PackagesPrefixesHandler()).WillOnce(ReturnRef(packagesPrefixesHandler));
+
     IUnknown* p = reinterpret_cast<IUnknown*>(this);
     EXPECT_HRESULT_SUCCEEDED(profilerCallback->Initialize(p));
     EXPECT_EQ(typeid(std::optional<CoreInteractMock>), typeid(profilerCallback->GetCorProfilerInfo()) );
