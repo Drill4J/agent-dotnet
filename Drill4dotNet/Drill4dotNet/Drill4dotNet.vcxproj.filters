@@ -92,12 +92,6 @@
     <ClInclude Include="MethodHeader.h">
       <Filter>Rewiting</Filter>
     </ClInclude>
-    <ClInclude Include="Connector.h">
-      <Filter>AdminCommunication</Filter>
-    </ClInclude>
-    <ClInclude Include="ConnectorImplementation.h">
-      <Filter>AdminCommunication</Filter>
-    </ClInclude>
     <ClInclude Include="CDrillProfiler.h">
       <Filter>Main</Filter>
     </ClInclude>
@@ -151,6 +145,12 @@
     </ClInclude>
     <ClInclude Include="LogBuffer.h">
       <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="IConnector.h">
+      <Filter>AdminCommunication</Filter>
+    </ClInclude>
+    <ClInclude Include="Connector.h">
+      <Filter>AdminCommunication</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -206,6 +206,9 @@
       <Filter>Utils</Filter>
     </ClCompile>
     <ClCompile Include="HttpPost.cpp">
+      <Filter>AdminCommunication</Filter>
+    </ClCompile>
+    <ClCompile Include="Connector.cpp">
       <Filter>AdminCommunication</Filter>
     </ClCompile>
   </ItemGroup>

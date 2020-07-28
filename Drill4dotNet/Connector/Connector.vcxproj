@@ -87,6 +87,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\Drill4dotNet\AdminDataStructures.cpp" />
+    <ClCompile Include="..\Drill4dotNet\Connector.cpp" />
     <ClCompile Include="..\Drill4dotNet\HttpPost.cpp" />
     <ClCompile Include="..\Drill4dotNet\OutputUtils.cpp" />
     <ClCompile Include="main.cpp" />
@@ -98,8 +99,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\Drill4dotNet\Connector.h" />
-    <ClInclude Include="..\Drill4dotNet\ConnectorImplementation.h" />
     <ClInclude Include="pch.h" />
   </ItemGroup>
   <ItemGroup>

@@ -1,12 +1,13 @@
 #include "pch.h"
 
-#include <ConnectorImplementation.h>
+#include <Connector.h>
 #include <HttpPost.h>
 #include <SessionControl.h>
 #include <iostream>
 #include <sstream>
 #include <thread>
 #include <atomic>
+#include <ProClient.h>
 
 int main(int argc, char** argv)
 {
@@ -26,8 +27,7 @@ int main(int argc, char** argv)
 
     try
     {
-        Connector connector {
-            []()
+        const auto treeProvider { []()
             {
                 return std::vector {
                     AstEntity {
@@ -40,18 +40,25 @@ int main(int argc, char** argv)
                                 L"my_return_type",
                                 1,
                                 std::vector { uint32_t { 42 } } } } } };
-            },
-            [](const PackagesPrefixes& prefixes)
+            } };
+
+        const auto packagesPrefixesHandler { [](const PackagesPrefixes& prefixes)
             {
                 std::wcout << L"Received packages prefixes settings:" << std::endl;
                 for (const auto& item : prefixes.packagesPrefixes)
                 {
                     std::wcout << L'\t' << item << std::endl;
                 }
-            }
-        };
+            } };
 
-        connector.InitializeAgent();
+        ProClient<
+            decltype(treeProvider),
+            decltype(packagesPrefixesHandler),
+            Connector,
+            ConsoleLogger
+        > client { treeProvider, packagesPrefixesHandler };
+
+        client.GetConnector().InitializeAgent();
         std::this_thread::sleep_for(std::chrono::seconds(16));
 
         SessionControl<HttpPost> sessionControl(

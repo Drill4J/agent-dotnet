@@ -122,7 +122,7 @@ namespace Drill4dotNet
         IsMetadataAssemblyImport MetaDataAssemblyImport,
         IMetadataImport MetaDataImport,
         IsLogger Logger>
-    class CProfilerCallback :
+        class CProfilerCallback :
         public CProfilerCallbackBase
     {
     protected:
@@ -137,10 +137,18 @@ namespace Drill4dotNet
             COR_PRF_MONITOR_JIT_COMPILATION |
             COR_PRF_MONITOR_ENTERLEAVE;
 
-        std::optional<ProClient<TConnector, Logger>> m_pImplClient{};
+        std::optional<
+            ProClient<
+            std::function<std::vector<AstEntity>()>,
+            std::function<void(const PackagesPrefixes&)>,
+            TConnector,
+            Logger>
+        > m_pImplClient;
         std::optional<CorProfilerInfo> m_corProfilerInfo;
         std::optional<std::vector<std::wstring>> m_packagesPrefixes;
         std::optional<std::thread> m_adminInteractionThread;
+        std::function<std::vector<AstEntity>()> m_treeProvider{};
+        std::function<void(const PackagesPrefixes&)> m_packagesPrefixesHandler{};
 
         inline static CProfilerCallback* g_cb = nullptr;
 
@@ -235,9 +243,99 @@ namespace Drill4dotNet
         CProfilerCallback(Logger logger)
             : m_logger(logger)
         {
+            m_treeProvider = [this]()
+            {
+                std::vector<AstEntity> result{};
+                uint32_t i { 1 };
+
+                for (const auto& file : std::filesystem::directory_iterator("."))
+                {
+                    if (file.path().extension() == L".dll"
+                        && (
+                            !m_packagesPrefixes.has_value()
+                            || std::find_if(
+                                m_packagesPrefixes->cbegin(),
+                                m_packagesPrefixes->cend(),
+                                [file](const std::wstring& prefix)
+                                {
+                                    return StartsWithIgnoreCase(std::wstring{ file.path().filename() }, prefix);
+                                }) != m_packagesPrefixes->cend()))
+                    {
+                        std::wcout << L"File found: " << file.path() << std::endl;
+
+                        MetaDataDispenser currentDllDispenser { Logger{} };
+                        MetaDataAssemblyImport currentDllAssemblyImport {
+                            currentDllDispenser.OpenScopeMetaDataAssemblyImport(
+                                file.path(), Logger{}) };
+
+                        AssemblyProps assemblyProps { currentDllAssemblyImport.GetAssemblyProps(currentDllAssemblyImport.GetAssemblyFromScope()) };
+
+                        MetaDataImport currentDllImport { currentDllDispenser.OpenScopeMetaDataImport(
+                            file.path(),
+                            Logger{}) };
+
+                        for (const auto& type : currentDllImport.EnumTypeDefinitions())
+                        {
+                            AstEntity typeAst {
+                                assemblyProps.Name,
+                                currentDllImport.GetTypeDefProps(type).Name };
+
+                            for (const auto& method : currentDllImport.EnumMethods(type))
+                            {
+                                MethodProps methodDetails { currentDllImport.GetMethodProps(method) };
+                                const ParseResult<MethodSignature> signature{
+                                    MethodSignature::Parse(methodDetails.SignatureBlob.cbegin(), methodDetails.SignatureBlob.cend()) };
+
+                                std::wstringstream returnType{};
+                                returnType << signature.ParsedValue.ReturnType();
+                                AstMethod methodAst {
+                                    .name { methodDetails.Name },
+                                    .returnType { returnType.str() },
+                                    .count { 1 },
+                                    .probes { i++ } };
+
+                                for (const auto& param : signature.ParsedValue.ParameterTypes())
+                                {
+                                    std::wstringstream parameter{};
+                                    parameter << param;
+                                    methodAst.params.push_back(parameter.str());
+                                }
+
+                                typeAst.methods.push_back(methodAst);
+                            }
+
+                            result.push_back(typeAst);
+                        }
+                    }
+                }
+
+                return result;
+            };
+
+            m_packagesPrefixesHandler = std::function{ [this](const PackagesPrefixes& prefixes)
+            {
+                std::vector<std::wstring> packagesPrefixes{};
+                for (auto&& prefix : prefixes.packagesPrefixes)
+                {
+                    if (prefix != L"")
+                    {
+                        packagesPrefixes.push_back(std::move(prefix));
+                    }
+                }
+
+                if (packagesPrefixes.empty())
+                {
+                    m_packagesPrefixes.reset();
+                }
+                else
+                {
+                    m_packagesPrefixes = std::move(packagesPrefixes);
+                }
+            } };
+
         }
 
-        ProClient<TConnector, Logger>& GetClient()
+        ProClient<decltype(m_treeProvider), decltype(m_packagesPrefixesHandler), TConnector, Logger>& GetClient()
         {
             return *m_pImplClient;
         }
@@ -258,96 +356,7 @@ namespace Drill4dotNet
             m_logger.Log() << L"CProfilerCallback::Initialize";
             try
             {
-                m_pImplClient.emplace();
-                GetClient().GetConnector().TreeProvider() = std::function { [this]()
-                {
-                    std::vector<AstEntity> result{};
-                    uint32_t i { 1 };
-
-                    for (const auto& file : std::filesystem::directory_iterator("."))
-                    {
-                        if (file.path().extension() == L".dll"
-                            && (
-                                !m_packagesPrefixes.has_value()
-                                || std::find_if(
-                                    m_packagesPrefixes->cbegin(),
-                                    m_packagesPrefixes->cend(),
-                                    [file](const std::wstring& prefix)
-                                    {
-                                        return StartsWithIgnoreCase(std::wstring{ file.path().filename() }, prefix);
-                                    }) != m_packagesPrefixes->cend()))
-                        {
-                            std::wcout << L"File found: " << file.path() << std::endl;
-
-                            MetaDataDispenser currentDllDispenser { Logger{} };
-                            MetaDataAssemblyImport currentDllAssemblyImport {
-                                currentDllDispenser.OpenScopeMetaDataAssemblyImport(
-                                    file.path(), Logger{}) };
-
-                            AssemblyProps assemblyProps { currentDllAssemblyImport.GetAssemblyProps(currentDllAssemblyImport.GetAssemblyFromScope()) };
-
-                            MetaDataImport currentDllImport { currentDllDispenser.OpenScopeMetaDataImport(
-                                file.path(),
-                                Logger{}) };
-
-                            for (const auto& type : currentDllImport.EnumTypeDefinitions())
-                            {
-                                AstEntity typeAst {
-                                    assemblyProps.Name,
-                                    currentDllImport.GetTypeDefProps(type).Name };
-
-                                for (const auto& method : currentDllImport.EnumMethods(type))
-                                {
-                                    MethodProps methodDetails { currentDllImport.GetMethodProps(method) };
-                                    const ParseResult<MethodSignature> signature{
-                                        MethodSignature::Parse(methodDetails.SignatureBlob.cbegin(), methodDetails.SignatureBlob.cend()) };
-
-                                    std::wstringstream returnType{};
-                                    returnType << signature.ParsedValue.ReturnType();
-                                    AstMethod methodAst {
-                                        .name { methodDetails.Name },
-                                        .returnType { returnType.str() },
-                                        .count { 1 },
-                                        .probes { i++ } };
-
-                                    for (const auto& param : signature.ParsedValue.ParameterTypes())
-                                    {
-                                        std::wstringstream parameter{};
-                                        parameter << param;
-                                        methodAst.params.push_back(parameter.str());
-                                    }
-
-                                    typeAst.methods.push_back(methodAst);
-                                }
-
-                                result.push_back(typeAst);
-                            }
-                        }
-                    }
-
-                    return result;
-                } };
-
-                GetClient().GetConnector().PackagesPrefixesHandler() = std::function { [this](const PackagesPrefixes& prefixes)
-                {
-                    std::vector<std::wstring> packagesPrefixes{};
-                    for (auto&& prefix : prefixes.packagesPrefixes)
-                    {
-                        if (prefix != L"")
-                        {
-                            packagesPrefixes.push_back(std::move(prefix));
-                        }
-                    }
-
-                    if (packagesPrefixes.empty())
-                    {
-                        m_packagesPrefixes.reset();
-                    }
-                    else
-                    {
-                        m_packagesPrefixes = std::move(packagesPrefixes);
-                    }
-                } };
+                m_pImplClient.emplace(m_treeProvider, m_packagesPrefixesHandler);
 
                 m_adminInteractionThread.emplace([this]()
                 {

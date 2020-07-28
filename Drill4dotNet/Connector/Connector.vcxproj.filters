@@ -30,14 +30,11 @@
     <ClCompile Include="..\Drill4dotNet\HttpPost.cpp">
       <Filter>Tested Source</Filter>
     </ClCompile>
+    <ClCompile Include="..\Drill4dotNet\Connector.cpp">
+      <Filter>Tested Source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\Drill4dotNet\Connector.h">
-      <Filter>Tested Source</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Drill4dotNet\ConnectorImplementation.h">
-      <Filter>Tested Source</Filter>
-    </ClInclude>
     <ClInclude Include="pch.h">
       <Filter>Test Files</Filter>
     </ClInclude>

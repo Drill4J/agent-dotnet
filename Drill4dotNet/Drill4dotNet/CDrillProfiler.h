@@ -5,16 +5,15 @@
 #include "ProClient.h"
 #include "CorProfilerInfo.h"
 #include "MetaDataDispenser.h"
-#include "ConnectorImplementation.h"
+#include "Connector.h"
 
 namespace Drill4dotNet
 {
-    using TConnector = Connector<std::function<std::vector<AstEntity>()>, std::function<void(const PackagesPrefixes&)>>;
     class ATL_NO_VTABLE CDrillProfiler
         : public ATL::CComObjectRootEx<ATL::CComSingleThreadModel>
         , public ATL::CComCoClass<CDrillProfiler, &CLSID_DrillProfiler>
         , public CProfilerCallback<
-            TConnector,
+            Connector,
             CorProfilerInfo<ConsoleLogger>,
             MetaDataDispenser<ConsoleLogger>,
             MetaDataAssemblyImport<ConsoleLogger>,

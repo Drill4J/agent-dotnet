@@ -129,9 +129,9 @@
   <ItemGroup>
     <ClInclude Include="AdminDataStructures.h" />
     <ClInclude Include="ByteUtils.h" />
-    <ClInclude Include="Connector.h" />
+    <ClInclude Include="IConnector.h" />
     <ClInclude Include="ComInitializer.h" />
-    <ClInclude Include="ConnectorImplementation.h" />
+    <ClInclude Include="Connector.h" />
     <ClInclude Include="CProfilerCallbackBase.h" />
     <ClInclude Include="HttpPost.h" />
     <ClInclude Include="ICorProfilerInfo.h" />
@@ -172,6 +172,7 @@
   <ItemGroup>
     <ClCompile Include="AdminDataStructures.cpp" />
     <ClCompile Include="CDrillProfiler.cpp" />
+    <ClCompile Include="Connector.cpp" />
     <ClCompile Include="CorGUIDs.cpp" />
     <ClCompile Include="CProfilerCallbackBase.cpp" />
     <ClCompile Include="dllmain.cpp" />
