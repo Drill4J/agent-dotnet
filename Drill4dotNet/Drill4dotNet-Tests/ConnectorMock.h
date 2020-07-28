@@ -8,15 +8,24 @@ namespace Drill4dotNet
 {
     class ConnectorMock
     {
+    private:
+        std::function<std::vector<AstEntity>()> m_tree{};
+        std::function<void(const PackagesPrefixes&)> m_packagesPrefixesHandler{};
+
     public:
-        MOCK_METHOD(std::function<std::vector<AstEntity>()>&, TreeProvider, ());
-        MOCK_METHOD(std::function<void(const PackagesPrefixes&)>&, PackagesPrefixesHandler, ());
+        std::function<std::vector<AstEntity>()>& TreeProvider()
+        {
+            return m_tree;
+        }
+
+        std::function<void(const PackagesPrefixes&)>& PackagesPrefixesHandler()
+        {
+            return m_packagesPrefixesHandler;
+        }
+
         MOCK_METHOD(void, InitializeAgent, ());
         MOCK_METHOD(void, SendAgentMessage, (const std::string&, const std::string&, const std::string&));
         MOCK_METHOD(void, SendPluginMessage, (const std::string&, const std::string&));
-        MOCK_METHOD(std::optional<ConnectorQueueItem>, GetNextMessage, ());
-        MOCK_METHOD(void, WaitForNextMessage, ());
-        MOCK_METHOD(void, WaitForNextMessage, (DWORD));
 
         ConnectorMock()
         {

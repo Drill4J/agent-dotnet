@@ -137,7 +137,7 @@ namespace Drill4dotNet
             COR_PRF_MONITOR_JIT_COMPILATION |
             COR_PRF_MONITOR_ENTERLEAVE;
 
-        ProClient<TConnector, Logger>& m_pImplClient;
+        std::optional<ProClient<TConnector, Logger>> m_pImplClient{};
         std::optional<CorProfilerInfo> m_corProfilerInfo;
         std::optional<std::vector<std::wstring>> m_packagesPrefixes;
         std::optional<std::thread> m_adminInteractionThread;
@@ -232,17 +232,14 @@ namespace Drill4dotNet
         }
 
     public:
-        CProfilerCallback(
-            ProClient<TConnector, Logger>& client,
-            Logger logger)
-            : m_pImplClient(client),
-            m_logger(logger)
+        CProfilerCallback(Logger logger)
+            : m_logger(logger)
         {
         }
 
         ProClient<TConnector, Logger>& GetClient()
         {
-            return  m_pImplClient;
+            return *m_pImplClient;
         }
 
         const std::optional<CorProfilerInfo>& GetCorProfilerInfo()
@@ -252,7 +249,7 @@ namespace Drill4dotNet
 
         InfoHandler<Logger>& GetInfoHandler()
         {
-            return m_pImplClient.GetInfoHandler();
+            return m_pImplClient->GetInfoHandler();
         }
 
         // Inherited via ICorProfilerCallback
@@ -261,6 +258,7 @@ namespace Drill4dotNet
             m_logger.Log() << L"CProfilerCallback::Initialize";
             try
             {
+                m_pImplClient.emplace();
                 GetClient().GetConnector().TreeProvider() = std::function { [this]()
                 {
                     std::vector<AstEntity> result{};

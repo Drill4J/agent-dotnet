@@ -15,8 +15,7 @@ class CProfilerCallbackTest : public Test
 public:
     void SetUp()
     {
-        proClient.emplace();
-        profilerCallback.emplace(*proClient, TrivialLogger{});
+        profilerCallback.emplace(TrivialLogger{});
         WCHAR injectionFileName[_MAX_PATH];
         ::GetModuleFileName(NULL, injectionFileName, _MAX_PATH);
         Drill4dotNet::s_Drill4dotNetLibFilePath = injectionFileName;
@@ -25,10 +24,8 @@ public:
     void TearDown()
     {
         profilerCallback.reset();
-        proClient.reset();
     }
 
-    std::optional<ProClient<ConnectorMock, TrivialLogger>> proClient;
     std::optional<CProfilerCallback<
         ConnectorMock,
         CoreInteractMock,
@@ -40,7 +37,7 @@ public:
 
 TEST_F(CProfilerCallbackTest, GetClient)
 {
-    EXPECT_EQ(&*proClient, &profilerCallback->GetClient());
+    profilerCallback->GetClient();
 }
 
 TEST_F(CProfilerCallbackTest, Initialize_Shutdown)
@@ -75,12 +72,6 @@ TEST_F(CProfilerCallbackTest, Initialize_Shutdown)
         EXPECT_CALL(metaDataImportMock, GetTypeDefProps(expectedInjection.Class)).WillOnce(Return(TypeDefProps { injectionClassName, 0, 0 }));
         EXPECT_CALL(metaDataImportMock, EnumMethodsWithName(expectedInjection.Class, injectionMethodName)).WillOnce(Return(std::vector { expectedInjection.Function }));
     }) };
-
-    std::function<std::vector<AstEntity>()> treeProvider{};
-    EXPECT_CALL(proClient->GetConnector(), TreeProvider()).WillOnce(ReturnRef(treeProvider));
-
-    std::function<void(const PackagesPrefixes&)> packagesPrefixesHandler{};
-    EXPECT_CALL(proClient->GetConnector(), PackagesPrefixesHandler()).WillOnce(ReturnRef(packagesPrefixesHandler));
 
     IUnknown* p = reinterpret_cast<IUnknown*>(this);
     EXPECT_HRESULT_SUCCEEDED(profilerCallback->Initialize(p));

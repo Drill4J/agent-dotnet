@@ -6,8 +6,7 @@ namespace Drill4dotNet
 {
 
     CDrillProfiler::CDrillProfiler()
-        : CProfilerCallback(dynamic_cast<ProClient<TConnector, ConsoleLogger>&>(*this), ConsoleLogger{})
-        , ProClient()
+        : CProfilerCallback(ConsoleLogger{})
     {
     }
 

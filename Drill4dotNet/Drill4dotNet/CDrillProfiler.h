@@ -13,7 +13,6 @@ namespace Drill4dotNet
     class ATL_NO_VTABLE CDrillProfiler
         : public ATL::CComObjectRootEx<ATL::CComSingleThreadModel>
         , public ATL::CComCoClass<CDrillProfiler, &CLSID_DrillProfiler>
-        , public ProClient<TConnector, ConsoleLogger>
         , public CProfilerCallback<
             TConnector,
             CorProfilerInfo<ConsoleLogger>,
