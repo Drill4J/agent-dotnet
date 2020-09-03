@@ -24,6 +24,14 @@ namespace Drill4dotNet
         { f(prefixes) } -> std::same_as<void>;
     };
 
+    // Determines whether the given functor can be
+    // used as a source of coverage data.
+    template <typename F>
+    concept IsCoverageDataSource = requires (F f)
+    {
+        { f() } -> std::same_as<std::vector<ExecClassData>>;
+    };
+
     class TrivialTreeProvider
     {
     public:
@@ -47,6 +55,7 @@ namespace Drill4dotNet
     template <
         IsTreeProvider TreeProvider,
         IsPackagesPrefixesHandler PackagesPrefixesHandler,
+        IsCoverageDataSource CoverageDataSource,
         IsConnector TConnector,
         IsLogger Logger>
     class ProClient
@@ -56,6 +65,7 @@ namespace Drill4dotNet
         TConnector m_connector;
         TreeProvider m_treeProvider;
         PackagesPrefixesHandler m_packagesPrefixesHandler;
+        CoverageDataSource m_coverageDataSource;
 
         inline static ProClient* s_this;
 
@@ -117,14 +127,7 @@ namespace Drill4dotNet
                         StopSession stopSession{ messageText.get<StopSession>() };
                         nlohmann::json coverageDataPart = CoverDataPart{
                             stopSession.payload.sessionId,
-                            std::vector{
-                                ExecClassData{
-                                    .id = 0,
-                                    .className = L"my_path/my_name",
-                                    .probes = { true },
-                                    .testName = L"my_test"
-                                }
-                            }
+                            s_this->m_coverageDataSource()
                         };
 
                         s_this->m_connector.SendPluginMessage(
@@ -159,13 +162,14 @@ namespace Drill4dotNet
     public:
         ProClient(
             TreeProvider treeProvider,
-            PackagesPrefixesHandler packagesPrefixesHandler)
+            PackagesPrefixesHandler packagesPrefixesHandler,
+            CoverageDataSource coverageDataSource)
             : m_connector(ReceiveMessage),
             m_treeProvider { treeProvider },
-            m_packagesPrefixesHandler { packagesPrefixesHandler }
+            m_packagesPrefixesHandler { packagesPrefixesHandler },
+            m_coverageDataSource { coverageDataSource }
         {
             s_this = this;
-
         }
 
         InfoHandler<Logger>& GetInfoHandler() &

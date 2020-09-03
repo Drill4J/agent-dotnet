@@ -51,12 +51,29 @@ int main(int argc, char** argv)
                 }
             } };
 
+        const auto coverageDataSource { []()
+        {
+            return std::vector {
+                ExecClassData {
+                    .id = 0,
+                    .className = L"my_path/my_name",
+                    .probes = { true },
+                    .testName = L"my_test"
+                }
+            };
+        } };
+
+
         ProClient<
             decltype(treeProvider),
             decltype(packagesPrefixesHandler),
+            decltype(coverageDataSource),
             Connector,
             ConsoleLogger
-        > client { treeProvider, packagesPrefixesHandler };
+        > client {
+            treeProvider,
+            packagesPrefixesHandler,
+            coverageDataSource };
 
         client.GetConnector().InitializeAgent();
         std::this_thread::sleep_for(std::chrono::seconds(16));

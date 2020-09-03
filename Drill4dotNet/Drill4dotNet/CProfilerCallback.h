@@ -20,6 +20,8 @@
 #include "Connector.h"
 #include "ProClient.h"
 #include "Signature.h"
+#include "HttpPost.h"
+#include "SessionControl.h"
 
 namespace Drill4dotNet
 {
@@ -141,14 +143,19 @@ namespace Drill4dotNet
             ProClient<
             std::function<std::vector<AstEntity>()>,
             std::function<void(const PackagesPrefixes&)>,
+            std::function<std::vector<ExecClassData>()>,
             TConnector,
             Logger>
         > m_pImplClient;
         std::optional<CorProfilerInfo> m_corProfilerInfo;
         std::optional<std::vector<std::wstring>> m_packagesPrefixes;
         std::optional<std::thread> m_adminInteractionThread;
+        std::optional<std::vector<ExecClassData>> m_coverageData;
+        std::optional<std::vector<AstEntity>> m_tree;
+        std::optional<SessionControl<HttpPost>> m_sessionControl;
         std::function<std::vector<AstEntity>()> m_treeProvider{};
         std::function<void(const PackagesPrefixes&)> m_packagesPrefixesHandler{};
+        std::function<std::vector<ExecClassData>()> m_coverageDataSource{};
 
         inline static CProfilerCallback* g_cb = nullptr;
 
@@ -165,6 +172,34 @@ namespace Drill4dotNet
                 functionInfo.has_value())
             {
                 g_cb->m_logger.Log() << L"Enter function: " << functionInfo->fullName();
+
+                if (functionInfo->fullName() == L"HelloWorld.Program.Main")
+                { 
+                    std::wcout << "this";
+                }
+
+                if (const auto typeLocation{ std::find_if(
+                    g_cb->m_tree->cbegin(),
+                    g_cb->m_tree->cend(),
+                    [&functionInfo](const auto& x) { return x.name == functionInfo->name.className; }) }
+                ; typeLocation != g_cb->m_tree->cend())
+                {
+                    const ptrdiff_t typeIndex { typeLocation - g_cb->m_tree->cbegin() };
+                    if (const auto methodLocation { std::find_if(
+                        typeLocation->methods.cbegin(),
+                        typeLocation->methods.cend(),
+                        [&functionInfo](const auto x)
+                        { return x.name == functionInfo->name.ownName; }
+                        )}
+                    ; methodLocation != typeLocation->methods.cend())
+                    {
+                        const ptrdiff_t methodIndex { methodLocation - typeLocation->methods.cbegin() };
+                        // if (typeIndex < g_cb->m_coverageData->size()
+                        //     && methodIndex < (*(g_cb->m_coverageData))[typeIndex].probes.size())
+                        (*(g_cb->m_coverageData))[typeIndex].probes[methodIndex] = true;
+                       // (*(g_cb->m_coverageData))[0].probes[0] = true;
+                    }
+                }
             }
             else
             {
@@ -246,8 +281,9 @@ namespace Drill4dotNet
             m_treeProvider = [this]()
             {
                 std::vector<AstEntity> result{};
+                std::vector<ExecClassData> coverageData{};
                 uint32_t i { 1 };
-
+                uint32_t j { 1 };
                 for (const auto& file : std::filesystem::directory_iterator("."))
                 {
                     if (file.path().extension() == L".dll"
@@ -279,9 +315,12 @@ namespace Drill4dotNet
                             AstEntity typeAst {
                                 assemblyProps.Name,
                                 currentDllImport.GetTypeDefProps(type).Name };
-
+                            ExecClassData coveragePart { j++, typeAst.path + L"/" + typeAst.name };
+                            coveragePart.testName = L"my_test";
+                            int methodsCount { 0 };
                             for (const auto& method : currentDllImport.EnumMethods(type))
                             {
+                                ++methodsCount;
                                 MethodProps methodDetails { currentDllImport.GetMethodProps(method) };
                                 const ParseResult<MethodSignature> signature{
                                     MethodSignature::Parse(methodDetails.SignatureBlob.cbegin(), methodDetails.SignatureBlob.cend()) };
@@ -304,11 +343,15 @@ namespace Drill4dotNet
                                 typeAst.methods.push_back(methodAst);
                             }
 
+                            coveragePart.probes.resize(methodsCount, false);
+                            coverageData.push_back(coveragePart);
                             result.push_back(typeAst);
                         }
                     }
                 }
 
+                m_tree = result;
+                m_coverageData = std::move(coverageData);
                 return result;
             };
 
@@ -333,9 +376,13 @@ namespace Drill4dotNet
                 }
             } };
 
+            m_coverageDataSource = [this]()
+            {
+                return *m_coverageData;
+            };
         }
 
-        ProClient<decltype(m_treeProvider), decltype(m_packagesPrefixesHandler), TConnector, Logger>& GetClient()
+        ProClient<decltype(m_treeProvider), decltype(m_packagesPrefixesHandler), decltype(m_coverageDataSource), TConnector, Logger>& GetClient()
         {
             return *m_pImplClient;
         }
@@ -356,7 +403,8 @@ namespace Drill4dotNet
             m_logger.Log() << L"CProfilerCallback::Initialize";
             try
             {
-                m_pImplClient.emplace(m_treeProvider, m_packagesPrefixesHandler);
+                m_coverageData.emplace();
+                m_pImplClient.emplace(m_treeProvider, m_packagesPrefixesHandler, m_coverageDataSource);
 
                 m_adminInteractionThread.emplace([this]()
                 {
@@ -460,6 +508,13 @@ namespace Drill4dotNet
                     fn_functionTailcall
                 );
                 m_corProfilerInfo->SetFunctionIDMapper(fn_FunctionIDMapper);
+
+                std::this_thread::sleep_for(std::chrono::seconds(4));
+                m_sessionControl.emplace(
+                    "http://localhost:8090/api",
+                    L"mysuperAgent",
+                    L"{6D2831ED-6A9D-42FB-9375-1ABFAAF81933}",
+                    L"AUTO");
             }
             catch (const _com_error& exception)
             {
@@ -479,6 +534,9 @@ namespace Drill4dotNet
             m_logger.Log() << L"CProfilerCallback::Shutdown";
             try
             {
+                m_sessionControl->Stop();
+                std::this_thread::sleep_for(std::chrono::seconds(4));
+                m_sessionControl.reset();
                 g_cb = nullptr;
                 GetInfoHandler().OutputStatistics();
                 m_corProfilerInfo.reset();
